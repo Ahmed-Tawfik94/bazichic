@@ -1,0 +1,316 @@
+{% extends 'layout.twig' %}
+{% block jstriggers %}
+    <script type="text/javascript">
+        $(document).ready(function () { // alert("Bazichic Welcomes You.");
+            $('input[type=radio][id=creditCart]').change(function () {
+                if (this.value == 'creditCart') { // alert("Apply Loyalty Points under dev");
+                }
+            });
+            $('input[type=checkbox][name=applyPoints]').change(function () {
+                if (this.value == '1') {
+                    alert("Apply Loyalty Points under dev");
+                }
+            });
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div id="titlebar" style="background-color:#34A853;">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h2 style="color:#ffffff;font-weight:600;">Subscription Form</h2>
+                    <nav id="breadcrumbs">
+                        <ul>
+                            <li>
+                                <a style="color:#ffffff;font-weight:600;" href="{{ base_url() }}/">Home</a>
+                            </li>
+                            <li style="color:#ffffff;font-weight:600;">Subscription Form</li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Content
+                    ================================================== -->
+
+    <!-- Container -->
+    <div class="container padding-bottom-60">
+
+        <div class="row">
+
+            <div class="col-lg-6 col-md-6 padding-right-30 boxed-widget booking-widget">
+                <div id="membership_overlay" style="display:none;">
+                    <div style="margin: 30px; text-align: center;">
+                        <img src="{{base_url()}}/images/preloader.gif" width="60"/>
+                        <h4>
+                            <strong>Taking you to subscription link...</strong>
+                        </h4>
+                        <h5>Please wait...</h5>
+
+                        <div id="resultHolder"></div>
+                    </div>
+                </div>
+
+                {% if page.canSubscribe %}
+                    {# <form method="POST" action="{{page.paypal.PAYPAL_URL}}" class="login" name="purchasePlanForm" id="purchasePlanForm"> #}
+
+                    <div class="row">
+                        <p style="color:#333;font-weight:bold;">{{page.selectedMembership.membersip_desc}}</p>
+                        <input type="hidden" name="plan_id" value="{{page.selectedMembership.id}}"/>
+
+                        {% if session.userID <= 0 %}
+                            <div class="col-md-12">
+
+                                <h3 class="margin-top-0 margin-bottom-30">Personal Details</h3>
+                            </div>
+
+
+                            <div class="col-md-6">
+                                <label style="color:#333;font-weight:bold;">First Name</label>
+                                <input type="text" name="first_name" value="{{session.first_name}}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label style="color:#333;font-weight:bold;">Last Name</label>
+                                <input type="text" name="last_name" value="{{session.last_name}}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="input-with-icon medium-icons">
+                                    <label style="color:#333;font-weight:bold;">E-Mail Address</label>
+                                    <input type="email" name="email" value="{{session.email}}">
+                                    <i class="im im-icon-Mail"></i>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="input-with-icon-medium-icons">
+                                    <label>Select Country</label>
+                                    <select class="chosen-select-no-single" name="country" id="country" required="required">
+                                        <option value="">Click to select</option>
+                                        {% for country in countries %}
+                                            <option value="{{ country }}">{{ country }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        {% else %}
+                            <input type="hidden" name="user_id" value="{{session.userID}}"/>
+                        {% endif %}
+                        <div class="col-md-12">
+                            <div class="input-with-icon medium-icons">
+                                <label style="color:#333;font-weight:bold;">Your Email</label>
+                                <input type="text" style="color:#333;" value="{{session.email}}" name="email_ref">
+                                <i class="im im-icon-Mail-Password"></i>
+
+                            </div>
+                            <label style="color:#555555;font-weight:italic;">
+                                <i class="fa fa-check"></i>
+                                We will send you an email confirming your subscription and validity details.</label>
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="input-with-icon medium-icons">
+                                <label style="color:#333;font-weight:bold;">Selected Membership</label>
+                                <input type="text" style="color:#333;" value="{{page.selectedMembership.name}}" name="plan_name" readonly>
+                                <i class="im im-icon-ID-Card"></i>
+                            </div>
+                            <label style="color:#555555;font-weight:italic;">
+                                <i class="fa fa-info-circle"></i>
+                                Hi
+                                {{session.first_name}}! You can access this plan till
+                                {{page.expiryDateDisplay}}.</label>
+                        </div>
+
+
+                        <input type="hidden" name="date_activation" value="{{page.datenow}}"/>
+                        <input type="hidden" name="date_expiring" value="{{page.expiryDate}}"/>
+                        <input type="hidden" name="status" value="Pending"/>
+                        <input type="hidden" name="amount" value="{{page.selectedMembership.price}}"/>
+                        <input type="hidden" name="note" value=""/>
+                    </div>
+
+                    <div
+                            class="form-row" style="text-align:right;">
+                        {# <button type="submit" class="button btn btn-success booking-confirmation-btn margin-top-10 margin-bottom-10"><i class="fa fa-unlock-alt"></i>
+																																							{% if page.selectedMembership.price > 0 %}CONTINUE {% else %} START FREE TRIAL {% endif %} </a> #}
+                        <a href="{{page.paypal.PAYPAL_URL}}" class="button booking-confirmation-btn margin-top-10 margin-bottom-10">Get Started</a>
+                    </div>
+
+                    <!--
+																												<div class="payment">
+																													<div class="payment-tab payment-tab-active">
+																														<div class="payment-tab-trigger">
+																															<input checked id="paypal" name="cardType" type="radio" value="paypal">
+																															<label for="paypal">PayPal</label>
+																															<img class="payment-logo paypal" src="https://i.imgur.com/ApBxkXU.png" alt="Pay Securely using Paypal">
+																														</div>
+
+																														<div class="payment-tab-content">
+																															<p>You will be redirected to PayPal to complete payment.</p>
+																														</div>
+																													</div>
+
+																													<div class="payment-tab">
+																														<div class="payment-tab-trigger">
+																															<input type="radio" name="cardType" id="creditCart" value="creditCart">
+																															<label for="creditCart">Use My Reward Points</label>
+																															<img class="payment-logo" src="https://i.imgur.com/IHEKLgm.png" alt="Use Reward Points">
+																														</div>
+
+																														<div class="payment-tab-content">
+																															<div class="">
+
+																									{% if page.canRedeem %}
+																									 <p>{{page.redeemStatus}}</p>
+																									 <div class="row with-forms">
+																									 	<div class="col-md-4">
+																														<div class="input-with-icon medium-icons">
+																															<label>Available Loyalty Points</label>
+																															<input type="text" name="available_points" value="{{page.current_points}}"readonly>
+																															<i class="im im-icon-Basket-Coins"></i>
+																														</div>
+																													</div>
+
+																													<div class="col-md-4">
+																													    <div class="input-with-icon medium-icons">
+																															<label>Redeem Loyalty Points</label>
+																															<input type="text" name="redeem_points" placeholder="Enter points" value="{% if page.current_points >= page.selectedMembership.price  %} {{page.selectedMembership.price}} {% else %}{{page.current_points}} {% endif %}" readonly>
+																															<i class="im im-icon-Tap"></i>
+																														</div>
+
+																													</div>
+
+																														<div class="col-md-4">
+																														      <div class="input-with-icon medium-icons">
+																															<label>Remaining Points</label>
+																															<input type="text" name="remaining_points" placeholder="Remaining" value="{{page.remaining_points}}" readonly>
+																															<i class="im im-icon-Wallet-2"></i>
+																														</div>
+																													</div>
+																									</div>
+
+																									<div class="row">
+																															<div class="col-md-12">
+																														<div class="checkboxes in-row margin-bottom-20">
+
+																																<input id="check-a" type="checkbox" name="applyPoints" value="1">
+																																<label for="check-a" style="color:#333333;">I agree to use my loyalty points for this subscription.</label>
+
+
+
+																															</div>
+																																</div>
+																															</div>
+
+																																<div class="clear"></div>
+																									{% else %}
+																										<div class="row text-center" style="padding:30px;">
+																									  <h1 style="font-weight:bolder;"><i class="im im-icon-Wallet-2"></i></h1>
+																									 <p>{{page.redeemStatus}}</p>
+																									 </div>
+																									{% endif %}
+																															</div>
+																														</div>
+																													</div>
+
+																												</div>
+																									 Payment Methods Accordion / End -->
+
+                    {# </form> #}
+                {% else %}
+                    <div class="row text-center" style="padding:30px;">
+                        <h1 style="font-weight:bolder;">
+                            <i class="im im-icon-Wallet-2"></i>
+                        </h1>
+                        <h4>{{page.subscriptionInfo}}</h4>
+                        <a class="button btn btn-success" href="{{ base_url() }}/dashboard">My Dashboard</a>
+                    </div>
+                {% endif %}
+
+            </div>
+
+
+            <!-- Sidebar
+                                                                    ================================================== -->
+            <div
+                    class="col-lg-6 col-md-6 margin-top-0">
+                <!-- Booking Summary -->
+                <div class="listing-item-container compact order-summary-widget">
+                    <div class="boxed-widget opening-hours summary margin-top-0">
+
+                        <h3>
+                            <i class="fa fa-calendar-check-o"></i>
+                            Billing Summary</h3>
+                        <ul>
+                            <li class="total-costs" style="font-size: 18px;border-top: 0px solid #e8e8e8;padding-top: 2px;">Subscription Plan
+                                <span>{{page.selectedMembership.title}}
+								</span>
+                            </li>
+
+                            <li>Starting Date
+                                <span>{{page.datenowDisplay}}</span>
+                            </li>
+                            <li>Valid till
+                                <span>{{page.expiryDateDisplay}}</span>
+                            </li>
+                            <!-- <li class="total-costs">Total Fee <span>${{page.selectedMembership.price}}</span></li> -->
+                            {% if page.selectedMembership.id == 1 %}
+                                <li class="total-costs">Subscription Fee
+                                    <span>
+										${{page.selectedMembership.price}}/
+										{{page.selectedMembership.interval}}</span>
+                                </li>
+                                <li class="total-costs">Free Trial Period<span>10 Days</span>
+                                </li>
+                            {% else %}
+                                <li class="total-costs">Subscription Fee
+                                    <span>
+										${{ page.selectedMembership.price}}/
+										{{ page.selectedMembership.interval}}</span>
+                                </li>
+                            {% endif %}
+                        </ul>
+                        <hr>
+                        {% if page.canHaveFreeTrial %}
+                            <div id="trial_overlay" style="display:none;">
+                                <div style="margin: 10px; text-align: center;">
+                                    <img src="{{base_url()}}/images/preloader.gif" width="40"/>
+                                    <h4>
+                                        <strong>Requesting Free Trial</strong>
+                                    </h4>
+                                    <h5>Please wait...</h5>
+                                </div>
+                            </div>
+                            <form method="POST" action="{{full_url_for('grant-free-trial')}}" class="login" name="freeTrialsForm" id="freeTrialsForm">
+                                <input type="hidden" name="user_id" value="{{session.userID}}"/>
+                                <div id="approveLayout" style="display:none;">
+                                    <p>I agree to start my free trial.</p>
+                                    <input type="hidden" name="approved" value="1"/>
+                                </div>
+                                <input type="hidden" name="plan_id" value="{{page.selectedMembership.id}}"/>
+                                <button type="submit" id="" class="button booking-confirmation-btn margin-top-10 margin-bottom-10">
+                                    <i class="fa fa-rocket"></i>
+                                    START FREE TRIAL
+                                </button>
+                            </form>
+
+                        {% else %}
+                            {{page.freeTrialMsg}}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <!-- Ends Sidebar
+                                                                    ================================================== -->
+
+
+        </div>
+
+    </div>
+    <!-- Container / End -->
+{% endblock %}

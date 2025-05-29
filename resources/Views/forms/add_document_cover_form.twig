@@ -1,0 +1,283 @@
+<!-- Section -->
+{% block jstriggers %}
+	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/greghub/green-audio-player/dist/css/green-audio-player.min.css">
+	<script src="https://cdn.jsdelivr.net/gh/greghub/green-audio-player/dist/js/green-audio-player.min.js"></script>
+{% endblock %}
+{% if page.editMode %}
+	{% if page.warning %}
+		<div class="row">
+			<div class="col-md-12">
+				<div class="notification success" style="padding: 15px 26px 1px 26px;">
+					<h5>
+						<strong>
+							<i class="fa fa-bell"></i>
+							ALERT
+						</strong>
+					</h5>
+					<p>
+						<strong>{{page.warning}}
+						</strong>
+					</p>
+					<a class="close" href="#"></a>
+				</div>
+			</div>
+		</div>
+	{% endif %}
+
+	<div
+		class="row with-forms margin-bottom-20">
+		<!-- One -->
+		<div
+			class="col-md-6">
+			<!-- Form Half Section / Starts -->
+			<div
+				class="add-listing-section margin-top-10">
+				<!-- Headline -->
+				<div class="add-listing-headline">
+					<h3><i class="bi bi-paperclip mr-2"></i> {{page.doc_type}} Cover</h3>
+					<small class="text-muted mt-2">Upload a cover image for this {{page.doc_type}}.</small>
+				</div>
+				<!-- Dropzone -->
+				<div
+					class="submit-section">
+					<!-- Overlay Section -->
+					<div id="doc_cover_overlay" style="display:none;">
+						<div style="padding:60px;text-align: center;">
+							<img src="{{base_url()}}/images/preloader.gif" width="70" alt="preloader"/>
+							<h3 style="color:#121212;margin-top:30px;">
+								<strong>Updating {{page.doc_type}} Cover</strong>
+							</h3>
+							<h4 style="color:#232323;">Please wait...</h4>
+							{% include 'partials/progressbar.twig' %}
+						</div>
+					</div>
+					<!-- end overlay -->
+					<form id="docMediaUploadForm" name="docMediaUploadForm" action="{{full_url_for('upload-media')}}" class="form-horizontal" enctype="multipart/form-data" method="POST" style="display:block;">
+						<input
+						type="hidden" value="{{page.document.qcode}}" name="doc_id" id="doc_id" >
+						<!-- Row -->
+						<div class="row with-forms">
+							<div class="col-md-12">
+								<div class="edit-profile-photo d-flex justify-content-center">
+									{% if document.cover %}
+										<img id="cover_image_preview" src="{{base_url()}}/{{document.cover}}" style="width:auto;height:300px;" alt="{{ page.document.title }}">
+									{% else %}
+										<img id="cover_image_preview" src="{{base_url()}}/images/books/default.png">
+									{% endif %}
+									<div class="change-photo-btn">
+										<div class="photoUpload">
+											<span>
+												<i class="fa fa-upload"></i>
+												Upload a Cover</span>
+											<input type="file" id="cover_image" name="cover_image" class="upload" onchange="docImgPreview();"/>
+										</div>
+									</div>
+								</div>
+
+							</div>
+
+						</div>
+						<!-- Row / End -->
+
+					</form>
+
+				</div>
+			</div>
+			<!-- Form Half Section / End -->
+		</div>
+		<!-- Two -->
+		<div
+			class="col-md-6">
+			<!-- Form Half Section / Starts -->
+			<div
+				class="add-listing-section margin-top-10">
+				<!-- Headline -->
+				<div class="add-listing-headline">
+					<h3><i class="bi bi-paperclip mr-2"></i>{{page.doc_type}} File</h3>
+					<small class="text-muted pt-2">Upload a file for this {{page.doc_type}}.</small>
+				</div>
+				<!-- Dropzone -->
+				<div
+					class="submit-section">
+					<!-- Overlay Section -->
+					<div id="doc_file_overlay" style="display:none;">
+						<div style="padding:60px;text-align: center;">
+							<img src="{{base_url()}}/images/preloader.gif" width="70" alt="preloader"/>
+							<h3 style="color:#121212;margin-top:30px;">
+								<strong>Uploading
+									{{page.doc_type}}
+									File</strong>
+							</h3>
+							<h4 style="color:#232323;">Please wait...</h4>
+							<hr>
+							{% include 'partials/progressbar.twig' %}
+						</div>
+					</div>
+					<!-- end overlay -->
+					<form id="docFileUploadForm" name="docFileUploadForm" action="{{full_url_for('upload-files')}}" class="form-horizontal" enctype="multipart/form-data" method="POST" style="display:block;">
+						<input
+						type="hidden" value="{{page.document.qcode}}" name="doc_id" id="doc_id">
+						<!-- Row -->
+						<div class="row with-forms">
+							<div class="col-md-12">
+								<div class="row justify-content-center">
+									<!--------- FILE UPLOAD ---------->
+									<div class="edit-profile-photo">
+										<div style="clear:both">
+											{% if document.link %}
+												<iframe id="viewer" frameborder="0" scrolling="no" width="300" height="300" {% if document.link %} src="{{base_url()}}/{{document.link}}" {% endif %}></iframe>
+											{% else %}
+												<img id="imgviewer" src="{{base_url()}}/images/books/default.png" alt="PDF not fount">
+											{% endif %}
+										</div>
+										<div class="change-photo-btn">
+											<div class="photoUpload">
+												<span><i class="fa fa-upload mr-2"></i>Upload {{page.doc_type}} File</span>
+												{% if page.doc_type_id ==1 or page.doc_type_id ==3 %}
+													<input type="file" name="doc_link" id="doc_link" class="upload" accept="application/pdf" onchange="showPdfPreview();"/>
+												{% else %}
+													<input type="file" name="doc_link" id="doc_link" class="upload" accept="audio/*" onchange="showPdfPreview();"/>
+												{% endif %}
+											</div>
+										</div>
+									</div>
+									<!--------- END OF FILE UPLOAD ---------->
+
+
+								</div>
+							</div>
+						</div>
+						<!-- Row / End -->
+					</form>
+
+				</div>
+			</div>
+
+			<!-- Form Half Section / End -->
+		</div>
+	</div>
+	<div class="row mb-3">
+		<div class="col-md-12">
+			<!-- Form Half Section / Starts -->
+			<div class="add-listing-section margin-top-10">
+				<!-- Headline -->
+				<div class="add-listing-headline">
+					<h3><i class="bi bi-speaker mr-2"></i>Audio File</h3>
+					<small class="text-muted mt-2">Upload an audio file for this {{page.doc_type}}.</small>
+				</div>
+				<!-- Dropzone -->
+				<div class="submit-section">
+					<!-- Overlay Section -->
+					<div id="doc_audio_overlay" style="display:none;">
+						<div style="padding:60px;text-align: center;">
+							<img src="{{base_url()}}/images/preloader.gif" width="70" alt="preloader"/>
+							<h3 style="color:#121212;margin-top:30px;">
+								<strong>Upload {{page.doc_type}} audio File</strong>
+							</h3>
+							<h4 style="color:#232323;">Please wait...</h4>
+							{% include 'partials/progressbar.twig' %}
+						</div>
+					</div>
+					<!-- end overlay -->
+					<form id="docAudioUploadForm" name="docAudioUploadForm" action="{{full_url_for('upload-audio',{qcode:page.document.qcode})}}" class="form-horizontal" enctype="multipart/form-data" >
+						<!-- Row -->
+						<div class="row with-forms">
+							<div class="col-md-12">
+								<div class="edit-profile-photo m-0 d-flex flex-column">
+									<div id="audioWrapper" class="w-100">
+										<div class="gap-example my-5 w-100 ">
+											<audio  id="audio_preview" name="myaudio">
+												<source  type="audio/mpeg" src="">
+											</audio>
+										</div>
+									</div>
+										<div id="empty_state" class="my-5 w-100 text-center">
+											<img src="/images/fileNotFound.svg" width="300px" height="300px" style="object-fit: contain" alt="file Not Found"/>
+											<p class="text-muted"> No Audio File has been upload yet click on upload button to upload an audio</p>
+										</div>
+									<div class="d-flex justify-content-end">
+										<div class="photoUpload btn btn-info rounded-pill">
+											<span><i class="fa fa-upload mr-1"></i>Upload an audio</span>
+											<input type="file" id="audio_file" name="audio_file" class="upload"/>
+										</div>
+									</div>
+								</div>
+
+							</div>
+
+						</div>
+						<!-- Row / End -->
+
+					</form>
+
+				</div>
+			</div>
+			<!-- Form Half Section / End -->
+		</div>
+	</div>
+	<script>
+		class baseAudioPlayer extends GreenAudioPlayer {
+			setAudio(src) {
+				if (this.player && this.player.tagName === 'AUDIO') {
+					this.player.src = src; // Set the new audio source
+					this.player.load();    // Reload the audio element
+				} else {
+					console.error('Player reference is invalid or not an audio element.');
+				}
+			}
+		}
+
+		// Ensure isAudioExist is properly checked
+		const isAudioExist = '{{ document.audio_file }}'.trim();
+		const uploader = $('#audio_file');
+		const empty = $('#empty_state');
+		const audioContainer = $('#audioWrapper');
+
+		// Initialize the audio player
+		const audioPlayer = new baseAudioPlayer('.gap-example', {
+			enableKeystrokes: true,
+			enableDownload: false,
+		});
+
+		// Check if an audio file exists and update UI accordingly
+		if (isAudioExist !== '') {
+			audioPlayer.setAudio('{{ base_url() }}/{{ document.audio_file }}');
+			empty.hide();
+			audioContainer.show();
+		} else {
+			audioContainer.hide();
+			empty.show();
+		}
+
+		// Listen for file upload changes
+		uploader.on('change', docUploadAudio);
+
+		async function docUploadAudio() {
+			console.log('triggered');
+
+			// Ensure a file is selected before reading
+			if (!uploader.prop("files")[0]) {
+				console.warn('No file selected.');
+				return;
+			}
+
+			let oFReader = new FileReader();
+			oFReader.readAsDataURL(uploader.prop("files")[0]);
+
+			oFReader.onload = function (oFREvent) {
+				let audio_file = oFREvent.target.result;
+				audioPlayer.setAudio(audio_file);
+
+				empty.hide();
+				audioContainer.show();
+			}
+
+			// Submit the form after setting the new audio file
+			$('#docAudioUploadForm').submit();
+		}
+	</script>
+
+
+{% endif %}
+
+

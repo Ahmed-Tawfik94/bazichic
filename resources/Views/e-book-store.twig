@@ -1,0 +1,206 @@
+{% extends 'layout.twig' %}
+{% block jstriggers %}
+
+    <script type="text/javascript">
+        var doc_types = [];
+        $(document).ready(function () {
+
+            $('.async_document_type').change(function () {
+                if (this.checked) {
+                    $.each($("input[class='async_document_type']:checked"), function () {
+                        doc_types.push($(this).val());
+                    });
+                } else {
+                    doc_types = selectDocs();
+                }
+            });
+
+
+            function selectDocs() {
+                var favorite = [];
+                $.each($("input[class='async_document_type']:checked"), function () {
+                    favorite.push($(this).val());
+                });
+                return favorite;
+            }
+        });
+    </script>
+    <style>
+        button:focus, button:active {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+        .favouriteDocument > i:hover{
+            color:#DC3444;
+        }
+        .custom-row {
+            margin-left: -10px;
+            margin-right: -10px;
+        }
+        .custom-col {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div id="titlebar" class="bg-bazi m-0">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h2 style="color:#ffffff;font-weight:500;">Discover E-Books, Audio Books & Magazines</h2>
+                    <nav id="breadcrumbs">
+                        <ul>
+                            <li><a style="color:#ffffff;font-weight:500;" href="{{ full_url_for('home') }}">Home</a></li>
+                            <li><a style="color:#ffffff;font-weight:500;" href="{{ full_url_for('e-book-store') }}" >BaziChic Library</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Container -->
+    <div class="container-fluid my-4">
+       {% include 'partials/widgets/filter.twig' %}
+        <div class="row flex-column mx-1 mx-md-3">
+
+            <!-- .sidebar end -->
+
+            <div class="col-12">
+                <nav aria-label="Page navigation" class="d-flex justify-content-center align-items-center">
+                    <ul class="pagination">
+                        <!-- Previous Button -->
+                        <li class="page-item {% if page.current_page == 1 %}disabled{% endif %}">
+                            <a class="page-link" href="?page={{ page.current_page - 1 }}" tabindex="-1">Previous</a>
+                        </li>
+
+                        <!-- Loop through page numbers -->
+                        {% for i in 1..page.total_pages %}
+                            <li class="page-item {% if i == page.current_page %}active{% endif %}">
+                                <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                            </li>
+                        {% endfor %}
+
+                        <!-- Next Button -->
+                        <li class="page-item {% if page.current_page == page.total_pages %}disabled{% endif %}">
+                            <a class="page-link" href="?page={{ page.current_page + 1 }}">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+
+            </div>
+            <div class="col-12 my-2">
+
+                    {% if page.data %}
+                    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 custom-row ">
+                        {% for document in page.data %}
+                            <div class="col px-3 px-md-0 p-1 h-100 custom-col">
+                                <div class="p-2">
+                                <div class="card w-100 book-card" >
+                                    <a href="{{ base_url() }}/e-book-store/book-detail/{{ document.qcode }}">
+                                    <img src="{{ base_url() }}/{{ document.cover }}" class="card-img-top"
+                                         style="aspect-ratio: 1; object-fit: contain; "
+                                         alt="{{ document.title }}"/>
+                                    </a>
+                                    <hr>
+                                    <div class="card-body" style="height: 180px">
+                                        <a class="nav-link p-2" href="{{ base_url() }}/e-book-store/book-detail/{{ document.qcode }}">
+                                        <h5 class="card-text">{{ document.title }}</h5>
+                                        {% set maxLength = 70 %}
+
+                                        <p class="card-text">{{ document.desc |length > maxLength ? document.desc |slice(0, maxLength) ~ '...' : document.desc  }}</p>
+                                        {% if document.tag %}
+                                            <div class="sale-flash orange">{{ document.tag }}</div>
+                                        {% endif %}
+                                        </a>
+                                    </div>
+                                        <div class="card-footer d-flex justify-content-between align-items-center bg-white border-0">
+                                        {% if page.carosell_view > 0 %}
+                                                {% if session.userID %}
+                                                        <button data-id="{{ document.id }}"
+                                                                data-title="{{ document.is_liked ? 1 : 0 }}"
+                                                           class="favouriteDocument btn btn-link text-muted outline-none border-0">
+                                                            <i class="bi bi-heart-fill {% if document.is_liked %}text-danger{% endif %}" style="font-size: 24px"></i>
+                                                        </button>
+                                                {% else %}
+                                                    <a href="#sign-in-dialog"
+                                                       class="item-quick-view popup-with-zoom-anim text-decoration-none"
+                                                       data-lightbox="ajax">
+                                                        <i class="bi bi-heart-fill text-muted" style="font-size: 24px"></i>
+{#                                                        <span>Favourite</span>#}
+                                                    </a>
+                                                {% endif %}
+
+                                                <a href="{{ full_url_for('book-detail',{id:document.qcode }) }}"
+                                                   class="item-quick-view btn btn-link text-decoration-none"
+                                                   data-lightbox="ajax">
+                                                    <i class="bi bi-zoom-in mr-1"></i>
+                                                    <span> Know More</span>
+                                                </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                        <section
+                                style="padding: 40px;text-align: center;margin-top:30px;margin-bottom:30px;background-color:#eee;"
+                                class="well center">
+                            <h1 style="text-align: center;font-weight: 500;">
+                                {% if page.doc_type_id == 1 or page.doc_type_id == 3 %}
+                                    <i class="sl sl-icon-book-open"></i>
+                                {% else %}
+                                    <i class="sl sl-icon-earphones-alt"></i>
+                                {% endif %}
+                            </h1>
+                            <h4>Looks like there is no
+                                {{ page.display_type }}
+                                at this moment. Check back again.</h4>
+
+                            <!-- Search -->
+                            <div class="row" style="margin-top:20px;">
+                                <div class="col-12">
+                                    <a href="{{ base_url() }}/e-book-store" class="button btn btn-purple text-white" style="margin-bottom:30px;">
+                                        <i class="fa fa-arrow-right"></i>
+                                        View All Documents</a>
+                                </div>
+                            </div>
+                        </section>
+                    {% endif %}
+
+                <!-- #shop end -->
+
+
+            </div>
+           <div class="col-12">
+               <nav aria-label="Page navigation" class="d-flex justify-content-center align-items-center">
+                   <ul class="pagination">
+                       <!-- Previous Button -->
+                       <li class="page-item {% if page.current_page == 1 %}disabled{% endif %}">
+                           <a class="page-link" href="?page={{ page.current_page - 1 }}" tabindex="-1">Previous</a>
+                       </li>
+
+                       <!-- Loop through page numbers -->
+                       {% for i in 1..page.total_pages %}
+                           <li class="page-item {% if i == page.current_page %}active{% endif %}">
+                               <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                           </li>
+                       {% endfor %}
+
+                       <!-- Next Button -->
+                       <li class="page-item {% if page.current_page == page.total_pages %}disabled{% endif %}">
+                           <a class="page-link" href="?page={{ page.current_page + 1 }}">Next</a>
+                       </li>
+                   </ul>
+               </nav>
+
+           </div>
+            <!--- END OF STORE -->
+        </div>
+        <div class="clearfix"></div>
+        <!-- Social Icons / End -->
+
+    </div>
+{% endblock content %}

@@ -1,0 +1,70 @@
+<div class="dashboard-nav d-none d-md-block">
+    <a href="#" class="dashboard-responsive-nav-trigger">
+        <i class="fa fa-reorder"></i>
+        Dashboard Navigation
+    </a>
+    <div class="dashboard-nav-inner">
+        <ul data-submenu-title="Welcome {{ session.first_name }}!">
+            <li {% if page.name == "dashboard" %} class="active" {% endif %}>
+                <a class="text-decoration-none" href="{{ full_url_for('dashboard') }}">
+                    <i class="sl sl-icon-rocket"></i>
+                    My Dashboard
+                </a>
+            </li>
+            <li {% if page.name == "notification" %} class="active" {% endif %}>
+                <a class="text-decoration-none" href="{{ full_url_for('my_notifications') }}">
+                    <i class="bi bi-bell"></i>
+                    Notifications
+                </a>
+            </li>
+            <li {% if page.name == "referrals" %} class="active" {% endif %}>
+                <a class="text-decoration-none" href="{{ full_url_for('referral-codes') }}">
+                    <i class="sl sl-icon-rocket"></i>
+                    Refer & Earn
+                </a>
+            </li>
+            <li {% if page.name == "savedreads" %} class="active" {% endif %}>
+                <a class="text-decoration-none" href="{{ full_url_for('saved-reads') }}">
+                    <i class="sl im im-icon-Arrow-LeftinCircle"></i>
+                    Saved Reads
+                    {% if session.num_saves %}
+                        <span class="nav-tag messages">{{ session.num_saves }}</span>
+                    {% endif %}
+                </a>
+            </li>
+            <li {% if page.name == "favourites" %} class="active" {% endif %}>
+                <a class="text-decoration-none" href="{{ full_url_for('bookmarks') }}">
+                    <i class="sl sl-icon-heart"></i>
+                    My Favourites
+                </a>
+            </li>
+        </ul>
+
+        <ul data-submenu-title="Account">
+            <li {% if page.name == "profile" %} class="active" {% endif %}>
+                <a class="text-decoration-none" href="{{ full_url_for('my-profile') }}">
+                    <i class="sl sl-icon-user"></i>
+                    My Profile
+                </a>
+            </li>
+            <li {% if page.name == "my-membership" %} class="active" {% endif %}>
+                <a class="text-decoration-none" href="{{ full_url_for('my-subscriptions') }}">
+                    <i class="sl sl-icon-shield"></i>
+                    Membership
+                </a>
+            </li>
+            <li>
+                <a class="text-decoration-none" href="{{ full_url_for('logout') }}">
+                    <i class="sl sl-icon-power"></i>Logout
+                </a>
+            </li>
+        </ul>
+
+        <!-- Referral Code Section -->
+
+    </div>
+</div>
+<!-- Navigation / End -->
+
+<!-- Add this script -->
+

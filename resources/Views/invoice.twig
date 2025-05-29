@@ -1,0 +1,140 @@
+{% extends 'dashboard_layout.twig' %}
+{% block content %}
+	<script>
+		const baseURL = "{{ base_url() }}";
+	</script>
+<script>
+	function printDiv() {
+		// Locate the invoice content
+		let invoiceElement = document.getElementById("invoice");
+		if (!invoiceElement) {
+			console.error("Invoice element not found");
+			return;
+		}
+
+		// Get the inner content of the invoice div
+		let divContents = invoiceElement.innerHTML;
+
+		// Open a new print window
+		let printWindow = window.open('', '', 'height=800, width=800');
+		printWindow.document.open();
+		printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Print Invoice</title>
+                    <!-- Include CSS files -->
+                    <link rel="stylesheet" href="${baseURL}/css/invoice.css">
+                    <link rel="stylesheet" href="${baseURL}/css/style.css">
+                    <link rel="stylesheet" href="${baseURL}/css/custom.css">
+                    <link rel="stylesheet" href="${baseURL}/css/colors/main.css" id="colors">
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            padding: 2rem;
+                            margin: 2rem;
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${divContents}
+                </body>
+                </html>
+            `);
+
+		// Close the document and initiate printing
+		printWindow.document.close();
+		printWindow.print();
+	}
+
+</script>
+<!-- Print Button -->
+<a href="javascript:printDiv();" class="print-button">Print this invoice</a>
+<!-- Invoice -->
+<div id="invoice">
+
+	<!-- Header -->
+	<div class="row">
+		<div class="col-md-6">
+			<div id="logo"><img src="{{base_url()}}/images/logo.png" style="max-height: 86px;"></div>
+		</div>
+
+		<div class="col-md-6">	
+			<p id="details" style="color:#444444;font-weight:bold;">
+				<strong style="color:#333333;">Order ID :</strong> #{{page.invoice.number}} <br>
+				<strong style="color:#333333;">Purchase Date :</strong> {{page.invoice.created|date('Y-m-d H:i:s')}}
+			</p>
+		</div>
+	</div>
+
+
+	<!-- Client & Supplier -->
+	<div class="row">
+		<div class="col-md-12">
+			<h2>Invoice</h2>
+		</div>
+
+		<div class="col-md-6">	
+			<strong class="margin-bottom-5">Business</strong>
+			<p style="color:#333333;font-weight:bold;">
+				Bazichic Chinese Metaphysics Consulting <br>
+				Kuala Lumpur, Malaysia <br>
+			</p>
+		</div>
+
+		<div class="col-md-6">	
+			<strong class="margin-bottom-5">Customer</strong>
+			<p style="color:#333333;font-weight:bold;">
+			{{page.thisUser.first_name}} {{page.thisUser.last_name}}<br>
+			</p>
+		</div>
+	</div>
+
+
+	<!-- Invoice -->
+	<div class="row">
+		<div class="col-md-12">
+			<table class="margin-top-20">
+				<tr>
+					<th>Service Description</th>
+					<th>TXN ID</th>
+					<th>Amount</th>
+				</tr>
+
+				<tr style="margin-top:10px;">
+
+						{% for item in page.invoice.lines.data %}
+							<td>
+								{{ item.description }} Subscription Plan
+							</td>
+
+							<td style="color:#333333;font-weight:bold;">{{ page.transactionEntry.txn_id }}</td>
+							<td style="color:#333333;font-weight:bold;">{{ (item.amount / 100) ~ ' ' ~ page.invoice.currency|upper }}</td>
+						{% endfor %}
+				</tr>
+			</table>
+		</div>
+		
+		<div class="col-md-4 col-md-offset-8">	
+			<table id="totals">
+				<tr>
+					<th>Total Amount Paid:</th>
+					<th><span style="color:#333333;font-weight:bold;">{{ (item.amount / 100) ~ ' ' ~ page.invoice.currency|upper }}</span></th>
+				</tr>
+			</table>
+		</div>
+	</div>
+
+
+	<!-- Footer -->
+	<div class="row">
+		<div class="col-md-12">
+			<ul id="footer" style="display:flex;justify-content:center;align-items:center">
+				<li style="color:#444444;font-weight:bold;"><span>www.bazichic.com</span></li>
+				<li style="color:#444444;font-weight:bold;">customer_support@bazichic.com</li>
+				<li style="color:#444444;font-weight:bold;">413-285-8989</li>
+			</ul>
+		</div>
+	</div>
+		
+</div>
+{% endblock content %}

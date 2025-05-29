@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Subscription Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .logo img {
+            height: 60px;
+            margin-bottom: 20px;
+        }
+        a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .cta-button {
+            display: inline-block;
+            background: #007BFF;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <h4>Dear {{ first_name|e }}!</h4>
+    <p>You have subscribed to our <strong>{{ plan_name }}</strong> plan successfully. Transaction Reference ID for your payment is {{ session_id|e }}.</p>
+
+    <p>Thanks for your subscription at Bazichic. Have a great journey ahead.</p>
+
+    <p>To Sign into your Account, <a href="{{ app_url }}/login" class="cta-button">Click Here</a>.</p>
+
+    <p>For more details, visit our official site at <a href="{{ app_url }}">www.bazichic.com</a>.</p>
+
+    <p>If you have any query, complaint, or suggestion regarding our services, feel free to write us at <a href="mailto:customer_support@bazichic.com">customer_support@bazichic.com</a>.</p>
+
+    <div class="logo">
+        <a href="{{ app_url }}"><img src="{{ app_url }}/images/logo.png" alt="Bazichic"></a>
+    </div>
+</div>
+</body>
+</html>

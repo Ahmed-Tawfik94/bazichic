@@ -1,0 +1,463 @@
+{% extends 'admin/admin_layout.twig' %}
+
+{% block content %}
+    <style>
+        .card-custom {
+            background: #ffffff;
+            color: #3A1078;
+            border-radius: 15px;
+            padding: 20px;
+            width: 100%;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        .header-title {
+            font-size: 32px;
+            font-weight: bold;
+        }
+        .sub-title {
+            color: #A0A0A0;
+            font-size: 14px;
+        }
+        .list-group-item {
+            background: transparent;
+            color: #3A1078;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: none;
+            padding: 10px 0;
+            font-size: 16px;
+        }
+        .list-group-item img {
+            width: 24px;
+            height: 16px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+        .top-arrow {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .top-arrow i {
+            color: #3A1078;
+            font-size: 14px;
+        }
+        .dashboard-stat-content h4{
+            color:#3A1078 !important;
+        }
+    </style>
+    {% if page.is_filtered %}
+            <button type="button" class="btn btn-primary">
+                ({{ page.start_date }} to {{ page.end_date }}) <span class="badge badge-pill "><i class="bi bi-x" style="font-size: 20px"></i></span>
+            </button>
+    {% else %}
+        <h3>All-Time Data</h3>
+    {% endif %}
+    <div class="row">
+        <div class="col-md-4">
+            <label for="start_date">Start Date</label>
+            <input type="date" id="start_date" class="form-control" value="{{ page.start_date }}">
+        </div>
+        <div class="col-md-4">
+            <label for="end_date">End Date</label>
+            <input type="date" id="end_date" class="form-control" value="{{ page.end_date }}">
+        </div>
+        <div class="col-md-4">
+            <label>&nbsp;</label>
+            <button id="filterButton" class="btn btn-primary  btn-block"><i class="bi bi-filter mr-2"></i>Apply</button>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top:1px;">
+        <div class="col-lg-6 col-md-6 col-sm-12">
+            <div id="subscriptionChart"></div>
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-12">
+            <div id="myChart"></div>
+        </div>
+    </div>
+
+    <h3 style="border-bottom:2px solid #778878;margin-bottom:3px;display: inline-block;padding-bottom: 10px;">
+        Transaction Summary</h3>
+    <div
+            class="row" style="margin-top:10px;">
+        <!-- Item -->
+        <div class="col-lg-6 col-md-6">
+            <a href="{{ full_url_for('manage-all-subscriptions') }}">
+                <div class="dashboard-stat card-custom card-custom " id="sales">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ page.data_stats.amountPaid }}
+                        </h4>
+                        <span>Total Amount Received</span>
+                        <span style="display:inline;font-size: 15px;line-height: 18px;font-style: italic;">(in USD)
+						</span>
+                    </div>
+                    <div class="dashboard-stat-icon">
+                        <i class="im im-icon-Dollar"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- Item -->
+        <div class="col-lg-6 col-md-6">
+            <a href="{{ full_url_for('manage-all-subscriptions') }}">
+                <div class="dashboard-stat card-custom " id="unpiad_sales">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ page.data_stats.amountUnPaid }}
+                        </h4>
+                        <span>Total Amount On Hold</span>
+                        <span style="display:inline;font-size: 15px;line-height: 18px;font-style: italic;">(in USD)</span>
+                    </div>
+                    <div class="dashboard-stat-icon">
+                        <i class="sl sl-icon-wallet"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+    <h3 style="border-bottom:2px solid #778878;margin-bottom:3px;display: inline-block;padding-bottom: 10px;">Active
+        Subscriptions Summary</h3>
+    <div
+            class="row" style="margin-top:10px;">
+        <!-- Item -->
+        <div class="col-lg-3 col-md-6">
+            <a href="{{ full_url_for('manage-all-subscriptions') }}">
+                <div class="dashboard-stat card-custom ">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ page.data_stats.activeSubscribers }}
+                        </h4>
+                        <span>Total Active Subscriptions</span>
+                    </div>
+                    <div class="dashboard-stat-icon">
+                        <i class="sl sl-icon-badge"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- Item -->
+        <div class="col-lg-3 col-md-6">
+            <a href="{{ full_url_for('manage-all-subscriptions') }}">
+            <div class="dashboard-stat card-custom ">
+                <div class="dashboard-stat-content">
+                    <h4>{{ page.data_stats.currentMembersWithStarter }}</h4>
+                    <span>Starter Subscribers</span>
+                </div>
+            </div>
+            </a>
+        </div>
+        <!-- Item -->
+        <div class="col-lg-3 col-md-6">
+            <a href="{{ full_url_for('manage-all-subscriptions') }}">
+                <div class="dashboard-stat card-custom ">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ page.data_stats.currentMembersWithPremium }}</h4>
+                        <span>Premium Subscribers</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- Item -->
+        <div class="col-lg-3 col-md-6">
+            <a href="{{ full_url_for('manage-all-subscriptions') }}">
+                <div class="dashboard-stat card-custom ">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ page.data_stats.currentMembersWithStudent }}</h4>
+                        <span>Student Subscribers</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <h3 style="border-bottom:2px solid #778878;margin-bottom:3px;display: inline-block;padding-bottom: 10px;">Users
+        Summary</h3>
+    <div class="row" style="margin-top:10px;">
+        <div class="col-lg-3 col-md-6">
+            <a href="{{ full_url_for('manage-users') }}">
+                <div class="dashboard-stat card-custom ">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ page.data_stats.totalMembers }}
+                        </h4>
+                        <span>Total User Accounts</span>
+                    </div>
+                    <div class="dashboard-stat-icon">
+                        <i class="sl sl-icon-people"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <a href="{{ full_url_for('reward-points') }}">
+                <div class="dashboard-stat card-custom ">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ page.data_stats.totalRewardPoints }}
+                        </h4>
+                        <span>Total Reward Points</span>
+                        {% if page.data_stats.numPeopleRewarded > 0 %}
+                            <span style="display:block;font-size: 15px;line-height: 18px;font-style: italic;">({{ page.data_stats.numPeopleRewarded }}
+                                {{ page.data_stats.numPeopleRewarded ==1 ?'Person':'People' }}
+								Rewarded)</span>
+                        {% endif %}
+                    </div>
+                    <div class="dashboard-stat-icon">
+                        <i class="sl sl sl-icon-wallet"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <a href="{{ full_url_for('free-trials-summary') }}">
+                <div class="dashboard-stat card-custom ">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ page.data_stats.totalFreeTrialsActive }}</h4>
+                        <span>Total Free Trials</span>
+                    </div>
+                    <div class="dashboard-stat-icon">
+                        <i class="sl sl sl-icon-plane"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <a href="{{ full_url_for('contact-form-submissions') }}">
+                <div class="dashboard-stat card-custom ">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ page.data_stats.numTotalContacts }}
+                        </h4>
+                        <span>Received Messages</span>
+                    </div>
+                    <div class="dashboard-stat-icon">
+                        <i class="sl sl-icon-envelope-open"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <h3 style="border-bottom:2px solid #778878;margin-bottom:3px;display: inline-block;padding-bottom: 10px;">Resources
+        Summary</h3>
+    <div class="row" style="margin-top:10px;">
+        <div class="col-lg-4 col-md-6">
+            <a href="{{ full_url_for('manage-reviews') }}">
+                <div class="dashboard-stat card-custom ">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ page.data_stats.numDocReviews }}
+                        </h4>
+                        <span>User Reviews</span>
+                    </div>
+                    <div class="dashboard-stat-icon">
+                        <i class="sl sl-icon-speech"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <a href="{{ full_url_for('bookmarks') }}">
+                <div class="dashboard-stat card-custom ">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ page.data_stats.numDocLikes }}
+                        </h4>
+                        <span>User Likes</span>
+                    </div>
+                    <div class="dashboard-stat-icon">
+                        <i class="im im-icon-Love-User"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <a href="{{ full_url_for('bookmarks') }}">
+                <div class="dashboard-stat card-custom ">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ page.data_stats.numDocSaves }}
+                        </h4>
+                        <span>Total Reads Saved</span>
+                    </div>
+                    <div class="dashboard-stat-icon">
+                        <i class="im im-icon-Data-Cloud"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Item -->
+        <div class="col-lg-4 col-md-6">
+            <a href="{{ full_url_for('manage-documents') }}">
+                <div class="dashboard-stat card-custom ">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ page.data_stats.numEbooks }}</h4>
+                        <span>E-Books</span>
+                        {% if page.data_stats.numEbooksPending > 0 %}
+                            <span style="display:block;font-size: 15px;line-height: 18px;font-style: italic;">({{ page.data_stats.numEbooksPending }}
+								Draft)</span>
+                        {% endif %}
+                    </div>
+                    <div class="dashboard-stat-icon">
+                        <i class="sl sl-icon-book-open"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Item -->
+        <div class="col-lg-4 col-md-6">
+            <a href="{{ full_url_for('manage-documents') }}">
+                <div class="dashboard-stat card-custom ">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ page.data_stats.numMagazines }}
+                        </h4>
+                        <span>Magazines</span>
+                        {% if page.data_stats.numMagazinesPending > 0 %}
+                            <span style="display:block;font-size: 15px;line-height: 18px;font-style: italic;">({{ page.data_stats.numMagazinesPending }}
+								Draft)</span>
+                        {% endif %}
+                    </div>
+                    <div class="dashboard-stat-icon">
+                        <i class="sl sl-icon-layers"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Item -->
+        <div class="col-lg-4 col-md-6">
+            <a href="{{ full_url_for('manage-categories') }}">
+                <div class="dashboard-stat card-custom ">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ page.data_stats.numDocCategories }}
+                        </h4>
+                        <span>Categories</span>
+                        {% if page.data_stats.numDocCategoriesDraft > 0 %}
+                            <span style="display:block;font-size: 15px;line-height: 18px;font-style: italic;">({{ page.data_stats.numDocCategoriesDraft }}
+								Draft)</span>
+                        {% endif %}
+                    </div>
+                    <div class="dashboard-stat-icon">
+                        <i class="sl sl-icon-tag"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="card-custom">
+                <div class="top-arrow shadow shadow-md">
+                    <i class="bi bi-arrow-up-right"></i>
+                </div>
+                <div class="header-title">${{ page.data_stats.amountPaid }}</div>
+                <div class="sub-title">Last Transactions</div>
+                <ul class="list-group mt-3">
+                    {% for earningRow in page.data_stats.earningsArr %}
+                        <li class="list-group-item">
+                            <div> {{ earningRow.date_end }}</div>
+                            <div>${{ earningRow.earning }}</div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card-custom">
+                <div class="top-arrow shadow shadow-md">
+                    <i class="bi bi-arrow-up-right"></i>
+                </div>
+                <div class="header-title">{{ page.data_stats.totalMembers }}</div>
+                <div class="sub-title">Impressions worldwide</div>
+                <ul class="list-group mt-3">
+                    {% for countryRow in page.data_stats.countries_stat %}
+                        {% if countryRow.country != ''  %}
+
+                            <li class="list-group-item">
+                                <div><img src="https://flagcdn.com/w40/{{ countryRow.country| country_code }}.png" alt="{{ countryRow.country }}"> {{ countryRow.country }}</div>
+                                <div>{{ countryRow.numUsers }}</div>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center align-items-center" style="margin-top:10px;">
+        <!-- Copyrights -->
+        <div class="col-md-12">
+            <div class="copyrights text-center">© 2017 - 2020 | BaziChic Chinese Metatphysics Consultancy | All Rights Reserved.
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block jsfooter %}
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script>
+        // Subscription Chart
+        var subscriptionChart = new ApexCharts(document.querySelector("#subscriptionChart"), {
+            chart: {
+                type: 'bar',
+                height: 350
+            },
+            series: [
+                {
+                    name: 'Active Subscribers',
+                    data: [{{ page.data_stats.currentMembersWithStarter }}, {{ page.data_stats.currentMembersWithPremium }}, {{ page.data_stats.currentMembersWithStudent }}, {{ page.data_stats.activeSubscribers }}]
+                }, {
+                    name: 'Total Subscriptions',
+                    data: [{{ page.data_stats.totalMembersWithStarter }}, {{ page.data_stats.totalMembersWithPremium }}, {{ page.data_stats.totalMembersWithStudent }}, {{ page.data_stats.totalSubscribers }}]
+                }
+            ],
+            xaxis: {
+                categories: ['Starter', 'Premium', 'Student', 'Total']
+            }
+        });
+        subscriptionChart.render();
+
+        // My Chart
+        var myChart = new ApexCharts(document.querySelector("#myChart"), {
+            chart: {
+                type: 'bar',
+                height: 350
+            },
+            series: [
+                {
+                    name: 'Published',
+                    data: [{{ page.data_stats.numEbooks }}, {{ page.data_stats.numMagazines }}]
+                }, {
+                    name: 'Draft',
+                    data: [{{ page.data_stats.numEbooksPending }}, {{ page.data_stats.numMagazinesPending }}]
+                }
+            ],
+            xaxis: {
+                categories: ['E-Books', 'Magazines']
+            }
+        });
+        myChart.render();
+        document.getElementById("filterButton").addEventListener("click", () => {
+            const startDate = document.getElementById("start_date").value;
+            const endDate = document.getElementById("end_date").value;
+
+            if (!startDate || !endDate) {
+                alert("Please select a valid date range.");
+                return;
+            }
+
+            const params = new URLSearchParams({start_date: startDate, end_date: endDate});
+            window.location.href = `/admin/admin-panel?${
+                params.toString()
+            }`;
+        });
+    </script>
+{% endblock %}

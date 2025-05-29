@@ -1,0 +1,19 @@
+<a href="{{ base_url() }}/e-book-store/book-detail/{{ row.qcode }}" class="listing-item-container compact">
+    <div class="listing-item">
+        {% if row.cover %}
+            <img src="{{ base_url() }}/{{ row.cover }}">
+        {% else %}
+            <img src="{{ base_url() }}/images/books/default.png">
+        {% endif %}
+
+        {% if row.tag %}
+            <div class="listing-badge now-open">{{ row.tag }}</div>{% endif %}
+
+        <div class="listing-item-content">
+
+            <h3 style="color:#ffffff;">{{ row.title }}
+
+        </div>
+
+    </div>
+</a>

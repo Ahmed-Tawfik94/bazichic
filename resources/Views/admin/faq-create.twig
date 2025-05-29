@@ -1,0 +1,197 @@
+{% extends 'admin/admin_layout.twig' %}
+{% block jstriggers %}
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () { // $('#summernote').summernote();
+            $("#summernote").summernote({
+                height: 500,
+                toolbar: [
+                    [
+                        'style', ['style']
+                    ],
+                    [
+                        'font',
+                        [
+                            'bold',
+                            'italic',
+                            'underline',
+                            'strikethrough',
+                            'superscript',
+                            'subscript',
+                            'clear'
+                        ]
+                    ],
+                    [
+                        'fontname', ['fontname']
+                    ],
+                    [
+                        'fontsize', ['fontsize']
+                    ],
+                    [
+                        'color', ['color']
+                    ],
+                    [
+                        'para',
+                        [
+                            'ol', 'ul', 'paragraph', 'height'
+                        ]
+                    ],
+                    [
+                        'table', ['table']
+                    ],
+// [ 'insert', [ 'link'] ],
+                    [
+                        'view',
+                        [
+                            'undo',
+                            'redo',
+                            'fullscreen',
+                            'codeview',
+                            'help'
+                        ]
+                    ]
+                ]
+            });
+
+            $('#selectFaqCategory').on('change', async function () {
+                const loading = $('#loadingCategories');
+                const selectSavedStatus = await $(this).val();
+                loading.show()
+                // console.log("Selected: " + selectSavedStatus);
+                const subjectSelect = $('#selectFaqSubCategory').empty();
+                const subjects_url = '/admin/apis/faqsubcategories/list/' + selectSavedStatus;
+                $.get(subjects_url)
+                    .done(function (data) {
+                        loading.hide();
+
+                        if (!data.result || !Array.isArray(data.result)) {
+                            console.warn("Invalid response format");
+                            return;
+                        }
+
+                        const options = data.result.map(item => `<option value="${item.id}">${item.title}</option>`).join('');
+                        subjectSelect.html(options);
+                        subjectSelect.prop("disabled", false)
+                    })
+                    .fail(function (xhr, status, error) {
+                        loading.hide();
+                        console.error("Error loading subjects:", error);
+                    });
+
+            });
+
+            handleFormSubmit('#addFAQForm', '#faqFormOverlay', authorization, 'Add New FAQ', 'Do you want to save this FAQ?');
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12">
+            <div id="add-listing">
+
+                <div id="faqFormOverlay" style="display:none;">
+                    <div style="margin: 30px; text-align: center;">
+                        <img src="{{ base_url() }}/images/preloader.gif" width="60"/>
+                        <h4>
+                            <strong>Submitting FAQ ...</strong>
+                        </h4>
+                        <h5>Please wait...</h5>
+                        <div id="login_msg"></div>
+                    </div>
+                </div>
+
+                <form
+                        role="form" name="addFAQForm" id="addFAQForm" action="{{ full_url_for('create-faq') }}"
+                        method="POST">
+                    <!-- Section -->
+                    <div
+                            class="add-listing-section">
+
+                        <!-- Headline -->
+                        <div class="add-listing-headline">
+                            <h3>
+                                <i class="sl sl-icon-doc"></i>
+                                Add New FAQ</h3>
+                        </div>
+
+
+                        <!-- Title -->
+                        <div class="row with-forms">
+                            <div class="col-md-12">
+                                <label for="title">FAQ Title * <i class="tip"
+                                                                  data-tip-content="Enter title for this FAQ"></i></label>
+                                <input class="search-field" type="text" name="title" id="title" value=""
+                                       placeholder="FAQ Title" required/>
+                            </div>
+                        </div>
+
+                        <!-- Intro -->
+                        <div class="row with-forms mb-3">
+                            <div class="col-md-12">
+                                <label for="summernote">FAQ Content *
+                                    <i class="tip" data-tip-content="Write the FAQ content in detail"></i>
+                                </label>
+                                <textarea id="summernote" name="editordata"
+                                          placeholder="Create formatted content body here" class="WYSIWYG"></textarea>
+
+                                <textarea class="WYSIWYG" style="display:none;" name="description" cols="40" rows="3"
+                                          id="description" spellcheck="true"
+                                          placeholder="Write the FAQ content"></textarea>
+
+                            </div>
+                        </div>
+
+
+                        <!-- Row -->
+
+                        <div id="loadingCategories" style="display:none;padding:6px 12px;text-align:center;margin:20px auto;background-color:#284F4A;width: fit-content;
+																    height: fit-content;border-radius:14px;">
+                            <span style="color:white;padding-bottom: 4px;">Loading categories</span>
+                        </div>
+
+                        <div
+                                class="row with-forms">
+                            <!-- Status -->
+                            <div class="col-md-6">
+                                <label for="selectFaqCategory">Select Category <span>*</span> <i class="tip"
+                                                                                                 data-tip-content="Choose a suitable category"></i></label>
+                                <select class="chosen-select-no-single" name="category_id" id="selectFaqCategory"
+                                        style="overflow-y: auto" required>
+                                    <option value="">Select a category</option>
+                                    {% if page.categories %}
+                                        {% for category_row in page.categories %}
+                                            <option value="{{ category_row.id }}">{{ category_row.title }}</option>
+                                        {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="selectFaqSubCategory">Select Sub-category <span>*</span> <i class="tip" data-tip-content="Select a Sub-category"></i></label>
+                                <select class="" name="subcategory_id" id="selectFaqSubCategory" disabled>
+                                    <option value="">Select a category</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Row / End -->
+                        <div class="row with-forms">
+                            <div class="checkboxes margin-top-10 margin-left-10">
+                                <input id="is_published" type="checkbox" name="is_published" value="1">
+                                <label for="is_published">Publish this FAQ and make available to the public.</label>
+                            </div>
+                        </div>
+
+
+                        <button type="submit" class="button btn btn-purple text-white preview"><i
+                                    class="fa fa-arrow-circle-right"></i> Add FAQ
+                        </button>
+
+                    </div>
+                    <!-- Section / End -->
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

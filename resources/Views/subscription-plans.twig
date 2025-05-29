@@ -1,0 +1,65 @@
+{% extends 'layout.twig' %}
+{% block content %}
+    <div id="titlebar" style="background-color:#4E31AA;">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h2 style="color:#ffffff;font-weight:600;">Select Subscription Plan</h2>
+                    <nav id="breadcrumbs">
+                        <ul>
+                            <li><a style="color:#ffffff;" href="{{ base_url() }}">Home</a></li>
+                            <li><a style="color:#ffffff;" href="{{ base_url() }}/subscription/subscription-plans">Subscription
+                                    Plans</a></li>
+                        </ul>
+                    </nav>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Pricing Tables
+    ================================================== -->
+
+    <!-- Container / Start -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="headline centered margin-top-30">
+                    Subscription Plans
+                    <span>10 Days Free Trial for All Plans.</span>
+                </h3>
+                {# <div class="notification success margin-bottom-30"> #}
+                {#    <h5><strong><i class="fa fa-bell"></i> NOTICE </strong></h5> #}
+                {#    <p><strong>Online subscription will be activated from March 11, 2020. </strong></p> #}
+                {#    <a class="close" href="#"></a> #}
+                {# </div> #}
+
+
+            </div>
+        </div>
+
+        <section id="pricing" class="pricing-content section-padding">
+            <div class="container">
+                <div class="row text-center">
+
+
+                    {% include 'partials/widgets/membership-table.twig' %}
+
+                </div>
+            </div>
+        </section>
+        <!-- Row / End -->
+
+    </div>
+    <!-- Container / End -->
+    <a href="{{ base_url() }}/contact" class="flip-banner parallax margin-top-65" style="background-color:#4E31AA;"
+       data-color="#4E31AA" data-color-opacity="0.85" data-img-width="2500" data-img-height="1666">
+        <div class="flip-banner-content">
+            <h2 class="flip-visible" style="font-size:22px;font-weight:600;">Having any issues or difficulties with your
+                account subscription feel free to contact us to resolve your issues.</h2>
+            <h2 class="flip-hidden">Contact BaziChic Support <i class="sl sl-icon-arrow-right"></i></h2>
+        </div>
+    </a>
+{% endblock content %}

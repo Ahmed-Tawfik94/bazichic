@@ -1,0 +1,77 @@
+{% extends 'admin/admin_layout.twig' %}
+{% block jstriggers %}
+	<script type="text/javascript">
+		$(document).ready(function () {
+handleFormSubmit('#createFAQSubCategoryForm','#faqFormOverlay',authorization,'Add New sub-category','Do you want to add new sub-category?')
+
+});
+	</script>
+{% endblock %}
+{% block content %}
+	<div class="row">
+		<div class="col-lg-12">
+			<div id="add-listing">
+
+				<div id="faqFormOverlay" style="display:none;">
+					<div style="margin: 30px; text-align: center;">
+						<img src="{{base_url()}}/images/preloader.gif" width="60"/>
+						<h4>
+							<strong>Saving  Sub-Category...</strong>
+						</h4>
+						<h5>Please wait...</h5>
+					</div>
+				</div>
+
+				<form
+					role="form" name="createFAQSubCategoryForm" id="createFAQSubCategoryForm" action="{{ full_url_for('create-faq-sub-category') }}" method="POST">
+					<!-- Section -->
+					<div
+						class="add-listing-section">
+
+						<!-- Headline -->
+						<div class="add-listing-headline">
+							<h3>
+								<i class="sl sl-icon-doc"></i>
+								Create New FAQ Sub-Category</h3>
+						</div>
+
+						<!-- Title -->
+						<div class="row with-forms">
+							<div class="col-md-12">
+								<h5>Sub-Category Title *
+									<i class="tip" data-tip-content="Enter title for this Category"></i>
+								</h5>
+								<input class="search-field" type="text" name="title" id="title" placeholder="Sub-Category Title" required/>
+							</div>
+						</div>
+
+						<div
+							class="row with-forms">
+							<!-- Status -->
+							<div class="col-md-12">
+								<h5>Select Category
+									<span>*</span>
+									<i class="tip" data-tip-content="Choose a main category"></i>
+								</h5>
+								<select class="chosen-select-no-single" name="category_id" required>
+									<option value="">Select a category</option>
+									{% if page.categories %}
+										{% for category_row in page.categories %}
+											<option value="{{category_row.id}}">{{category_row.title}}</option>
+										{% endfor %}
+									{% endif %}
+								</select>
+							</div>
+						</div>
+						<button type="submit" class="button btn btn-purple text-white preview">
+							<i class="fa fa-arrow-circle-right"></i>
+							Save Sub Category</button>
+
+					</div>
+					<!-- Section / End -->
+				</form>
+			</div>
+		</div>
+	</div>
+
+{% endblock content %}

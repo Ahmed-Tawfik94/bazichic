@@ -1,0 +1,30 @@
+images/logo3.png
+
+Original Color
+- Primary
+#34A853
+- Darker
+#2a2a2a
+#294f4a
+- Brighter
+
+1st Try 
+- Primary
+#4E31AA
+- Darker
+#3A1078
+- Brighter
+
+2nd Try
+- Primary
+#6C48C5
+- Darker
+#1230AE
+- Brighter
+
+3rd Try
+- Primary
+#A076F9
+- Darker
+#6528F7
+- Brighter

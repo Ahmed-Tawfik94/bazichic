@@ -1,0 +1,50 @@
+{% extends 'admin/admin_layout.twig' %}
+
+{% block jstriggers %}
+  <script type="text/javascript" src=" https://code.jquery.com/jquery-3.3.1.js"></script>
+  <link href="https://cdn.datatables.net/v/bs4/jq-3.7.0/jszip-3.10.1/dt-2.2.1/datatables.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <script src="https://cdn.datatables.net/v/bs4/jq-3.7.0/jszip-3.10.1/dt-2.2.1/datatables.min.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#referralTransactionsTable').DataTable({
+            processing: true,
+            serverSide: true,
+            responsive: true,
+            order: [[0, "desc"]],
+            ajax: {
+                url: '{{ full_url_for("retrieve-referral-transactions") }}',
+                type: "GET",
+                error: function(xhr, error, thrown) {
+                    console.log('Error: ', error);
+                    toastr.error('Failed to fetch referral transactions.');
+                }
+            },
+            columns: [
+                { data: "id", name: 'id', orderable: true },
+                { data: "referrer_name", name: 'referrer_name', orderable: true },
+                { data: "referred_name", name: 'referred_name', orderable: true },
+                { data: "referral_code", name: 'referral_code', orderable: true },
+                { data: "points", name: 'points', orderable: true },
+                { data: "status", name: 'status', orderable: true },
+                { data: "date_created", name: 'date_created', orderable: true }
+            ],
+            pageLength: 25,
+            lengthMenu: [10, 25, 50, 100]
+        });
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="row clearfix margin-bottom-20">
+    <div class="d-flex justify-content-between align-items-center my-2 w-100 border-bottom py-2">
+        <h3>Referral Transactions</h3>
+    </div>
+    <div class="col-lg-12 col-md-12 my-4">
+        {% include 'list_items/referral_transactions_data_table.twig' %}
+    </div>
+</div>
+{% endblock %}

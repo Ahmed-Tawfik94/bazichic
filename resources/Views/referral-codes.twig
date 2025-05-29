@@ -1,0 +1,313 @@
+{% extends 'dashboard_layout.twig' %}
+{% block slider %}
+{% endblock %}
+{% block content %}
+    <div class="row">
+        {% if session.role_id == 1 %}
+            <div class="col-lg-6 col-md-6">
+                <section style="padding: 20px 20px 20px 20px;text-align: center;background-color:#ffffff;"
+                         class="center">
+                    <h1 style="text-align: center;font-weight: 500;font-size:50px;margin-top:0px;"><i
+                                class="im im-icon-Conference"></i></h1>
+                    <p style="padding-bottom: 3px;font-size:16px;line-height:16px;font-weight:500;">Generate referrals
+                        code that you can share with friends and family. Win reward points that you will redeem.</p>
+                    <div class="text-center">
+                        <form role="form" method="POST" name="createReferralForm" id="createReferralForm"
+                              action="{{ full_url_for('create-referral-code') }}">
+                            <input type="hidden" value="{{ session.userID }}" name="user_id" id="user_id">
+                            <button class="button btn btn-purple text-white button-3d button-rounded button-small button-green"
+                                    type="submit"><i class="fa fa-arrow-circle-right"></i> Generate New Referral Code
+                            </button>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        {% endif %}
+        <div class="{% if session.role_id == 1 %}col-lg-6 col-md-6{% else %}col-lg-12 col-md-12{% endif %}">
+            <!--- Stats Start -->
+            <div class="row">
+                <div class="col-lg-6 col-md-12">
+                    <a href="{{ base_url() }}/my-connections">
+                        <div class="dashboard-stat color-3">
+                            <div class="dashboard-stat-content"><h4>{{ page.num_connections }} </h4> <span
+                                        style="color:#ffffff;">My Connections</span></div>
+                            <div class="dashboard-stat-icon"><i class="im im-icon-Conference"></i></div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-lg-6 col-md-12">
+                    <a href="{{ base_url() }}/reward-points">
+                        <div class="dashboard-stat color-3">
+                            <div class="dashboard-stat-content"><h4>{{ page.reward_points }} </h4> <span
+                                        style="color:#ffffff;">Reward Points</span></div>
+                            <div class="dashboard-stat-icon"><i class="im im-icon-Coins-3"></i></div>
+                        </div>
+                    </a>
+                </div>
+
+            </div>
+            <!-- Stats Ends -->
+        </div>
+    </div>
+
+
+    <div class="clear"></div>
+
+
+    <div class="row">
+        <div class="col-lg-12 center">
+            <ul class="nav" data-submenu-title="Your Referral Code" style="gap:20px">
+                {% if session.referral_code %}
+                    <li class="nav-item">
+                        <a href="#" class="text-decoration-none nav-link bg-dark text-white rounded-lg "
+                           onclick="copyToClipboard('{{ session.referral_code }}')" id="referral-code">
+                            <i class="sl sl-icon-tag"></i>
+                            Referral Code: <span id="referral-code-text">{{ session.referral_code }}</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="text-decoration-none nav-link bg-dark text-white rounded-lg "
+                           onclick="copyToClipboard('{{ full_url_for('register') }}?referral_code={{ session.referral_code }}')"
+                           id="referral-url">
+                            <i class="sl sl-icon-link"></i>
+                            Copy Referral URL
+                        </a>
+                    </li>
+                {% else %}
+                        <button href="#" class="text-decoration-none btn btn-success" onclick="generateReferralCode()"
+                           id="generate-referral-button">
+                            <i class="sl sl-icon-tag"></i>
+                            Generate Referral Code
+                        </button>
+                {% endif %}
+            </ul>
+
+            <!-- Redeem & Withdrawal Buttons -->
+            <div class="row mt-4">
+                <div class="col-lg-6 col-md-12 mb-2">
+                    <button id="redeem-reward-btn"
+                            class="btn btn-primary btn-lg btn-block"
+                            style="font-size: 14px;"
+                            onclick="confirmRedeemReward()"
+                            {% if page.reward_points < 100 %}disabled{% endif %}>
+                        <i class="fa fa-gift"></i> Redeem Reward (100 Points)
+                    </button>
+                </div>
+
+                <div class="col-lg-6 col-md-12 mb-2">
+                    <button id="withdraw-money-btn"
+                            class="btn btn-warning btn-lg btn-block"
+                            style="font-size: 14px;"
+                            onclick="confirmWithdrawMoney()"
+                            {% if page.reward_points < 1000 %}disabled{% endif %}>
+                        <i class="fa fa-money"></i> Withdraw Money (1000 Points)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                console.log(text);
+                navigator.clipboard.writeText(text)
+                    .then(() => {
+                        swal({
+                            title: '',
+                            html: 'Copied to clipboard '+ text,
+                            type: 'success',
+                            showCancelButton: false,
+                            confirmButtonColor: '#3085d6',
+                            focusConfirm: false
+                        });
+                    })
+                    .catch(err => {
+                        console.error('Error copying to clipboard:', err);
+                        swal({
+                            title: '',
+                            html: 'Failed to copy. Please try again.',
+                            type: 'error',
+                            showCancelButton: false,
+                            confirmButtonColor: '#3085d6',
+                            focusConfirm: false
+                        });
+                    });
+            } else {
+                // Fallback for unsupported browsers
+                const tempInput = document.createElement('input');
+                tempInput.style.position = 'absolute';
+                tempInput.style.left = '-9999px';
+                tempInput.value = text;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                try {
+                    document.execCommand('copy');
+                    swal({
+                        title: '',
+                        html: 'Copied to clipboard',
+                        type: 'success',
+                        showCancelButton: false,
+                        confirmButtonColor: '#3085d6',
+                        focusConfirm: false
+                    });
+                } catch (err) {
+                    console.error('Fallback copy failed:', err);
+                    swal({
+                        title: '',
+                        html: 'Failed to copy. Please try again.',
+                        type: 'error',
+                        showCancelButton: false,
+                        confirmButtonColor: '#3085d6',
+                        focusConfirm: false
+                    });
+                }
+                document.body.removeChild(tempInput);
+            }
+        }
+
+        function generateReferralCode() {
+            fetch('{{ full_url_for("generate-referral-code") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        swal({
+                            title: '',
+                            html: 'Referral code generated: ' + data.referral_code,
+                            type: 'success',
+                            showCancelButton: false,
+                            confirmButtonColor: '#3085d6',
+                            focusConfirm: false
+                        });
+
+                        // Update the DOM dynamically
+                        const referralSection = document.querySelector('[data-submenu-title="Your Referral Code"]');
+                        referralSection.innerHTML = `
+                <li class="nav-item">
+                    <a href="#" class="text-decoration-none nav-link bg-dark text-white rounded-lg" onclick="copyToClipboard('${data.referral_code}')" id="referral-code">
+                        <i class="sl sl-icon-tag"></i>
+                        Referral Code: <span id="referral-code-text">${data.referral_code}</span>
+                    </a>
+                </li>
+            `;
+                    } else {
+                        swal({
+                            title: '',
+                            html: 'Failed to generate referral code. Please try again.',
+                            type: 'error',
+                            showCancelButton: false,
+                            confirmButtonColor: '#3085d6',
+                            focusConfirm: false
+                        });
+                    }
+                })
+                .catch(err => {
+                    swal({
+                        title: '',
+                        html: 'An error occurred. Please try again.',
+                        type: 'error',
+                        showCancelButton: false,
+                        confirmButtonColor: '#3085d6',
+                        focusConfirm: false
+                    });
+                    console.error('Error generating referral code:', err);
+                });
+        }
+
+        
+    function confirmRedeemReward() {
+        swal({
+            title: "Confirm Redemption",
+            text: "Are you sure you want to redeem 100 points for a reward?",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, redeem it!"
+        }).then((result) => {
+            if (result.value) {
+                redeemReward();
+            }
+        });
+    }
+
+    function redeemReward() {
+        fetch('{{ full_url_for("redeem-reward") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: '{{ session.userID }}' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                swal("Success", "Reward redemption request submitted!", "success")
+                    .then(() => location.reload());
+            } else {
+                swal("Error", data.message, "error");
+            }
+        })
+        .catch(err => {
+            swal("Error", "An error occurred while redeeming the reward.", "error");
+            console.error('Error:', err);
+        });
+    }
+    function confirmWithdrawMoney() {
+    swal({
+        title: "Withdraw Money",
+        text: "Enter amount to withdraw (Minimum: $100)",
+        input: "number",
+        inputAttributes: {
+            min: 100,
+            step: 10
+        },
+        showCancelButton: true,
+        confirmButtonText: "Withdraw",
+        cancelButtonText: "Cancel",
+    }).then((result) => {
+        if (!result.value || isNaN(result.value) || result.value < 100) {
+            swal("Error", "Minimum withdrawal is $100.", "error");
+            return;
+        }
+
+        withdrawMoney(parseFloat(result.value));
+    });
+}
+
+function withdrawMoney(amount) {
+    let pointsRequired = amount * 10;
+    let availablePoints = {{ page.reward_points }};
+
+    if (pointsRequired > availablePoints) {
+        swal("Error", "You do not have enough points to withdraw this amount.", "error");
+        return;
+    }
+
+    fetch('{{ full_url_for("withdraw-money") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: '{{ session.userID }}', amount: amount })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            swal("Success", `You have successfully withdrawn $${amount} and received the money! (${pointsRequired} points deducted)`, "success")
+                .then(() => location.reload());
+        } else {
+            swal("Error", data.message, "error");
+        }
+    })
+    .catch(err => {
+        swal("Error", "An error occurred while processing the withdrawal.", "error");
+        console.error('Error:', err);
+    });
+}
+
+    </script>
+{% endblock %}
+

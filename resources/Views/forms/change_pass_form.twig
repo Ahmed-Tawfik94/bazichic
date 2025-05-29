@@ -1,0 +1,21 @@
+{% if page.admin_mode %}
+    {% set form_action = full_url_for('admin-pass-update') %}
+{% else %}
+    {% set form_action = full_url_for('update-profile') %}
+{% endif %}
+<form role="form" name="profileCredForm" id="profileCredForm" action="{{form_action}}">
+
+    <!-- Change Password -->
+    <div class="my-profile">
+        <label for="old_password" class="margin-top-0">Current Password</label>
+        <input type="password" name="old_password" id="old_password" required>
+
+        <label for="pass1">New Password</label>
+        <input id="pass1" type="password" name="pass1" required>
+
+        <label for="pass2">Confirm New Password</label>
+        <input type="password" name="pass2" id="pass2" required>
+        <input type="hidden" value="{{ session.userID }}" name="user_id" id="user_id">
+        <button type="submit" class="button btn btn-purple text-white margin-top-15">Change Password</button>
+    </div>
+</form>

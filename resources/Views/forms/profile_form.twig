@@ -1,0 +1,134 @@
+{% if  page.admin_mode and page.action =='update-user'%}
+	{% set form_action = full_url_for('user-account-update',{id:page.thisUser.id}) %}
+{% elseif page.admin_mode  %}
+	{% set form_action = full_url_for('admin-profile-update') %}
+{% else %}
+	{% set form_action = full_url_for('user-profile-update')%}
+{% endif %}
+<div id="profileFormOverlay" style="display:none;">
+	<div style="margin: 30px; text-align: center;">
+		<img src="{{base_url()}}/images/preloader.gif" width="60"/>
+		<h4>
+			<strong>Saving Profile...</strong>
+		</h4>
+		<h5>Please wait...</h5>
+		<div id="login_msg"></div>
+	</div>
+</div>
+
+			<form method="POST" role="form" name="profileForm" id="profileForm" action="{{ form_action }}" enctype="multipart/form-data">
+			{% if page.admin_mode %}
+				<input type="hidden" value="1" name="admin_mode" id="admin_mode">
+			{% endif %}
+
+			<input
+			type="hidden" value="{{page.thisUser.id}}" name="user_id" id="user_id">
+			<!-- Details -->
+			<div class="my-profile">
+
+				<input type="hidden" value="" name="phone" id="phone">
+				<input
+				type="hidden" value="" name="gender" id="gender">
+
+				<!---- PROFILE FORM -->
+				<div class="row with-forms">
+					<div class="col-md-4">
+						<div class="edit-profile-photo">
+							{% if page.thisUser.user_image %}
+								<img id="profilePreview" src="{{base_url()}}/{{page.thisUser.user_image}}?d=mm&amp;s=70" class="NO-CACHE" alt="user-image">
+							{% else %}
+								<img id="profilePreview" src="{{base_url()}}/images/avatar.jpg" alt="placeholder">
+							{% endif %}
+							<div class="change-photo-btn">
+								<div class="photoUpload">
+									<span>
+										<i class="fa fa-upload"></i>
+										Upload Profile Picture</span>
+									<input type="file" id="profile_image" name="profile_image" class="upload" onchange="profileImgPreview();" accept="image/*"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-8">
+						<div class="row with-forms">
+							<div class="col-md-6">
+								<label for="first_name" style="margin-top: 0px;">First Name</label>
+								<input value="{{page.thisUser.first_name}}" name="first_name" id="first_name" type="text" placeholder="Enter first name">
+
+
+							</div>
+							<div class="col-md-6">
+								<label for="last_name" style="margin-top: 0px;">Last Name</label>
+								<input value="{{page.thisUser.last_name}}" name="last_name" id="last_name" type="text" placeholder="Enter last name">
+							</div>
+						</div>
+
+
+						<div class="row with-forms">
+							<div class="col-md-6">
+								<div>
+									<label for="dob" style="margin-top: 0px;">Date of Birth</label>
+									<input type="text" name="dob" id="dob" class="form-control" placeholder="Select date of birth" value="{{page.thisUser.dob}}"/>
+								</div>
+							</div>
+
+							<div class="col-md-6">
+								<div>
+								<label for="country" style="margin-top: 0px;">Country</label>
+									<select class="chosen-select-no-single" name="country" id="country" required="required">
+										<option value="">Click to select</option>
+										{% for country in countries %}
+											{% if page.thisUser.country %}
+												<option value="{{ country }}" selected>{{ country }}</option>
+											{% else %}
+												<option value="{{ country }}">{{ country }}</option>
+											{% endif %}
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+
+						</div>
+							{% if page.admin_mode and page.action == 'update-user'%}
+						<div class="row with-forms">
+								<div class="col-md-6">
+									<div>
+										<label for="userTypes" style="margin-top: 0px;">Select User Type *</label>
+										<select id="userTypes" class="chosen-select-no-single" name="type" id="type" required="required">
+											{% for role in page.userTypes %}
+												<option value="{{ role.id }}" {% if role.name == page.thisUser.type %} selected {% endif %}>{{ role.name }}</option>
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+								<div class="col-md-6 my-2">
+									<div>
+										<label for="verification" style="margin-top: 0px;">User Status</label>
+										<select class="chosen-select-no-single" name="status" id="verification" required="required">
+											<option value="1" {% if page.thisUser.status_id ==1 %} selected {% endif %}>Verified</option>
+											<option value="2" {% if page.thisUser.status_id == 2 %} selected {% endif %}>Unverified</option>
+										</select>
+									</div>
+								</div>
+						</div>
+							{% endif %}
+
+
+						<label for="email" style="margin-top: 0px;">Email</label>
+						<input value="{{page.thisUser.email}}" name="email" id="email" type="email" readonly>
+
+
+					</div>
+				</div>
+				<!---- END OF PROFILE FORM -->
+
+				<label for="description">Short Description About you
+					<i class="tip" data-tip-content="Write a short intro that describes you."></i>
+				</label>
+				<textarea class="search-field" name="description" id="description" rows="2" value="" placeholder="Write a short intro that describes you." minlength="200">{{page.thisUser.description}}</textarea>
+
+
+			</div>
+
+			<button class="button btn btn-purple text-white margin-top-15">Save Changes</button>
+		</form>

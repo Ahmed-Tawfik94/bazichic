@@ -1,0 +1,161 @@
+{% extends 'dashboard_layout.twig' %}
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12 col-md-12">
+            <div class="dashboard-list-box margin-top-0">
+
+                <!-- Sort by -->
+                <div class="sort-by">
+                    <div class="sort-by-select">
+                        <label for="selectSavedStatus"></label>
+                        <select data-placeholder="Default order"
+                                name="selectSavedStatus" id="selectSavedStatus"
+                                class="chosen-select-no-single">
+                            {% for status in page.status %}
+                            <option value="{{ status.id }}">{{ status.value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Reply to review popup -->
+                <div id="small-dialog" class="zoom-anim-dialog mfp-hide">
+                    <div>
+                        {% include 'forms/dialog_document_review_form.twig' %}
+                    </div>
+                </div>
+
+                <h4>SAVED READS</h4>
+
+                <div class="messages-container margin-top-0">
+
+                    {% if page.data %}
+                    <ul id="booklist">
+                        {% for document in page.data %}
+                            {% include 'list_items/saved_doc_list_item.twig' %}
+
+                        {% endfor %}
+                    </ul>
+                    <!--- STATIC DATA -->
+
+                    <!-- END OF STATIC DATA -->
+                </div>
+
+                {% else %}
+                    <div style="text-align: center;padding: 40px 0;">
+                        <h1><i class="sl sl-icon-book-open"></i></h1>
+                        <h3 class="margin-top-10">Looks like you have not started reading yet.</h3>
+                        <p>Once you start reading you can always start from where you left.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>    </div>
+{% endblock content %}
+{% block jsfooter %}
+    <script>
+        const booklist = $('#booklist')
+        $('#selectSavedStatus').change(function () {
+            var status = $(this).val();
+            $.ajax({
+                url: '{{ full_url_for('saved-readsbyStatus') }}',
+                method: 'POST',
+                dataType: 'json',
+                data: {
+                    status: status
+                },
+                success: function (response) {
+                    booklist.empty();
+                    if (response.document.length == 0) {
+                        booklist.append(`
+                        <div style="text-align: center;padding: 40px 0;">
+                            <h1><i class="sl sl-icon-book-open"></i></h1>
+                            <h3 class="margin-top-10">Looks like you have not ${parseInt(status)  === 2?'completed':'started'} reading yet.</h3>
+                            <p>Once you ${parseInt(status)  === 2?'completed':'start'} reading you can always start from where you left.</p>
+                        </div>`)
+                    } else {
+                        response.document.forEach((document) => {
+                            booklist.append(`
+    <li class="pending-booking">
+        <div class="list-box-listing">
+            <div class="list-box-listing-img">
+                <a href="">
+                    ${
+                                document.cover
+                                    ? `<img src="${document.cover}" alt="${document.title}">`
+                                    : `<img src="/images/books/default.png" alt="placeholder">`
+                            }
+                </a>
+            </div>
+            <div class="list-box-listing-content">
+                <div class="inner">
+                    <h3>${document.title} <span class="booking-status pending"></span></h3>
+                    <div class="d-flex align-items-center py-4" style="grid-gap: 20px">
+                        ${
+                                document.date_updated
+                                    ? `<div class="inner-booking-list">
+                                <h5>Last Read</h5>
+                                <ul class="booking-list">
+                                    <li class="highlighted">${document.date_updated}</li>
+                                </ul>
+                              </div>`
+                                    : ""
+                            }
+
+                        <div class="inner-booking-list">
+                            <h5>Started</h5>
+                            <ul class="booking-list">
+                                <li class="highlighted">${document.date_created}</li>
+                            </ul>
+                        </div>
+
+                        ${
+                                document.read_status
+                                    ? `<div class="inner-booking-list">
+                                <h5>Progress:</h5>
+                                <ul class="booking-list">
+                                    <li class="highlighted">${document.read_status}</li>
+                                </ul>
+                              </div>`
+                                    : ""
+                            }
+                    </div>
+
+                    <div class="d-flex align-items-center flex-row-reverse justify-content-between" style="grid-gap: 10px">
+                        <form action="/e-book-store/ebook-reader" name="launchReaderForm" class="launchReaderForm"
+                              method="POST" style="margin-top: 10px; margin-bottom: 10px;">
+                            <input type="hidden" name="doc_id" value="${document.id}">
+                            <input type="hidden" name="doc_link" value="${document.link}">
+                            <input type="hidden" name="is_downloadable" value="${document.is_downloadable}">
+                            <input type="hidden" name="last_read_page" value="${document.page}">
+                            <button type="submit" class="button btn btn-purple text-white"><i class="fa fa-arrow-right"></i> Read Now</button>
+                        </form>
+                        <div class="d-flex align-items-center" style="grid-gap: 10px">
+                            ${
+                                document.is_liked <= 0
+                                    ? `<a href="#" class="button gray reject favouriteDocument" data-id="${document.id}" data-title="Unliked">
+                                    <i class="sl sl-icon-heart"></i> Favourite
+                                  </a>`
+                                    : ""
+                            }
+                            <a href="/e-book-store/book-detail/${document.qcode}" class="button orange approve">
+                                <i class="sl sl-icon-check"></i> View Detail
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </li>
+`);
+
+
+                        })
+                    }
+                }
+
+            })
+        })
+
+    </script>
+{% endblock %}

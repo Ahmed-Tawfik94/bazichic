@@ -1,0 +1,33 @@
+
+{% block jstriggers %}
+	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/greghub/green-audio-player/dist/css/green-audio-player.min.css">
+	<script src="https://cdn.jsdelivr.net/gh/greghub/green-audio-player/dist/js/green-audio-player.min.js"></script>
+{% endblock %}
+<div class="gap-example my-5 w-100">
+	<audio  id="audio_preview" name="myaudio">
+		<source  type="audio/mpeg" src="">
+	</audio>
+</div>
+
+<script>
+	class baseAudioPlayer extends GreenAudioPlayer {
+		setAudio(src) {
+			if (this.player && this.player.tagName === 'AUDIO') {
+				this.player.src = src; // Set the new audio source
+				this.player.load();    // Reload the audio element
+			} else {
+				console.error('Player reference is invalid or not an audio element.');
+			}
+		}
+	}
+
+	let doc_title = '{{ document.title }}';
+	let audio_file = '{{ base_url }}/{{ document.audio_file }}';
+	let coverimg = '{{ base_url }}/{{ document.cover }}';
+	const is_downloadable = Boolean(Number('{{ document.is_downloadable }}'));
+	const audioPlayer =  new baseAudioPlayer('.gap-example',{
+		enableKeystrokes: true,
+		enableDownload: is_downloadable,
+	})
+	audioPlayer.setAudio(audio_file);
+</script>

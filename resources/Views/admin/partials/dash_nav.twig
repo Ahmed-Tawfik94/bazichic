@@ -1,0 +1,101 @@
+<div class="dashboard-nav">
+	<a href="#" class="dashboard-responsive-nav-trigger">
+		<i class="fa fa-reorder"></i>
+		Dashboard Navigation</a>
+	<div class="dashboard-nav-inner">
+		<ul data-submenu-title="Admin Panel">
+			<li {% if page.name == "adminpanel" %} class="active" {% endif %}>
+				<a class="text-decoration-none" href="{{ full_url_for('admin-panel') }}">
+					<i class="sl sl-icon-rocket"></i>
+					Admin Panel</a>
+			</li>
+
+			<li {% if page.name == "settings" %} class="active" {% endif %}>
+				<a class="text-decoration-none" href="{{ full_url_for('configuration') }}">
+					<i class="sl sl-icon-settings"></i>
+					Site Settings</a>
+			</li>
+			<li {% if page.name == "notification" %} class="active" {% endif %}>
+				<a class="text-decoration-none" href="{{ full_url_for('notifications') }}">
+					<i class="sl sl-icon-bubbles"></i>
+					Notification</a>
+			</li>
+			<li {% if page.name == "manage-documents" %} class="active" {% endif %}>
+				<a>
+					<i class="sl sl-icon-layers"></i>
+					Manage Documents</a>
+				<ul>
+					<li><a class="text-decoration-none"href="{{ full_url_for('manage-documents') }}"><i class="sl sl-icon-plus"></i>View All
+						                                Documents</a></li>
+					<li><a class="text-decoration-none"href="{{ full_url_for('manage-categories') }}"><i class="sl sl-icon-tag"></i>Manage
+						                                Categories</a></li>
+					<li><a class="text-decoration-none"href="{{ full_url_for('manage-reviews') }}"><i class="sl sl-icon-bubbles"></i>All Reviews</a></li>
+				</ul>
+			</li>
+
+			<li {% if page.name == "manage-membership" %} class="active" {% endif %}>
+				<a>
+					<i class="sl sl-icon-shield"></i>
+					Manage Memberships</a>
+				<ul>
+					<li><a class="text-decoration-none"href="{{ full_url_for('manage-membership-plans') }}"><i class="sl sl-icon-badge"></i>Membership Plans</a></li>
+					<li><a class="text-decoration-none"href="{{ full_url_for('manage-all-subscriptions') }}"><i class="sl sl-icon-wallet"></i>Subscriptions</a></li>
+					<li><a class="text-decoration-none"href="{{ full_url_for('free-trials-summary') }}"><i class="sl sl-icon-plane"></i>View Free
+						                                Trials</a></li>
+				</ul>
+			</li>
+			<li {% if page.name == "manage-users" %} class="active" {% endif %}>
+				<a>
+					<i class="bi bi-people"></i>
+					Manage Users</a>
+				<ul>
+					<li><a class="text-decoration-none"href="{{ full_url_for('manage-users') }}"><i class="bi bi-people"></i>View All Users</a></li>
+					<li><a class="text-decoration-none"href="{{ full_url_for('create-new-account') }}"><i class="sl sl-icon-plus"></i>Add New
+						                                User</a></li>
+					<li><a class="text-decoration-none"href="{{ full_url_for('contact-form-submissions') }}"><i class="bi bi-envelope-arrow-up"></i>Messages</a></li>
+				</ul>
+			</li>
+			<li {% if page.name == "manage-referrals" %} class="active" {% endif %}>
+				<a>
+					<i class="sl sl-icon-present"></i>
+					Manage Referrals</a>
+				<ul>
+					<li><a class="text-decoration-none"href="{{ full_url_for('manage-referrals') }}"><i class="sl sl-icon-user"></i>Referral List</a></li>
+        <li><a class="text-decoration-none" href="{{ full_url_for('manage-referral-transactions') }}">
+            <i class="sl sl-icon-wallet"></i> Referral Transactions</a></li>
+					<li>
+						<a class="text-decoration-none" href="{{ full_url_for('manage-redeem-transactions') }}">
+							<i class="sl sl-icon-wallet"></i>
+							Redeem Transactions</a>
+					</li>
+				</ul>
+			</li>
+
+
+			<li {% if page.name == "manage-faqs" %} class="active" {% endif %}>
+				<a>
+					<i class="sl sl-icon-pin"></i>
+					Manage FAQs</a>
+				<ul>
+					<li><a class="text-decoration-none"href="{{ full_url_for('manage-faqs') }}"><i class="sl sl-icon-pin"></i>View All FAQs 2</a></li>
+					<li><a class="text-decoration-none"href="{{ full_url_for('add-faq') }}"><i class="sl sl-icon-plus"></i>Add New FAQ</a></li>
+					<li><a class="text-decoration-none"href="{{ full_url_for('faqs-category-manager') }}"><i class="sl sl-icon-list"></i>FAQCategorization</a></li>
+				</ul>
+			</li>
+		</ul>
+		<ul data-submenu-title="Account">
+			<li {% if page.name == "profile" %} class="active" {% endif %}>
+
+				<a class="text-decoration-none" href="{{ full_url_for('admin-profile') }}">
+					<i class="sl sl-icon-user"></i>
+					My Profile</a>
+			</li>
+			<li>
+				<a class="text-decoration-none" href="{{ full_url_for('logout') }}">
+					<i class="sl sl-icon-power"></i>Logout</a>
+			</li>
+		</ul>
+
+	</div>
+</div>
+<!-- Navigation / End -->

@@ -1,0 +1,160 @@
+{% block jstriggers %}
+    <script src="https://www.google.com/recaptcha/api.js?render={{ page.siteKey }}"></script>
+    <script>
+        grecaptcha.ready(function() {
+            grecaptcha.execute('{{ page.siteKey }}', {action: 'submit'}).then(function(token) {
+                // Add token to the form
+                $("#siteContactForm")[0].insertAdjacentHTML(
+                    'beforeend',
+                    '<input type="hidden" name="g-recaptcha-response" value="' + token + '">'
+                );
+                $("#siteContactForm").submit(function (e) {
+                      e.preventDefault();
+                      $.ajax({
+                        url: $(this).attr("action"),
+                        type: "POST",
+                        data: $(this).serialize(),
+                        dataType: "json",
+                        success: function (data) {
+                            swal({
+                              title: "Message Sent Successfully.",
+                              html: "<b>" + data.message + "</b>",
+                              type: "success",
+                              showCancelButton: false,
+                              confirmButtonColor: "#3085d6",
+                              focusConfirm: false,
+                            });
+                            setTimeout(function () {
+                              window.location.replace(base_url);
+                            }, 2200);
+                        },
+                        error: function (xhr, ajaxOptions, thrownError) {
+                          //alert(thrownError);
+                            swal({
+                                title: "",
+                                html: "<b>" + xhr.responseJson['message'] + "</b>",
+                                type: "error",
+                                showCancelButton: false,
+                                allowOutsideClick: false,
+                                confirmButtonColor: "#3085d6",
+                                focusConfirm: false,
+                            });
+                        },
+                      });
+                    });
+            });
+        });
+    </script>
+
+
+{% endblock %}
+{% extends 'layout.twig' %}
+{% block content %}
+    <!-- Container / Start -->
+    <div class="container my-5">
+        <div class="row">
+
+            <!-- Contact Details -->
+            <div class="col-md-5">
+                <h4 class="headline margin-bottom-30">Get In Touch</h4>
+                <!-- Contact Details -->
+                <div class="sidebar-textbox">
+                    <p>Feel free to contact us if you have any inquiry about our services.</p>
+
+                    <ul class="contact-details">
+                        {% if settings.phone %}
+                            <li><i class="im im-icon-Phone-2"></i> <strong>Phone:</strong>
+                                <span> {{ settings.phone }} </span></li>
+                        {% endif %}
+
+                        {% if settings.email %}
+                            <li><i class="im im-icon-Envelope"></i> <strong>E-Mail:</strong> <span><a
+                                            href="mailto:{{settings.email}}">{{ settings.email }}</a></span></li>
+                        {% endif %}
+
+                        {% if settings.link %}
+                            <li><i class="im im-icon-Globe"></i> <strong>Web:</strong> <span><a
+                                            href="#">{{ settings.link }}</a></span></li>
+                        {% endif %}
+                        {% if settings.address %}
+                            <li>
+                                <i class="im im-icon-Address-Book"></i>
+                                <strong>Address:</strong>
+                                <p>{{ settings.address }}</p></li>
+                        {% endif %}
+
+                    </ul>
+                </div>
+
+            </div>
+
+            <!-- Contact Form -->
+            <div class="col-md-7">
+
+                <section id="contact" class="card">
+                    <div class="card-body">
+                    <h4 class="headline margin-bottom-35">Contact Form</h4>
+
+                    <div id="contact-message"></div>
+
+                    <form role="form" name="siteContactForm" id="siteContactForm" action="{{ full_url_for('contact-submit') }}" method="post" autocomplete="off">
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div>
+                                    <input name="name" type="text" id="name" placeholder="Your Name"
+                                           required="required"/>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div>
+                                    <input name="email" type="email" id="email" placeholder="Email Address"
+                                           pattern="^[A-Za-z0-9](([_\.\-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$"
+                                           required="required"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <select class="chosen-select-no-single" name="subject" required>
+                                <option label="">Select a subject</option>
+                                {% for topic in page.help_topics %}
+                                    <option value="topic">{{ topic }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <textarea name="comments" cols="40" rows="3" id="comments" minLength="30"
+                                      placeholder="Message" spellcheck="true" required="required"></textarea>
+                        </div>
+
+
+                        <!-- Google reCAPTCHA box
+        <div class="g-recaptcha" id="rcaptcha" style="margin-left: 90px;" data-sitekey="6LfazN4UAAAAAHcW2a4LovKYvU-FhXAW7rmazyyy"></div>
+    <span id="captcha" style="margin-left:100px;color:red" />  -->
+
+{#                        <div class="row" style="margin-bottom:30px;">#}
+{#                            <div class="col-sm-5">#}
+{#                                <img app="{{ base_url() }}/images/capcha.jpg" id="captcha_image"/>#}
+{#                                <br/>#}
+{#                             <div class="g-recaptcha" data-sitekey="{{ page.siteKey }}"></div>#}
+
+{#                            </div>#}
+{#                            <div class="col-sm-6">#}
+{#                                <label for="email">Enter the code from the image here:</label>#}
+{#                                <input type="text" class="form-control" id="captcha" name="captcha" required>#}
+{#                            </div>#}
+{#                        </div>#}
+
+                        <input  type="submit" class="submit button" id="submit" value="Submit Message"/>
+                    </form>
+                    </div>
+                </section>
+            </div>
+            <!-- Contact Form / End -->
+
+        </div>
+    </div>
+{% endblock %}

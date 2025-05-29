@@ -1,0 +1,124 @@
+{% extends 'admin/admin_layout.twig' %}
+{% block jstriggers %}
+	<style>
+		#myProgress {
+			width: 100%;
+			background-color: grey;
+		}
+
+		#myBar {
+			width: 1%;
+			height: 30px;
+			background-color: green;
+		}
+	</style>
+	<script type="text/javascript">
+		$(document).ready(function () {
+			// const overlay = $("#doc_file_overlay");
+			// const formEl = $("#docFileUploadForm");
+			// const progress = $("#myProgress");
+			// const bar = $("#myBar");
+			// const barText = $("#myBarTxt");
+
+
+			// formEl.submit(function (e) {
+			// 	e.preventDefault();
+			//
+			// 	const form = $(this);
+			// 	const data = new FormData(this);
+			//
+			// 	swal({
+			// 		title: 'Upload File',
+			// 		text: "Are you sure you want to upload this file?",
+			// 		type: 'warning',
+			// 		showCancelButton: true,
+			// 		confirmButtonColor: '#3085d6',
+			// 		cancelButtonColor: '#d33',
+			// 		confirmButtonText: 'Confirm'
+			// 	}).then((result) => {
+			// 		if (result.value) {
+			// 			overlay.show();
+			// 			formEl.hide();
+			// 			progress.show();
+			//
+			// 			$.ajax({
+			// 				url: form.attr('action'),
+			// 				type: "POST",
+			// 				data: data,
+			// 				beforeSend: function (request) {
+			// 					request.setRequestHeader("Authorization", authorization);
+			// 				},
+			// 				// xhr: function () {
+			// 				// 	const xhr = new window.XMLHttpRequest();
+			// 				// 	xhr.upload.addEventListener("progress", function (evt) {
+			// 				// 		if (evt.lengthComputable) {
+			// 				// 			const percentComplete = Math.floor((evt.loaded / evt.total) * 100);
+			// 				// 			bar.css("width", percentComplete + "%");
+			// 				// 			barText.text(percentComplete + "%");
+			// 				//
+			// 				// 			if (percentComplete >= 100) {
+			// 				// 				progress.hide();
+			// 				// 			}
+			// 				// 		}
+			// 				// 	}, false);
+			// 				// 	return xhr;
+			// 				// },
+			// 				processData: false,
+			// 				contentType: false,
+			// 				dataType: 'json',
+			// 				success: function (data) {
+			// 					overlay.hide();
+			// 					formEl.show();
+			//
+			// 					if (data.error) {
+			// 						swal({
+			// 							title: '',
+			// 							html: `<b>${data.message}</b>`,
+			// 							type: 'error',
+			// 							confirmButtonColor: '#3085d6'
+			// 						});
+			// 					} else {
+			// 						swal({
+			// 							title: 'File Uploaded',
+			// 							html: `<b>${data.message}</b>`,
+			// 							type: 'success',
+			// 							confirmButtonColor: '#3085d6'
+			// 						});
+			// 						setTimeout(() => {
+			// 							location.href = `${base_url}/admin/manage-documents`;
+			// 						}, 2200);
+			// 					}
+			// 				},
+			// 				error: function (xhr) {
+			// 					overlay.hide();
+			// 					formEl.show();
+			// 					console.error("Upload failed:", xhr);
+			// 				}
+			// 			});
+			// 		}
+			// 	});
+			// });
+		});
+
+	</script>
+{% endblock %}
+{% block content %}
+	<!-- Overlay Section -->
+	<div id="update_doc_overlay" style="display:none;">
+		<div id="add-listing">
+			<div class="add-listing-section">
+				<div style="padding:60px;text-align: center;">
+					<img src="{{base_url()}}/images/preloader.gif" width="70"/>
+					<h3 style="color:#121212;margin-top:30px;">
+						<strong>Updating
+							{{page.doc_type}}...</strong>
+					</h3>
+					<h4 style="color:#232323;">Please wait...</h4>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Section / End -->
+	{% include 'forms/add_document_cover_form.twig' %}
+	{% include 'forms/add_document_form.twig' %}
+{% endblock content %}

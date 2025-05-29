@@ -1,0 +1,36 @@
+
+<li class="list-group-item px-0" {% if notification.seen == 0 %} class="unread"{% endif %}>
+    <div class="media justify-content-between align-items-center">
+        <div class="rounded-circle border border-secondary" style="width: 70px;height: 70px">
+            {% if notification.sender.user_image %}
+                <img id="cover_image_preview"
+                     class="rounded-circle"
+                     src="{{ base_url() }}/{{ notification.sender.user_image }}" width="70px" alt="{{ notification.sender.name }}">
+            {% else %}
+                <img class="rounded-circle" src="http://www.gravatar.com/avatar/00000000000000000000000000000000?d=mm&amp;s=70" alt="placeholder"/>
+            {% endif %}
+        </div>
+
+        <div class="media-body px-3">
+                <h5>{{ notification.title}}</h5>
+            <div class=" d-flex justify-content-between">
+                <p class="p-0 m-0">{{ notification.message }}</p>
+                <span  class="text-sm text-muted time_ago" style="display: none">{{ notification.date_created | date('Y-m-d H:i:s') }}</span>
+            </div>
+        </div>
+    </div>
+</li>
+
+{% block jsfooter %}
+    <script>
+        $(document).ready(function () {
+            let timeText = $('.time_ago')
+            timeText.each((idx,el)=>{
+            let timeAgo = moment($(el).text().trim(), "YYYY-MM-DD HH:mm:ss").fromNow();  // Parse & convert
+                $(el).text(timeAgo);  // Update the content
+                $(el).show()
+            })
+        });
+
+    </script>
+{% endblock %}

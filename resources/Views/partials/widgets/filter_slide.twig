@@ -1,0 +1,17 @@
+<div class="main-search-container"
+     style="min-height: 80vh; background-color: #879ceb; background-size: cover; background-position: center; background-repeat: no-repeat;
+             background-image: url('{{ base_url() }}/{{ page.banner_link is not empty ? page.banner_link : 'images/banners/main_banner.png' }}');">
+    <div class="main-search-inner">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-12">
+                    <a class="button btn btn-purple text-white text-decoration-none" href="{{ full_url_for('registration') }}"
+                       type="submit" style="font-size: 20px; padding: 12px 30px; margin-top: 220px;">
+                        <i class="fa fa-arrow-right"></i>
+                        10 DAYS FREE TRIAL
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

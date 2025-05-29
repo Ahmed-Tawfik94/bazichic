@@ -1,0 +1,122 @@
+{% extends 'layout.twig' %}
+
+    {% block jstriggers %}
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Full BaZi Calendar</title>
+        <link rel="stylesheet" href="/css/calendar/calendar.css">
+        <script src="https://cdn.jsdelivr.net/npm/dayjs"></script>
+        <script
+                src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.6.13/lunar.min.js"
+                integrity="sha512-pF4uHC43KH2P5X4w5DWo3f9fLrSdjLcWVBDWnl6aKBGaXZ/KaY/lY/xMyN6w+2Dwt0SLqQO4bUBEND4JaHwfXg=="
+                crossorigin="anonymous"
+                referrerpolicy="no-referrer"
+        ></script>
+        <script
+                src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment-with-locales.min.js"
+                integrity="sha512-4F1cxYdMiAW98oomSLaygEwmCnIP38pb4Kx70yQYqRwLVCs3DbRumfBq82T08g/4LJ/smbFGFpmeFlQgoDccgg=="
+                crossorigin="anonymous"
+                referrerpolicy="no-referrer"
+        ></script>
+        <script src="https://unpkg.com/mustache@latest"></script>
+        <script>
+            const customTags = [ '<%', '%>' ];
+            Mustache.tags = customTags;
+        </script>
+    {% endblock %}
+{% block content %}
+    <div class="loader-wrapper">
+    <span class="loader"></span>
+    </div>
+<div class="calendar">
+    <div class="row">
+        <!-- Left-Side Details -->
+        <div class="col-md-3">
+            <div id="day_details"></div>
+        </div>
+
+        <!-- Calendar Section -->
+        <div class="col-md-9">
+            <div class="calendar-grid">
+                <div id="dateSwitcher" class="d-flex justify-content-between align-items-center my-3">
+                    <button id="prevMonthButton" class="btn btn-outline-secondary d-flex justify-content-center align-items-center rounded-circle" style="border-width: 2px;width: 50px;height: 50px;font-size: 1.5rem !important;"><i class="bi bi-chevron-left"></i></button>
+                    <h5 id="monthYearDisplay"></h5>
+                    <button id="nextMonthButton" class="btn btn-outline-secondary  d-flex justify-content-center align-items-center rounded-circle" style="width: 50px;height: 50px;font-size: 1.5rem !important; border-width: 2px"><i class="bi bi-chevron-right"></i></button>
+                </div>
+                <div class="day-header">
+                    <div class="day">Sun</div>
+                    <div class="day">Mon</div>
+                    <div class="day">Tue</div>
+                    <div class="day">Wed</div>
+                    <div class="day">Thu</div>
+                    <div class="day">Fri</div>
+                    <div class="day">Sat</div>
+                </div>
+                <div class="date-grid" id="bazi-calendar"></div>
+            </div>
+            <!-- Dong Gong Rating Legend -->
+            <div class="my-2">
+                <div class="d-flex flex-wrap gap-2 justify-content-end align-items-center" style="display: flex; flex-wrap: wrap; gap: 10px; font-size: 0.9rem;">
+                    <div><strong>Dong Gong Rating</strong></div>
+                    <div class="badge px-4 py-3" style="font-size:0.9rem;background-color: #f8d7da;">Excellent</div>
+                    <div  class="badge px-4 py-3" style="font-size:0.9rem;background-color: #fff3cd;">Auspicious</div>
+                    <div  class="badge px-4 py-3" style="font-size:0.9rem;background-color: #d4edda;">Fair</div>
+                    <div  class="badge px-4 py-3" style="font-size:0.9rem;background-color: #cce5ff;">Bad</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Details Section -->
+        {% if page.user_subscription %}
+        <div class="col-md-12">
+            <div class="details-section mt-4">
+                <div id="dynamic-details" class="dynamic-details">
+                    <!-- Content will be dynamically injected here -->
+                </div>
+            </div>
+        </div>
+
+        {% if page.user_subscription.membership_plan_id in page.plans_ids.Premium %}
+            <div class="col-md-12">
+                <div id="hourly-details-section" class="hourly-details-section mt-4">
+                    <p><strong>Hourly Details</strong></p>
+                    <div id="hourly-details-grid" class="hourly-details-grid">
+                        <!-- Hourly details cards will be dynamically injected here -->
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div id="bazi-list" class="bazi-list">
+                    <!-- Dynamic content will be injected here -->
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div id="daily-stars" class="daily-stars">
+                    <!-- Dynamic Daily Stars content will be injected here -->
+                </div>
+            </div>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+    {% include 'calendar/components/leftbar.twig' %}
+    {% include 'calendar/components/day-cell.twig' %}
+    {% if page.user_subscription %}
+            {% include 'calendar/components/dynamic_date_table.twig' %}
+        {% if page.user_subscription.membership_plan_id in page.plans_ids.Premium %}
+            {% include 'calendar/components/hourly_details.twig' %}
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block jsbottomincludes %}
+    <script>
+        const userSubscription = JSON.parse('{{ page.user_subscription | json_encode | raw }}');
+
+        const premiumPlans= JSON.parse('{{ page.plans_ids.Premium | json_encode | raw }}')
+    </script>
+    <script src="/scripts/calendar/data.js"></script>
+    <script src="/scripts/calendar/calendar.js"></script>
+    <script src="/scripts/calendar/calendarUI.js"></script>
+
+{% endblock %}

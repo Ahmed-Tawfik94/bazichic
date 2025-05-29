@@ -1,0 +1,292 @@
+{% extends 'admin/admin_layout.twig' %}
+{% block jstriggers %}
+    <link href="{{ base_url() }}/scripts/audioplayer/dist/skin/blue.monday/css/jplayer.blue.monday.min.css"
+          rel="stylesheet" type="text/css"/>
+    <script type="text/javascript" src="{{ base_url() }}/scripts/audioplayer/lib/jquery.min.js"></script>
+    <script type="text/javascript"
+            src="{{ base_url() }}/scripts/audioplayer/dist/jplayer/jquery.jplayer.min.js"></script>
+    {#    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" #}
+    {#          integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous"> #}
+
+    <script type="text/javascript">
+        // <![CDATA[
+        $(document).ready(function () {
+            $("#jquery_jplayer_1").jPlayer({
+                ready: function (event) {
+                    $(this).jPlayer("setMedia", {
+                        title: "Click to listen audio book",
+                        m4a: "{{ base_url() }}/uploads/documents/  {{ document.link }}",
+                        oga: ""
+                    });
+                },
+                swfPath: "{{ base_url() }}/scripts/audioplayer/dist/jplayer",
+                supplied: "m4a, oga",
+                wmode: "window",
+                useStateClassSkin: true,
+                autoBlur: false,
+                smoothPlayBar: true,
+                keyEnabled: true,
+                remainingDuration: true,
+                toggleDuration: true
+            });
+
+
+            $('#rating').on('change', function () { // alert("yeah!! "+this.value);
+                let msg = "Please select a rating.";
+                switch (this.value) {
+                    case 1:
+                        msg = "POOR";
+                        break;
+
+                    case 2:
+                        msg = "AVERAGE";
+                        break;
+
+                    case 3:
+                        msg = "GOOD";
+                        break;
+
+                    case 4:
+                        msg = "VERY GOOD";
+                        break;
+
+                    case 5:
+                        msg = "EXCELLENT";
+                        break;
+
+                    default:
+                        msg = " : N/A";
+                        break;
+                }
+                $('#ratingMsg').text("You selected " + this.value + "/5.");
+            });
+
+
+        });
+        // ]]>
+    </script>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row sticky-wrapper">
+            <div class="col-lg-12">
+
+                <!-- Titlebar -->
+                <div id="titlebar" class="listing-titlebar">
+                    <div class="listing-titlebar-title">
+                        <h2 style="color:#333;">{{ document.title }}
+                            {% if document.tag %}
+                                <span class="listing-tag">{{ document.tag }}</span>
+                            {% endif %}
+                        </h2>
+                        <span>
+							<a href="#listing-location" class="listing-address">
+								<i class="fa fa-tags"></i>
+								{{ document.category }}
+							</a>
+						</span>
+
+                        {% if document.keywords|length > 0 %}
+                            <p>
+								<span>
+									{% for keyword in document.keywords %}
+                                        <a href="#" style="padding: 0px 10px;" class="rate-review">
+											<i class="sl sl-icon-tag"></i>
+											{{ keyword.keyword }}</a>
+                                    {% endfor %}
+								</span>
+                            </p>
+                        {% endif %}
+
+                        {% if document.num_reviews > 0 %}
+                            <div class="star-rating" data-rating="{{ document.avg_rating }}">
+                                <div class="rating-counter">
+                                    <a href="#listing-reviews">({{ document.num_reviews }}
+                                        reviews)</a>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+                <div class="sharethis-inline-share-buttons" style="display:block;margin-bottom:16px;"></div>
+
+
+                {#                 aduio boooks #}
+                {% if session.userID > 0 %}
+                    {% if document.document_type ==2 %}
+                        {% if document.link %}
+                            {% if document.is_downloadable ==1 %}
+                                <a href="{{ base_url() }}/uploads/documents/{{ document.link }}" class="button"
+                                   target="_blank">Click to download audiobook.</a>
+                            {% endif %}
+
+                            <div id="jquery_jplayer_1" class="jp-jplayer"></div>
+                            <div id="jp_container_1" class="jp-audio" role="application" aria-label="media player">
+                                <div class="jp-type-single">
+                                    <div class="jp-gui jp-interface">
+                                        <div class="jp-controls">
+                                            <button class="jp-play" role="button" tabindex="0">play</button>
+                                            <button class="jp-stop" role="button" tabindex="0">stop</button>
+                                        </div>
+                                        <div class="jp-progress">
+                                            <div class="jp-seek-bar">
+                                                <div class="jp-play-bar"></div>
+                                            </div>
+                                        </div>
+                                        <div class="jp-volume-controls">
+                                            <button class="jp-mute" role="button" tabindex="0">mute</button>
+                                            <button class="jp-volume-max" role="button" tabindex="0">max volume</button>
+                                            <div class="jp-volume-bar">
+                                                <div class="jp-volume-bar-value"></div>
+                                            </div>
+                                        </div>
+                                        <div class="jp-time-holder">
+                                            <div class="jp-current-time" role="timer" aria-label="time">&nbsp;</div>
+                                            <div class="jp-duration" role="timer" aria-label="duration">&nbsp;</div>
+                                            <div class="jp-toggles">
+                                                <button class="jp-repeat" role="button" tabindex="0">repeat</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="jp-details">
+                                        <div class="jp-title" aria-label="title">&nbsp;</div>
+                                    </div>
+                                    <div class="jp-no-solution">
+                                        <span>Update Required</span>
+                                        To play the media you will need to either update your browser to a recent
+                                        version or update your <a href="http://get.adobe.com/flashplayer/"
+                                                                  target="_blank">Flash plugin</a>.
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="boxed-widget booking-widget margin-top-35 text-center">
+                                <h2><i class="fa fa-warning "></i></h2>
+                                <h3>NO AUDIO FOUND</h3>
+                                <p>Looks like the audio book you are finding is not available at this moment. Check back
+                                    again.</p>
+                                <div class="row with-forms  margin-top-0"></div>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+                {#                            end audio books #}
+
+
+                {#                        book details #}
+
+                <!-- Listing Nav -->
+                <div id="listing-nav" class="listing-nav-container">
+                    <ul class="listing-nav">
+                        <li><a href="#listing-overview" class="active">Description</a></li>
+                        <li><a href="#listing-author">About Author</a></li>
+                        <li><a href="#listing-reviews">Reviews</a></li>
+                        <li><a href="#add-review">Add Review</a></li>
+                    </ul>
+                </div>
+
+                <!-- Overview -->
+                <div id="listing-overview" class="listing-section">
+                    <p>{{ document.description }}</p>
+                    <h4 class="listing-desc-headline"> {{ document.doc_type }} Details</h4>
+                    <ul class="listing-features margin-top-0">
+                        <li><i class="sl sl-icon-tag"></i> Category: {{ document.category }}</li>
+                        <li><i class="sl sl-icon-info"></i> Code: {{ document.qcode }}</li>
+                        {% if document.num_pages > 0 %}
+                            <li><i class="sl sl-icon-book-open"></i> Total Pages: {{ document.num_pages }}</li>
+                        {% endif %}
+
+                        {% if document.num_likes > 0 %}
+                            {% if document.is_liked > 0 %}
+                                <li>
+                                    <i class="fa fa-heart" style="color:#f92b60 !important;"></i>
+                                    {% if document.num_likes > 1 %}you & {{ ( document.num_likes - 1 )|pluralize('other', 'others') }}.{% else %}
+                                        <small>{{ document.num_likes }}</small> {% endif %}
+                                </li>
+                            {% else %}
+                                <li>
+                                    <i class="sl sl-icon-heart"></i>
+                                    Liked by {{ document.num_likes|pluralize('other', 'others') }}.
+                                </li>
+                            {% endif %}
+                        {% endif %}
+
+                        {% if document.read_time > 0 %}
+                            <li><i class="im im-icon-Timer-2"></i> Read Time: {{ document.read_time }} Minutes
+                            </li>{% endif %}
+                        {% if document.listen_time > 0 %}
+                            <li><i class="im im-icon-Hipster-Headphones"></i> Listen Time: {{ document.listen_time }}
+                            Minutes</li>{% endif %}
+                    </ul>
+                </div>
+
+                <!-- Author -->
+                <div id="listing-author" class="listing-section">
+                    <h3 class="listing-desc-headline margin-top-60 margin-bottom-30">About The Author</h3>
+
+                    <div id="singleListingMap-container">
+                        <p style="font-weight:500;">{{ document.author_name }}</p>
+                        {% if document.author_link %}<a href="{{ document.author_link }}" target="_blank"
+                                                        class="button"><i class="fa fa-link"></i> Read More
+                            </a>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Reviews -->
+                <div id="listing-reviews" class="listing-section">
+                    <h3 class="listing-desc-headline margin-top-20 margin-bottom-20">
+                        Reviews {% if document.num_reviews > 0 %}
+                            <span>({{ document.num_reviews }})</span>
+                        {% endif %}</h3>
+
+                    <div class="clearfix"></div>
+
+                    <!-- Reviews -->
+                    <section class="comments listing-reviews">
+
+                        {% if document.all_reviews|length > 0 %}
+                            <ul>
+                                {% for row in document.all_reviews %}
+                                    <li>
+                                        <div class="avatar">
+                                            {% if row.reviewer_image %}
+                                                <img src="{{ base_url() }}/uploads/images/users/{{ row.reviewer_image }}"
+                                                     class="img-fluid">
+                                            {% else %}
+                                                <img src="{{ base_url() }}/public/uploads/images/users/profile.png"
+                                                     class="img-fluid">
+                                            {% endif %}
+
+                                        </div>
+                                        <div class="comment-content">
+                                            <div class="arrow-comment"></div>
+                                            <div class="comment-by">{{ row.reviewer_name }}<span
+                                                        class="date">{{ row.date_created }}</span>
+                                                <div class="star-rating" data-rating="{{ row.stars }}"></div>
+                                            </div>
+                                            <!-- <p> Rated {{ row.stars }}/5</p> -->
+                                            <blockquote>{{ row.text }}</blockquote>
+                                        </div>
+                                    </li>
+
+                                {% endfor %}
+
+                            </ul>
+                        {% else %}
+                            <h5 class="mb-4">No Review Yet. Be the first to review this {{ document.doc_type }}.</h5>
+                        {% endif %}
+                    </section>
+                </div>
+
+                <!-- Add Review Box / End -->
+                {#                        end book details #}
+
+            </div>
+
+
+        </div>
+    </div>
+{% endblock %}

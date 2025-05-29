@@ -1,0 +1,51 @@
+{% extends 'admin/admin_layout.twig' %}
+{% block jstriggers %}
+<script type="text/javascript">
+ $(document).ready(function() {
+handleFormSubmit('#createFAQCategoryForm','#faqFormOverlay',authorization,'Add New Category', 'Do you want to save this Category?')
+
+});
+</script>
+{% endblock %}
+{% block content %}
+<div class="row">
+			<div class="col-lg-12">
+				<div id="add-listing">
+				    
+				     <div id="faqFormOverlay" style="display:none;">
+					<div style="margin: 30px; text-align: center;">
+					<img src="{{base_url()}}/images/preloader.gif" width="60"/>
+					<h4><strong>Saving FAQ Category...</strong></h4>
+					<h5>Please wait...</h5>
+					<div id="login_msg"></div>
+					</div>	
+					</div>
+					
+  <form role="form" name="createFAQCategoryForm" id="createFAQCategoryForm" action="{{full_url_for('create-fqa-category')}}" method="POST">
+					<!-- Section -->
+					<div class="add-listing-section">
+
+						<!-- Headline -->
+						<div class="add-listing-headline">
+							<h3><i class="sl sl-icon-doc"></i> Create New FAQ Category</h3>
+						</div>
+
+						<!-- Title -->
+						<div class="row with-forms">
+							<div class="col-md-12">
+								<h5>Category Title * <i class="tip" data-tip-content="Enter title for this Category"></i></h5>
+								<input class="search-field" type="text" name="title" id="title" placeholder="Category Title" required/>
+							</div>
+						</div>
+
+							
+						<button type="submit" class="button btn btn-purple text-white preview"> <i class="fa fa-arrow-circle-right"></i> Save Category</button>
+						
+					</div>
+					<!-- Section / End -->
+                    </form>
+				</div>
+			</div>
+		</div>
+		
+{% endblock content %}

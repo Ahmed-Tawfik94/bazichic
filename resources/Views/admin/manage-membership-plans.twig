@@ -1,0 +1,147 @@
+{% extends 'admin/admin_layout.twig' %}
+{% block jstriggers %}
+  <link href="https://cdn.datatables.net/v/bs4/jq-3.7.0/jszip-3.10.1/dt-2.2.1/af-2.7.0/b-3.2.1/b-colvis-3.2.1/b-html5-3.2.1/b-print-3.2.1/cr-2.0.4/date-1.5.5/fc-5.0.4/fh-4.0.1/kt-2.12.1/r-3.0.3/rg-1.5.1/rr-1.5.0/sc-2.4.3/sb-1.8.1/sp-2.3.3/sl-3.0.0/sr-1.4.1/datatables.min.css" rel="stylesheet">
+  <script src="https://cdn.datatables.net/v/bs4/jq-3.7.0/jszip-3.10.1/dt-2.2.1/af-2.7.0/b-3.2.1/b-colvis-3.2.1/b-html5-3.2.1/b-print-3.2.1/cr-2.0.4/date-1.5.5/fc-5.0.4/fh-4.0.1/kt-2.12.1/r-3.0.3/rg-1.5.1/rr-1.5.0/sc-2.4.3/sb-1.8.1/sp-2.3.3/sl-3.0.0/sr-1.4.1/datatables.min.js"></script>
+  <style>
+    td.details-control {
+      cursor: pointer;
+      font-weight: bold;
+      color: blue;
+    }
+    .badge-soft-success {
+      background-color: rgba(40, 167, 69, 0.1);
+      color: #28a745;
+    }
+    .badge-soft-danger {
+      background-color: rgba(220, 53, 69, 0.1);
+      color: #dc3545;
+    }
+    span.dt-column-title::after {
+      content: none !important;
+    }
+    span.dt-column-title {
+      text-decoration: none !important;
+      border-bottom: none !important;
+      box-shadow: none !important;
+    }
+  </style>
+{% endblock %}
+{% block content %}
+
+    <div class="mb-3 text-left">
+      <h1>Manage Membership</h1>
+    </div>
+  <div class="table-responsive">
+  <table id="plansTable" class="table"  style="width:100%">
+    <thead>
+    <tr>
+      <th scope="col"></th>
+      <th scope="col">Plan Name</th>
+      <th scope="col">Description</th>
+      <th scope="col">actions</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  </div>
+  <script id="plan_details" type="text/template">
+    <table class="table  bg-transparent" style="width:100%">
+      <thead>
+        <tr>
+          <th scope="col">Interval</th>
+          <th scope="col">Price</th>
+          <th scope="col">Availability</th>
+        </tr>
+      </thead>
+      <tbody>
+      <%# items %>
+      <tr>
+        <td class="text-capitalize"><% interval %></td>
+        <td>$<% price %></td>
+        <td>
+          <%# is_available %>
+              <span class="badge badge-soft-success px-3 py-2">
+                  <i class="bi bi-check-circle mr-1"></i>
+                  Active
+              </span>
+          <%/ is_available %>
+          <%^ is_available %>
+            <span class="badge badge-soft-danger px-3 py-2">
+              <i class="bi bi-x-circle mr-1"></i>
+              Not Active
+            </span>
+          <%/ is_available %>
+        </td>
+      </tr>
+      <%/ items %>
+      </tbody>
+    </table>
+  </script>
+
+  <script>
+    $(document).ready(function () {
+      // Subscription Data (JSON)
+      var subscriptions = JSON.parse('{{ page.membership_plans | json_encode | raw }}')
+
+      // Convert JSON into table rows
+      var tableData = [];
+      Object.keys(subscriptions).forEach((key) => {
+        let plan = subscriptions[key];
+        let btn=`<a class="btn btn-link d-flex justify-content-center align-items-center "
+                       href="/admin/membership/edit/${plan.stripe_product_id}">
+                      <i class="bi bi-pencil-square"></i>
+                </a>`
+        tableData.push([
+          '<i class=" details-control bi bi-chevron-up"></i>', // Expand/Collapse Button
+          plan.name,
+          plan.description,
+          btn,
+          plan.stripe_product_id // Hidden Data (Optional)
+        ]);
+      });
+
+      // Initialize DataTable
+      var table = $('#plansTable').DataTable({
+        data: tableData,
+        ordering: false,
+        responsive:true,
+        columns: [
+          { title: "#"},
+          { title: "Plan Name" },
+          { title: "Description" },
+          { title: "Actions"}
+        ],
+        rowCallback: function(row, data) {
+          // Apply custom class if the plan name contains "Premium"
+            $(row).attr('data-id',data[4]);
+            $(row).on('click',clickable_row)
+            $(row).css('cursor','pointer')
+        }
+      });
+
+      // Function to format sub-table for plan details
+      function format(plan) {
+        const template = $('#plan_details').html();
+        return  Mustache.render(template, {items:plan.items});
+      }
+
+      // Expand/Collapse functionality
+       function clickable_row () {
+        var tr = $(this).closest('tr');
+        var row = table.row(tr);
+        var plan = subscriptions[tr.attr('data-id')]; // Get plan from hidden column
+
+        if (row.child.isShown()) {
+          row.child.hide();
+          $(this).find('i.details-control').removeClass('bi-chevron-down').addClass('bi-chevron-up')
+        } else {
+          row.child(format(plan)).show();
+          $(this).find('i.details-control').removeClass('bi-chevron-up').addClass('bi-chevron-down')
+        }
+      }
+    });
+  </script>
+
+
+
+{% endblock %}

@@ -1,0 +1,64 @@
+<table id="documents_table" class="table table-striped">
+{#	<thead>#}
+{#		<tr>#}
+{#			<th>Cover</th>#}
+{#			<th>Title</th>#}
+{#			<th>Category</th>#}
+{#			<th>Likes</th>#}
+{#			<th>Saves</th>#}
+{#			<th>Rating</th>#}
+{#			<th>Reviews</th>#}
+{#			<th>Action</th>#}
+{#		</tr>#}
+{#	</thead>#}
+	<tbody>
+{#		{% for document in page.data %}#}
+{#			<tr>#}
+
+{#				<td>#}
+{#					{% if document.cover %}#}
+{#						<img src="{{base_url()}}/{{document.cover}}" width="75" alt="{{ document.title }}">#}
+{#					{% else %}#}
+{#						<img src="{{base_url()}}/images/books/default.png" width="75" alt="placeholder">#}
+{#					{% endif %}#}
+{#				</td>#}
+{#				<td>#}
+{#					<p class="my-1 pb-2 font-weight-bold">{{document.title}}</p>#}
+{#					<div style="font-size:14px;" class="my-1 pb-2">File:#}
+{#						{{document.file_type}}#}
+{#						{% if document.note %}#}
+{#							({{ document.note | round(2) }} MB)#}
+{#						{% endif %}#}
+{#					</div>#}
+{#					{% if document.date_updated %}#}
+{#						<div style="font-size:14px;" class="my-1 pb-2">Last Updated:#}
+{#							<small>{{document.date_updated}}</small>#}
+{#						</div>#}
+{#					{% endif %}#}
+{#					{% if document.is_downloadable %}#}
+{#						<span class="badge badge-pill badge-info">Downloadable</span>#}
+{#					{% endif %}#}
+{#					{% if document.is_published == 0 %}#}
+{#						<span class="badge badge-pill badge-danger">Not Published</span>#}
+{#					{% endif %}#}
+{#				</td>#}
+{#				<td>{{document.category}}</td>#}
+{#				<td>{{document.num_likes}}</td>#}
+{#				<td>{{document.num_saves}}</td>#}
+{#				<td><span class="d-block my-1">Rated {{document.avg_rating | number_format(1)}}/5</span></td>#}
+{#				<td>#}
+{#					{% if document.num_reviews > 0 %}#}
+{#						<span class="d-block my-1">{{ document.num_reviews }} Reviews</span>#}
+{#					{% else %}#}
+{#						Not rated yet#}
+{#					{% endif %}#}
+{#				</td>#}
+{#				<td>#}
+{#					<div class="d-flex flex-column " style="gap:5px">#}
+
+{#					</div>#}
+{#				</td>#}
+{#			</tr>#}
+{#		{% endfor %}#}
+	</tbody>
+</table>

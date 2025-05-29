@@ -1,0 +1,227 @@
+<?php
+//  use Psr\Http\Message\ServerRequestInterface as Request;
+// use Psr\Http\Message\ResponseInterface as Response;
+// use Src\Helpers\Helpers;
+
+
+// $app->get('/bazichik-timeline[/{s_no}]', function (Request $request, Response $response, $args) {
+// 	require_once("dbmodels/activity.crud.php");
+// 	require_once("dbmodels/user.crud.php");
+// 	require_once("dbmodels/utils.crud.php");
+// 	$userCRUD = new UserCRUD(getConnection());
+// 	$notificationCRUD = new ActivityCRUD(getConnection());
+// 	$utilCRUD = new UtilCRUD(getConnection());
+// 	$thisUser = $userCRUD->getUserByAPIKey($_SESSION["api_key"]);
+// 	if ($thisUser != null && $thisUser["id"] == $_SESSION["userID"]) {
+// 	} else {
+// 		//$uri = $request->getUri()->withPath($this->router->pathFor('unauthorized'));
+// 		//return $response->withRedirect((string)$uri);
+// 	}
+// 	$s_no = $request->getAttribute('s_no');
+// 	if (empty($s_no)) {
+// 		$s_no = 0;
+// 	}
+// 	$data = $notificationCRUD->getActivitiesFor($_SESSION["userID"], $s_no);
+// 	$numAllNoti = $notificationCRUD->getNumActivitiesFor($_SESSION["userID"]);
+// 	$numUnreadNoti = $notificationCRUD->getNumUnreadActivities($_SESSION["userID"]);
+// 	//Do proper session management in helper
+// 	$custom_data = array();
+// 	if (count($data) > 0) {
+// 		foreach ($data as $row) {
+// 			$tmp = array();
+// 			$tmp["id"] = $row["id"];
+// 			$tmp["title"] = $row["title"];
+// 			$tmp["message"] = $row["message"];
+// 			$tmp["status"] = $row["status"];
+// 			$tmp["user_image"] = $userCRUD->getUserImageByID($row["sender_id"]);
+// 			$tmp["date_created"] = $utilCRUD->getTimeDifference($row["date_created"]);
+// 			$tmp["action_link"] = $notificationCRUD->getActionLink($row["data_id"], $row["data_title"]);
+// 			array_push($custom_data, $tmp);
+// 		}
+// 	}
+
+// 	$vars = [
+// 		'page' => [
+// 			'title' => 'Timeline',
+// 			'description' => 'Access Unlimited E-Books, Audio Books and Magazines on Chinese Metaphysics',
+// 			'data' => $custom_data,
+// 			'current_page' => $s_no,
+// 			'numAllNoti' => $numAllNoti,
+// 			'numUnreadNoti' => $numUnreadNoti
+// 		],
+// 	];
+// 	if (count($data) > 0) {
+// 		foreach ($data as $row) {
+// 			$notificationCRUD->updateStatus($row["id"], "Read");
+// 		}
+// 	}
+
+// 	return $this->view->render($response, 'bazichik-timeline.twig', $vars);
+// })->setName('bazichik-timeline');
+
+
+
+// $app->get('/404', function (Request $request, Response $response, $args) {
+// 	$_SESSION["last_saved"] = "";
+// 	$vars = [
+// 		'page' => [
+// 			'title' => 'Page Not Found',
+// 			'description' => 'Access Unlimited E-Books, Audio Books and Magazines on Chinese Metaphysics'
+// 		]
+// 	];
+
+// 	return $this->view->render($response, '404.html', $vars);
+// })->setName('404');
+
+// $app->get('/404.html', function (Request $request, Response $response, $args) {
+// 	$_SESSION["last_saved"] = "";
+// 	$vars = [
+// 		'page' => [
+// 			'title' => 'Page Not Found',
+// 			'description' => 'Access Unlimited E-Books, Audio Books and Magazines on Chinese Metaphysics'
+// 		]
+// 	];
+
+// 	return $this->view->render($response, '404.html', $vars);
+// })->setName('404.html');
+
+
+
+
+// $app->get('/unauthorized', function (Request $request, Response $response, $args) {
+// 	$_SESSION["last_saved"] = "";
+// 	$helper = new Helper();
+// 	if ($helper->validateSession()) {
+// 		$vars = [
+// 			'page' => [
+// 				'title' => 'Unauthorized Access | Bazichic - Chinese Metaphysics Consultancy',
+// 				'description' => 'Access Unlimited E-Books, Audio Books and Magazines on Chinese Metaphysics'
+// 			],
+// 		];
+// 		return $this->view->render($response, 'unauthorized.twig', $vars);
+// 	} else {
+// 		$uri = $request->getUri()->withPath($this->router->pathFor('login'));
+// 		return $response->withRedirect((string) $uri);
+// 	}
+// })->setName('unauthorized');
+
+// function getRequestingAgent($request)
+// {
+// 	require_once("dbmodels/user.crud.php");
+// 	$userCRUD = new UserCRUD(getConnection());
+// 	$headers = $request->getHeaders();
+// 	$output = array();
+// 	$output["error"] = true;
+// 	$output["message"] = "Invalid Api key";
+// 	$authArr = $request->getHeader("Authorization");
+// 	$api_key = $authArr[0];
+// 	$output["api_key"] = $api_key;
+// 	if (isset($api_key) && !empty($api_key)) {
+// 		if (!$userCRUD->isValidApiKey($api_key)) {
+// 			$output["error"] = true;
+// 			$output["message"] = "Access Denied. Invalid Authorization key.";
+// 		} else {
+// 			$output["user_info"] = $userCRUD->getUserByAPIKey($api_key);
+// 			$output["error"] = false;
+// 			$output["message"] = "Access Granted.";
+// 		}
+// 	} else {
+// 		$output["error"] = true;
+// 		$output["message"] = "Access Denied. No Authorization found with request.";
+// 	}
+// 	return $output;
+// }
+
+
+
+// function echoRespnse($status_code, $response)
+// {
+// 	//$app = \Slim\Slim::getInstance();
+// 	// Http response code
+// 	//$app->status($status_code);
+// 	// setting response content type to json
+// 	//$app->contentType('application/json');
+// 	echo json_encode($response);
+// }
+
+// $app->post('/slim_uploader/upload', function ($request, $respo, $args) use ($app) {
+// 	$response = array();
+// 	$response["error"] = true;
+// 	$doc_id = $request->getParam('doc_id');
+// 	$doc_type_name = "Doc";
+// 	$file_size = 0;
+// 	$uploadFileName = "";
+// 	$ext = "";
+// 	$response['debug'] = "";
+// 	$files = $request->getUploadedFiles();
+// 	if (empty($files['myfile'])) {
+// 		$response['error'] = true;
+// 		$response['message'] = 'You must upload a file.';
+// 		echoRespnse(200, $response);
+// 		exit;
+// 	}
+
+
+// 	if (!empty($files['myfile'])) {
+
+// 		try {
+// 			$newfile = $files['myfile'];
+// 			$cover_file_type = "Unknown";
+// 			if ($newfile->getError() === UPLOAD_ERR_OK) {
+// 				$uploadCoverName = $newfile->getClientFilename();
+// 				$uploadCoverName = explode(".", $uploadCoverName);
+// 				$ext = array_pop($uploadCoverName);
+// 				$ext = strtolower($ext);
+// 				$uploadCoverName = $doc_id . "." . $ext;
+
+// 				//Delete Cover Image
+// 				if (!empty($uploadCoverName)) {
+// 					try {
+// 						$fileToTest = "uploads/images/tests/$uploadCoverName";
+// 						if (file_exists($fileToTest)) {
+// 							unlink($fileToTest);
+// 							$response['debug'] .= ' Deleted: ' . $fileToTest . '.';
+// 						}
+// 					} catch (Exception $e) {
+// 						$response['debug'] .= 'Exception deleting old file: ' . $e->getMessage() . '.';
+// 					}
+// 				}
+
+
+// 				$file_size = $newfile->getSize();
+// 				$cover_file_type = $newfile->getClientMediaType();
+// 				$response["file_size"] = $file_size;
+// 				$response["cover_file_type"] = $cover_file_type;
+// 				if (!$cover_file_type == "image/jpg" || !$cover_file_type == "image/jpeg" || !$cover_file_type == "image/jpeg") {
+// 					$response['error'] = true;
+// 					//$response['message'] = 'Please upload a png, jpg or jpeg image file as the Cover Image.';
+// 					//echoRespnse(200, $response);
+// 					//return;
+// 				}
+// 				if ($cover_file_type > 100000000) {
+// 					$response['error'] = true;
+// 					$response['message'] = 'Upload a cover image of size not more than 100 MB.';
+// 					echoRespnse(200, $response);
+// 					return;
+// 				}
+// 				$res = $newfile->moveTo("uploads/images/tests/$uploadCoverName");
+// 				$response["url"] = "http://localhost:8000/uploads/images/tests/" . $uploadCoverName;
+// 				if ($res) {
+// 					$response["error"] = false;
+// 					$response["message"] = "File has been uploaded successfully. ";
+
+// 					echoRespnse(200, $response);
+// 				} else {
+// 					$response["error"] = true;
+// 					$response["message"] = "Failed to upload file. Please try again.";
+// 					echoRespnse(200, $response);
+// 				}
+// 			}
+// 		} catch (Exception $e) {
+// 			$response["error"] = true;
+// 			$response["message"] = "Failed to upload file=> " . $e->getMessage();
+// 			echoRespnse(200, $response);
+// 			exit;
+// 		}
+// 	}
+// })->add($authenticate);

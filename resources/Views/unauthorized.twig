@@ -1,0 +1,37 @@
+{% set layout_template = session.userID == 1 ? 'admin/admin_layout.twig' : 'layout.twig' %}
+{% extends layout_template %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <section class="center" style="text-align:center;margin:25px;padding:30px;background-color:#eee;">
+                    <h1 style="color:#666;font-size:72px;line-height:75px;font-weight:bold;">
+                        <i class="sl sl-icon-lock sl-3x"></i>
+                    </h1>
+                    <p><strong>Looks like you are not authorized to access this page.</strong></p>
+                    <hr>
+                    <div class="row justify-content-center align-items-center" style="margin:20px;">
+                        <div class="col-lg-8 col-lg-offset-2">
+                            {% if session.userID == 1 %}
+                                <a href="{{ full_url_for('home') }}" class="button btn btn-purple text-white">
+                                    <i class="sl sl-icon-home"></i> Go to Home page
+                                </a>
+                                <a href="{{ full_url_for('admin-panel') }}" class="button btn btn-purple text-white">
+                                    <i class="sl sl-icon-rocket"></i> My Dashboard
+                                </a>
+                            {% else %}
+                                <a href="{{ full_url_for('home') }}" class="button btn btn-purple text-white">
+                                    <i class="sl sl-icon-home"></i> Go to Home page
+                                </a>
+                                <a href="{{ full_url_for('dashboard') }}" class="button btn btn-purple text-white">
+                                    <i class="sl sl-icon-rocket"></i> My Dashboard
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+{% endblock %}

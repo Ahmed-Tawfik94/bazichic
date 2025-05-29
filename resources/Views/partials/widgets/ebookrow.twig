@@ -1,0 +1,11 @@
+<div>
+
+	<a href="{{ full_url_for('book-detail',{id:document.qcode }) }}">
+		{% if document.cover %}
+			<img src="{{ base_url() }}/{{ document.cover }}" style="object-fit: cover;" alt="{{ document.title }}">
+		{% else %}
+			<img src="{{ base_url() }}/images/books/default.png" alt="placeholder">
+		{% endif %}
+	</a>
+
+</div>

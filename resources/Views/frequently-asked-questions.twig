@@ -1,0 +1,33 @@
+{% extends 'layout.twig' %}
+{% block content %}
+    <div id="titlebar" class="bg-bazi mb-0">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 d-flex justify-content-between align-items-center">
+                    <h2 style="color:#ffffff;font-weight:500;">Frequently Asked Questions</h2>
+                </div>
+                <div class="col-md-12">
+                    <nav id="breadcrumbs">
+                        <ul>
+                            <li><a class="text-white text-decoration-none" href="{{ full_url_for('home') }}">Home</a></li>
+                            <li><a class="text-white text-decoration-none" href="{{ full_url_for('' ) }}">Help Center</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container / Start -->
+    <div class="container" style="background-color:#fff;">
+        <div class="row">
+            <div class="col-md-12 d-flex justify-content-center mt-4 mb-4">
+                <!-- Centered PDF Download Button -->
+                <a href="{{ base_url() }}/docs/BaziChicFAQ.pdf" class="button btn btn-purple text-white text-white">
+                    <i class="fas fa-file-pdf"></i> Download PDF
+                </a>
+            </div>
+        </div>
+    </div>
+    <!-- Container / End -->
+{% endblock content %}

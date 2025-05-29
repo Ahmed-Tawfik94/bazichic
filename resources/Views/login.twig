@@ -1,0 +1,115 @@
+{% extends 'layout.twig' %}
+{% block slider %}{% endblock %}
+{% block content %}
+	<div class="container">
+		<div class="row">
+			<div class="col-12 col-md-6">
+				<div class="boxed-widget mx-auto" style="padding:30px; z-index:50; box-sizing: border-box; border-radius:4px; margin:15px;">
+
+					<div id="login_page_overlay" style="display:none;">
+						<div style="margin: 60px; text-align: center;">
+							<img src="{{ base_url() }}/images/preloader.gif" width="50" alt="preloader"/>
+							<h4>
+								<strong>Authenticating...</strong>
+							</h4>
+							<h5>Please wait...</h5>
+							<div id="login_page_msg"></div>
+						</div>
+					</div>
+
+					<form method="POST" action="{{ full_url_for('login_controller') }}" class="login" name="loginPageForm" id="loginPageForm">
+						<div class="text-center">
+							<h3>Member Login</h3>
+						</div>
+						<div class="text-center">
+							<p class="text-muted">Sign in to access thousands of E-Books, Audio Books, and Magazines brought to you by BaziChic.</p>
+						</div>
+						<div class="form-group">
+							<i class="im im-icon-Male"></i>
+							<label for="email">Email Address</label>
+							<input type="email" class="form-control input-text" id="login_email" name="email" aria-describedby="emailHelp" placeholder="Your registered email" required>
+						</div>
+						<div class="form-group">
+							<i class="im im-icon-Lock-2"></i>
+							<label for="login_password">Password</label>
+							<div class="position-relative">
+								<i id="togglePassword" class="bi bi-eye position-absolute register_show_hide_pass" ></i>
+								<input type="password" class="form-control input-text position-relative" id="login_password" name="password" placeholder="Your Password" required>
+							</div>
+						</div>
+						<div class="form-group">
+							<a href="{{ full_url_for('password-recovery') }}" class="text-decoration-underline cursor-pointer">
+								Recover Password
+							</a>
+						</div>
+						<div class="form-group mb-0 text-center">
+							<button type="submit" class="btn btn-primary-400 login-page-button text-decoration-none text-white">
+								<i class="fa fa-unlock-alt"></i>
+								Log In
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+
+			<div class="col-12 col-md-6 d-flex">
+				<div class="boxed-widget flex-fill mx-auto" style="z-index: 50; box-sizing: border-box; border-radius: 4px; margin:15px;">
+					<div
+						class="text-center d-flex flex-column justify-content-between h-100">
+						<!-- Headline -->
+						<div class="text-center">
+							<h3 style="color:#333;">Create Account</h3>
+						</div>
+						<div
+							class="inner">
+							{# <div class=""><img app="{{ base_url() }}/images/avatar.jpg" style="width:60px; height:60px; border-radius: 50%; margin:10px;"></div> #}
+							<span style="color:#333;">Are you a registered subscriber of BaziChic? Sign in using your credentials to access unlimited E-Books, Audio Books and Magazines.</span>
+						</div>
+						<div class="form-group mb-0 text-center">
+
+							<a href="{{ full_url_for('register') }}" class="btn btn-primary-400 login-page-button text-decoration-none text-white">
+
+								<i class="fa fa-user"></i>
+								Register New Account
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<style>
+		.login-page-button {
+			display: inline-block; /* Make the button fit its content */
+			min-width: 250px; /* Minimum width for buttons */
+			text-align: center; /* Center the text and icons */
+			padding: 0.5rem 1rem; /* Add padding for content spacing */
+		}
+
+		@media(max-width: 768px) {
+			/* Full width on smaller screens */
+			.login-page-button {
+			    min-width: 0px; /* Minimum width for buttons */
+				display: block; /* Make buttons block elements */
+				width: 100%; /* Full width */
+				margin: 0 auto; /* Center align */
+			}
+		}
+	</style>
+	<script>
+		$(document).ready(function () {
+			$('#togglePassword').on('click', function () {
+				let passwordField = $('#login_password');
+				let icon = $(this);
+
+				if (passwordField.attr('type') === 'password') {
+					passwordField.attr('type', 'text');
+					icon.removeClass('bi-eye').addClass('bi-eye-slash');
+				} else {
+					passwordField.attr('type', 'password');
+					icon.removeClass('bi-eye-slash').addClass('bi-eye');
+				}
+			});
+		});
+	</script>
+{% endblock %}

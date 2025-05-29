@@ -1,0 +1,10 @@
+
+{% if page.latest_docs|length > 0 %}
+{% for document in page.latest_docs %}
+	<!-- Listing Item -->
+				<div class="swiper-slide">
+			{% include 'partials/widgets/ebookrow.twig' %}
+				</div>
+				<!-- Listing Item / End -->
+{% endfor %}
+{% endif %}

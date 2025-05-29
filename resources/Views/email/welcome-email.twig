@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Account Verification</title>
+		<style>
+			body {
+				font-family: 'Helvetica Neue', Arial, sans-serif;
+				line-height: 1.8;
+				color: #444;
+				background-color: #f3f4f6;
+				margin: 0;
+				padding: 0;
+			}
+			.email-container {
+				max-width: 600px;
+				margin: 40px auto;
+				background: #ffffff;
+				padding: 30px;
+				border-radius: 10px;
+				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+				text-align: center;
+			}
+			.header {
+				border-bottom: 2px solid #e4e4e4;
+				padding-bottom: 20px;
+				margin-bottom: 20px;
+			}
+			.logo img {
+				height: 50px;
+			}
+			h4 {
+				color: #333;
+				font-size: 22px;
+				margin: 0 0 15px;
+			}
+			p {
+				margin: 15px 0;
+				font-size: 16px;
+				color: #555;
+			}
+			a {
+				color: #1a73e8;
+				text-decoration: none;
+			}
+			a:hover {
+				text-decoration: underline;
+			}
+			.cta-button {
+				display: inline-block;
+				background: #1a73e8;
+				color: #ffffff;
+				padding: 12px 20px;
+				border-radius: 6px;
+				text-decoration: none;
+				font-weight: bold;
+				margin-bottom: 20px;
+				transition: background 0.3s ease;
+			}
+			.cta-button:hover {
+				background: #155bb5;
+			}
+			.footer {
+				margin-top: 30px;
+				font-size: 14px;
+				color: #777;
+			}
+			.footer a {
+				color: #1a73e8;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="email-container">
+			<div class="header">
+				<div class="logo">
+					<a href="{{ app_url }}">
+						<img src="{{ app_url }}/images/logo.png" alt="BaziChic">
+					</a>
+				</div>
+			</div>
+
+			<h4>Welcome,
+				{{ first_name|e }}!</h4>
+
+			<p>We're excited to have you join us at
+				<strong>BaziChic</strong>. Please verify your account to get started.</p>
+
+			<a href="{{ app_url }}/verify?token={{ token|e }}" class="cta-button" style="color: #ffffff !important; text-decoration:none">Verify Your Account</a>
+
+
+			<p>If you’ve already verified your account, you can sign in by clicking the button below:</p>
+
+			<a href="{{ app_url }}/login" class="cta-button" style="color: #ffffff !important; text-decoration:none">Sign In</a>
+
+			<p>Need help or have questions? Visit our
+				<a href="{{ app_url }}">website</a>
+				or contact our support team.</p>
+
+			<div class="footer">
+				<p>&copy;
+					{{ "now"|date("Y") }}
+					BaziChic. All rights reserved.</p>
+				<p>
+					Visit us at
+					<a href="{{ app_url }}">www.bazichic.com</a>
+				</p>
+			</div>
+		</div>
+	</body>
+</html>
