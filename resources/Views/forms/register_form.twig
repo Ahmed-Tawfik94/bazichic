@@ -10,6 +10,9 @@
 
 <form name="registerForm" id="registerForm" action="{{ full_url_for('registration') }}" class="login nobottommargin"
       style="margin-bottom:20px;" method="post">
+    <!-- CSRF Token Fields -->
+    <input type="hidden" name="{{ csrf_name_key }}" value="{{ csrf_name }}">
+    <input type="hidden" name="{{ csrf_value_key }}" value="{{ csrf_value }}">
 
 
     <h3 class="center" style="color:#333;">Don't have an Account? Register Now.</h3>

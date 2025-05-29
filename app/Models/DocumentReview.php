@@ -124,4 +124,12 @@ class DocumentReview extends Model
     {
         return self::destroy($id);
     }
+
+    /**
+     * Get the user that owns the review.
+     */
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

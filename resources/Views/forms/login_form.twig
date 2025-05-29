@@ -10,6 +10,10 @@
 </div>
 
 <form method="POST" action="{{full_url_for('login_controller')}}" class="login" name="loginForm" id="loginForm">
+    <!-- CSRF Token Fields -->
+    <input type="hidden" name="{{ csrf_name_key }}" value="{{ csrf_name }}">
+    <input type="hidden" name="{{ csrf_value_key }}" value="{{ csrf_value }}">
+    
 	<div class="text-center">
 
 		<p style="color:#333;font-weight:500;">Signin to access thousands of E-Books, Audio Books and Magazines brought to you by BaziChic. Don't have an account yet!

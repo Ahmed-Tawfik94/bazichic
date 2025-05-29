@@ -45,8 +45,24 @@ class LoginController extends BaseController
 
     public function logout(Request $request, Response $response, $args)
     {
+        // 1. Unset all $_SESSION variables
+        $_SESSION = array();
+
+        // 2. Destroy the session data on the server
         session_destroy();
-        session_unset();
+
+        // 3. Expire the session cookie
+        $params = session_get_cookie_params();
+        setcookie(
+            session_name(), // get session name
+            '',             // set value to empty
+            time() - 42000, // set expiration time to the past
+            $params["path"],
+            $params["domain"],
+            $params["secure"],
+            $params["httponly"]
+        );
+
         $vars = [
             'page' => [
                 'title' => 'Login | BaziChic - Chinese Metaphysics Consultancy',
@@ -80,6 +96,9 @@ class LoginController extends BaseController
             // user credentials are wrong
             return $this->jsonResponse($response, ['error' => true, 'message' => 'Login failed. Looks like either email or password you entered is incorrect.'], 400);
         } else {
+            // Regenerate session ID after successful login and before setting session data
+            session_regenerate_id(true);
+
             $current_user_id = $current_user->id;
             User::updateLastActive($current_user_id, $date_created);
             /*********************************/

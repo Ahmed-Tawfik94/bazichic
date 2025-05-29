@@ -106,6 +106,32 @@ $app->add(function ($request, $response, $next) use ($container) {
 
 
 $app->add(new \App\Middleware\SessionMiddleware($container->get('view')));
+
+// CSRF protection
+// Note: This requires session state to be available.
+$container['csrf'] = function ($container) {
+    // Failure handler for CSRF
+    $failureHandler = function ($request, $response, $next) use ($container) {
+        $request = $request->withAttribute('csrf_status', false);
+        // In a real app, a user-friendly error page or redirect is better.
+        // For this task, a simple error response.
+        // You might want to log the CSRF failure here.
+        // $container->get('logger')->warning('CSRF check failed.');
+        return $response->withStatus(400)->write('CSRF check failed. Please try submitting the form again.');
+    };
+    // For slim/csrf ^0.8.3 (common for Slim 3):
+    $guard = new \Slim\Csrf\Guard();
+    $guard->setFailureCallable($failureHandler); // Set custom failure handler
+    // Optional: Set a custom storage for tokens if not using default session storage
+    // $guard->setStorage($persistentTokenStorage); 
+    // Optional: Set a custom prefix for session keys
+    // $guard->setPrefix('my_csrf_prefix');
+    return $guard;
+};
+
+$app->add($container->get('csrf'));
+// Add DeviceDetectionMiddleware after CSRF if it doesn't interact with forms/sessions
+// Or before if it needs to set up things CSRF might depend on (unlikely for device detection)
 $app->add(new \App\Middleware\DeviceDetectionMiddleware($container->get('view')));
 
 

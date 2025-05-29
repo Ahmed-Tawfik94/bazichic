@@ -91,7 +91,12 @@ class EbookController extends BaseController
         $offset = ($page - 1) * $limit;  // Calculate the offset
 
         /****************** QUERY DOCUMENTS *****************/
-        $data = Document::where('is_published', $status);
+        // Eager load relationships
+        $data = Document::with([
+            'reviews', // For avg_rating, num_reviews
+            'likes',   // For num_likes & is_liked
+            // 'category', // Optionally load if category name is directly needed from $row->category->name
+        ])->where('is_published', $status);
 
         try {
             // Apply search filter
@@ -155,16 +160,20 @@ class EbookController extends BaseController
         $custom_data = [];
         if (count($data) > 0) {
             foreach ($data as $row) {
+                $is_liked_by_current_user = false;
+                if ($user_id !== 'guest' && $row->likes) {
+                    $is_liked_by_current_user = $row->likes->contains('user_id', $user_id);
+                }
                 $custom_data[] = [
                     "id" => $row->id,
                     "title" => $row->title,
                     "qcode" => $row->qcode,
                     "desc" => $row->description,
-                    "avg_rating" => DocumentReview::getAvgReviewsFor($row->id),
-                    "num_reviews" => DocumentReview::getNumReviewsFor($row->id),
-                    "num_likes" => DocumentLike::getNumLikes($row->id),
+                    "avg_rating" => $row->reviews->avg('stars') ?? 0,
+                    "num_reviews" => $row->reviews->count(),
+                    "num_likes" => $row->likes->count(),
                     "cover" => $row->cover,
-                    "is_liked" => DocumentLike::isLikedBy($user_id ?? 'guest', $row->id) ?? false
+                    "is_liked" => $is_liked_by_current_user
                 ];
             }
         }
@@ -308,18 +317,17 @@ class EbookController extends BaseController
 
 
             $all_reviews = array();
-            $all_reviews_array = DocumentReview::getReviewsFor($document["id"]);
+            // Eager load user for reviews
+            $all_reviews_array = DocumentReview::with('user')->where('doc_id', $document["id"])->orderBy('id', 'DESC')->get();
             if (count($all_reviews_array) > 0) {
-                foreach ($all_reviews_array as $row) {
+                foreach ($all_reviews_array as $review_row) { // Renamed $row to $review_row to avoid conflict
                     $tmp = array();
-                    $tmp["id"] = $row["id"];
-                    //$tmp["user_id"] = $row["user_id"];
-                    $tmp["reviewer_name"] = User::getNameByID($row["user_id"]);
-                    $tmp["reviewer_image"] = User::getUserImageByID($row["user_id"]);
-                    $tmp["stars"] = $row["stars"];
-                    $tmp["text"] = $row["text"];
-                    //$tmp["date_created"] = $row["date_created"];
-                    $tmp["date_created"] = Util::getFormalDate($row["date_created"]);
+                    $tmp["id"] = $review_row->id;
+                    $tmp["reviewer_name"] = $review_row->user ? ($review_row->user->first_name . ' ' . $review_row->user->last_name) : 'N/A';
+                    $tmp["reviewer_image"] = $review_row->user ? $review_row->user->user_image : null;
+                    $tmp["stars"] = $review_row->stars;
+                    $tmp["text"] = $review_row->text;
+                    $tmp["date_created"] = Util::getFormalDate($review_row->date_created);
                     $all_reviews[] = $tmp;
                 }
             }

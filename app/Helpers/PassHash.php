@@ -2,29 +2,27 @@
 namespace App\Helpers;
 class PassHash {
 
-    // blowfish
-    private static $algo = '$2a';
-    // cost parameter
-    private static $cost = '$10';
+    // No need for algo, cost, or unique_salt anymore
 
-    // mainly for internal use
-    public static function unique_salt() {
-        return substr(sha1(mt_rand()), 0, 22);
-    }
-
-    // this will be used to generate a hash
+    /**
+     * Hash the password using PHP's password_hash function.
+     *
+     * @param string $password The password to hash.
+     * @return string|false The hashed password or false on failure.
+     */
     public static function hash($password) {
-
-        return crypt($password, self::$algo .
-                self::$cost .
-                '$' . self::unique_salt());
+        return password_hash($password, PASSWORD_DEFAULT);
     }
 
-    // this will be used to compare a password against a hash
-    public static function check_password($hash, $password) {
-        $full_salt = substr($hash, 0, 29);
-        $new_hash = crypt($password, $full_salt);
-        return ($hash == $new_hash);
+    /**
+     * Verify the password against a hash using PHP's password_verify function.
+     *
+     * @param string $password The password to verify.
+     * @param string $hash The hash to verify against.
+     * @return bool True if the password matches the hash, false otherwise.
+     */
+    public static function check_password($password, $hash) {
+        return password_verify($password, $hash);
     }
 
 }

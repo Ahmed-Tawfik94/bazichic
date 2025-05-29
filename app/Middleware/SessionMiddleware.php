@@ -22,7 +22,8 @@ class SessionMiddleware
                 'use_only_cookies' => true, // Prevent session ID in URLs
                 'cookie_httponly'  => true, // Prevent JavaScript from accessing session cookies
                 'cookie_secure'    => isset($_SERVER['HTTPS']), // Secure cookies only on HTTPS
-                'cookie_lifetime'  => 3600 * 12, // 1 hour session lifetime
+                'cookie_lifetime'  => 3600 * 1, // Shorten to 1 hour
+                'cookie_samesite'  => 'Lax' // Add SameSite attribute
             ]);
 //            session_regenerate_id(true);
         }

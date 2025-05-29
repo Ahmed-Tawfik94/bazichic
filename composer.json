@@ -29,7 +29,8 @@
         "fakerphp/faker": "^1.24",
         "mobiledetect/mobiledetectlib": "^3.74",
       "ext-gd": "*",
-      "ext-fileinfo": "*"
+      "ext-fileinfo": "*",
+      "slim/csrf": "^0.8.3"
     },
     "scripts": {
     "phinx": "vendor/bin/phinx",

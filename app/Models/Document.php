@@ -293,4 +293,53 @@ class Document extends Model
     {
         return $this->hasOne(DocumentAudio::class);
     }
+
+    /**
+     * Get the reviews for the document.
+     */
+    public function reviews(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(DocumentReview::class, 'doc_id'); // Corrected FK to doc_id
+    }
+
+    /**
+     * Get the likes for the document.
+     */
+    public function likes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(DocumentLike::class, 'doc_id'); // Corrected FK to doc_id
+    }
+
+    /**
+     * Get the saves for the document.
+     */
+    public function saves(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(DocumentSave::class, 'doc_id'); // Corrected FK to doc_id
+    }
+
+    /**
+     * Get the category that owns the document.
+     */
+    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    /**
+     * Get the document type that owns the document.
+     * Named documentTypeModel to avoid conflict with documentType attribute.
+     */
+    public function documentTypeModel(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(DocumentType::class, 'documentType');
+    }
+
+    /**
+     * Get the user that uploaded/authored the document.
+     */
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }
