@@ -9,12 +9,11 @@
     },
     "require": {
         "php": ">=7.4",
-        "slim/slim": "^3.0",
-        "slim/twig-view": "^2.0",
-        "awurth/slim-validation": "^2.1",
-        "davidepastore/slim-validation": "^0.5.0",
-        "slim/flash": "^0.4.0",
-        "kanellov/slim-twig-flash": "^0.2.0",
+        "slim/slim": "^4.12.0",
+        "slim/twig-view": "^3.3.0",
+        "php-di/php-di": "^7.0",
+        "slim/psr7": "^1.6",
+        "odan/slim-csrf": "^3.1",
         "dyorg/slim-token-authentication": "^0.3.3",
         "vlucas/phpdotenv": "^5.6",
         "phpmailer/phpmailer": "^6.9",
@@ -29,8 +28,7 @@
         "fakerphp/faker": "^1.24",
         "mobiledetect/mobiledetectlib": "^3.74",
       "ext-gd": "*",
-      "ext-fileinfo": "*",
-      "slim/csrf": "^0.8.3"
+      "ext-fileinfo": "*"
     },
     "scripts": {
     "phinx": "vendor/bin/phinx",
