@@ -7,12 +7,13 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Views\Twig;
+use Odan\Session\SessionInterface; // Import SessionInterface
+use Odan\Session\Middleware\SessionStartMiddleware; // To get SESSION_ATTRIBUTE constant
 
 class SessionMiddleware implements MiddlewareInterface
 {
     protected Twig $view;
 
-    // Inject Twig (or any view service) via constructor
     public function __construct(Twig $view)
     {
         $this->view = $view;
@@ -20,24 +21,26 @@ class SessionMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start([
-                'use_only_cookies' => true, // Prevent session ID in URLs
-                'cookie_httponly'  => true, // Prevent JavaScript from accessing session cookies
-                'cookie_secure'    => isset($_SERVER['HTTPS']), // Secure cookies only on HTTPS
-                'cookie_lifetime'  => 3600 * 1, // Shorten to 1 hour
-                'cookie_samesite'  => 'Lax' // Add SameSite attribute
-            ]);
-//            session_regenerate_id(true);
-        }
+        // Session is now started by Odan\Session\Middleware\SessionStartMiddleware.
+        // This middleware's role is now primarily to make session data available to Twig.
 
-        // Inject session into Twig globally
-        // Ensure $_SESSION is available and populated before trying to access it.
-        if (isset($_SESSION)) {
-            $this->view->getEnvironment()->addGlobal('session', $_SESSION);
+        $sessionAttributeName = SessionStartMiddleware::SESSION_ATTRIBUTE; // Default is 'session'
+        $session = $request->getAttribute($sessionAttributeName);
+
+        if ($session instanceof SessionInterface) {
+            // Expose the session object itself to Twig.
+            // Templates can then use session.get('key'), session.all(), etc.
+            $this->view->getEnvironment()->addGlobal('app_session', $session);
+            
+            // For compatibility with old templates that might use `session.userID`, etc.
+            // you could also add all session data. However, it's better to update templates
+            // to use `app_session.get('userID')`.
+            // $this->view->getEnvironment()->addGlobal('session', $session->all());
         } else {
-            // Optionally initialize $_SESSION or add an empty array to Twig if session didn't start
-            $this->view->getEnvironment()->addGlobal('session', []);
+            // Fallback if session attribute isn't found or is not the expected type.
+            // This indicates an issue with SessionStartMiddleware not running or failing.
+            $this->view->getEnvironment()->addGlobal('app_session', null);
+            // $this->view->getEnvironment()->addGlobal('session', []); // For old template compatibility
         }
         
         $response = $handler->handle($request);

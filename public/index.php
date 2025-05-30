@@ -62,13 +62,12 @@ if ($container->has(\App\Renderers\HtmlErrorRenderer::class)) {
 // Add middleware. Middleware is executed in Last-In-First-Out (LIFO) order.
 
 // Session Middleware (starts session, adds session data to Twig)
-// Should be early if other middleware depend on session data being available.
+// Our custom one. It also starts native session.
 $app->add(\App\Middleware\SessionMiddleware::class);
 
-// CSRF Protection Middleware (depends on session)
-// Note: Ensure Odan\Csrf\CsrfMiddleware is correctly configured in dependencies.php
-// particularly regarding session handling (e.g., if it needs odan/psr7-session).
-$app->add(\Odan\Csrf\CsrfMiddleware::class);
+// New CSRF Protection Middleware (TheCodingMachine\Tachyons\Csrf)
+// This depends on a session being active.
+$app->add(\TheCodingMachine\Tachyons\Csrf\CsrfMiddleware::class);
 
 // Maintenance Mode Middleware
 // Checks for maintenance mode. May depend on session for admin bypass.
@@ -77,6 +76,14 @@ $app->add(\App\Middleware\MaintenanceMiddleware::class);
 // Device Detection Middleware
 // Detects device type and makes it available to Twig and request attributes.
 $app->add(\App\Middleware\DeviceDetectionMiddleware::class);
+
+// Odan PSR-7 Session Start Middleware
+// This should be one of the earliest to ensure session is started and managed for PSR-7.
+// If App\Middleware\SessionMiddleware also calls session_start(), ensure no conflicts.
+// Typically, only one middleware should be responsible for session_start().
+// For now, adding it as per task, potential session_start redundancy needs review later.
+$app->add(\Odan\Session\Middleware\SessionStartMiddleware::class);
+
 
 // --- Routes ---
 // Load web routes
