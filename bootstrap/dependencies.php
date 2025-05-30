@@ -10,12 +10,14 @@ use App\Helpers\PluralizeExtension;
 use App\Helpers\countiesExtention;
 use App\Middleware\DeviceDetectionMiddleware;
 use App\Middleware\MaintenanceMiddleware;
-use App\Middleware\SessionMiddleware; // The custom one that starts native sessions
+use App\Middleware\SessionMiddleware; 
 use App\Models\SiteSetting; 
 use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\StreamFactoryInterface; // Added
 use Slim\App; 
 use Slim\Interfaces\RouteParserInterface; 
 use Slim\Psr7\Factory\ResponseFactory; 
+use Slim\Psr7\Factory\StreamFactory; // Added
 
 // PSR-7 Session
 use Odan\Session\PhpSession;
@@ -45,19 +47,11 @@ return function (ContainerBuilder $containerBuilder) {
             }
 
             // Add CSRF token to Twig for client-side access (e.g., in meta tag for AJAX)
+            // This token is managed by CsrfHeaderCheckMiddleware in the session.
             if ($container->has(SessionInterface::class)) {
                 $session = $container->get(SessionInterface::class);
-                // The CsrfHeaderCheckMiddleware typically generates/manages the token in session.
-                // The default session key is 'csrf_token'.
-                $csrfToken = $session->get('csrf_token'); 
-                if (!$csrfToken && method_exists($session, 'regenerateId')) { 
-                    // If token doesn't exist, middleware might create it on first run.
-                    // Or, we might need to ensure it's created here if not.
-                    // For now, just try to fetch it.
-                    // The middleware itself should handle creating it if not present on first POST, etc.
-                    // Or a dedicated service could ensure it's always in session for GET requests.
-                }
-                $twig->getEnvironment()->addGlobal('csrf_token', $csrfToken); // For use in meta tags
+                $csrfToken = $session->get('csrf_token'); // Default session key for the token
+                $twig->getEnvironment()->addGlobal('csrf_token', $csrfToken);
             }
             return $twig;
         },
@@ -73,7 +67,11 @@ return function (ContainerBuilder $containerBuilder) {
         },
 
         ResponseFactoryInterface::class => function (ContainerInterface $container) {
-            return $container->get(ResponseFactory::class);
+            return $container->get(ResponseFactory::class); // Provided by Slim\Psr7
+        },
+
+        StreamFactoryInterface::class => function (ContainerInterface $container) {
+            return $container->get(StreamFactory::class); // Provided by Slim\Psr7
         },
         
         SessionInterface::class => function (ContainerInterface $container) {
@@ -96,19 +94,24 @@ return function (ContainerBuilder $containerBuilder) {
             return $container->get(SessionInterface::class);
         },
 
-        // New CSRF Header Check Middleware
         CsrfHeaderCheckMiddleware::class => function (ContainerInterface $container) {
-            $session = $container->get(SessionInterface::class);
-            // Configuration options for CsrfHeaderCheckMiddleware
-            // $headerName = 'X-CSRF-Token'; // Default header name
-            // $sessionKey = 'csrf_token';   // Default session key
-            // $tokenLength = 32;            // Default token length
-            // return new CsrfHeaderCheckMiddleware($session, $headerName, $sessionKey, $tokenLength);
-            // Using defaults:
-            return new CsrfHeaderCheckMiddleware($session);
+            // Configuration for CsrfHeaderCheckMiddleware v2.0.0
+            $config = [
+                // 'header_name' => 'X-CSRF-Token', // Default
+                // 'session_key' => 'csrf_token',   // Default
+                // 'token_length' => 32,            // Default
+                // 'unprotected_paths' => [],       // Default
+                // 'methods' => ['POST', 'PUT', 'DELETE', 'PATCH'], // Default
+                // 'fail_on_missing_header' => true // Default
+            ];
+            return new CsrfHeaderCheckMiddleware(
+                $container->get(ResponseFactoryInterface::class),
+                $container->get(StreamFactoryInterface::class),
+                $container->get(SessionInterface::class), // SessionInterface is now the third argument
+                $config
+            );
         },
 
-        // Middleware Definitions (existing custom middleware)
         SessionMiddleware::class => function (ContainerInterface $container) { 
             return new SessionMiddleware($container->get(Twig::class));
         },

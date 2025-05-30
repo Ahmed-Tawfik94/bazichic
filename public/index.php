@@ -79,10 +79,8 @@ $app->add(\App\Middleware\DeviceDetectionMiddleware::class);
 
 // Odan PSR-7 Session Start Middleware
 // This should be one of the earliest to ensure session is started and managed for PSR-7.
-// If App\Middleware\SessionMiddleware also calls session_start(), ensure no conflicts.
-// Typically, only one middleware should be responsible for session_start().
-// For now, adding it as per task, potential session_start redundancy needs review later.
-$app->add(\Odan\Session\Middleware\SessionStartMiddleware::class);
+// It will use the Odan\Session\PhpSession options defined in dependencies.php.
+$app->add(\Odan\Session\Middleware\SessionMiddleware::class); // Corrected for odan/session v5
 
 
 // --- Routes ---
