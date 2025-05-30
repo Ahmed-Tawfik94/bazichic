@@ -2,6 +2,7 @@
 use DI\ContainerBuilder;
 use Slim\Factory\AppFactory;
 use Slim\Views\TwigMiddleware;
+use Slim\Views\Twig; // Added this line
 use Psr\Log\LoggerInterface; // For error handler logging example
 
 require_once __DIR__ . '/../vendor/autoload.php';
