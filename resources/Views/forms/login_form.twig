@@ -10,8 +10,7 @@
 </div>
 
 <form method="POST" action="{{full_url_for('login_controller')}}" class="login" name="loginForm" id="loginForm">
-    <!-- New CSRF Token Field for Tachyons CSRF Middleware -->
-    <input type="hidden" name="{{ csrf_token_name }}" value="{{ csrf_token_value }}">
+    <!-- CSRF form field removed as CsrfHeaderCheckMiddleware handles token via headers/session -->
     
 	<div class="text-center">
 

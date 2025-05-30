@@ -17,12 +17,12 @@ use Slim\App;
 use Slim\Interfaces\RouteParserInterface; 
 use Slim\Psr7\Factory\ResponseFactory; 
 
-// New includes for PSR-7 Session and Tachyons CSRF
+// PSR-7 Session
 use Odan\Session\PhpSession;
 use Odan\Session\SessionInterface;
-use TheCodingMachine\Tachyons\Csrf\CsrfMiddleware as TachyonsCsrfMiddleware;
-use TheCodingMachine\Tachyons\Csrf\CsrfTokenManager;
-use TheCodingMachine\Tachyons\Csrf\CsrfTokenManagerInterface;
+
+// New CSRF Middleware
+use TheCodingMachine\CsrfHeaderMiddleware\CsrfHeaderCheckMiddleware;
 
 return function (ContainerBuilder $containerBuilder) {
     $containerBuilder->addDefinitions([
@@ -44,16 +44,20 @@ return function (ContainerBuilder $containerBuilder) {
                 $twig->getEnvironment()->addGlobal('flash', $flash);
             }
 
-            // Add CSRF token variables globally to Twig using Tachyons CsrfTokenManager
-            if ($container->has(CsrfTokenManagerInterface::class)) {
-                $csrfTokenManager = $container->get(CsrfTokenManagerInterface::class);
-                // Tachyons typically uses one token for all forms unless scoped.
-                // The default token name is often '__csrf_token'.
-                // The CsrfMiddleware adds input fields to forms automatically if configured.
-                // For manual addition or access in JS, you might need these.
-                $token = $csrfTokenManager->getToken(); // Gets the default token
-                $twig->getEnvironment()->addGlobal('csrf_token_name', $token->getInputName());
-                $twig->getEnvironment()->addGlobal('csrf_token_value', $token->getValue());
+            // Add CSRF token to Twig for client-side access (e.g., in meta tag for AJAX)
+            if ($container->has(SessionInterface::class)) {
+                $session = $container->get(SessionInterface::class);
+                // The CsrfHeaderCheckMiddleware typically generates/manages the token in session.
+                // The default session key is 'csrf_token'.
+                $csrfToken = $session->get('csrf_token'); 
+                if (!$csrfToken && method_exists($session, 'regenerateId')) { 
+                    // If token doesn't exist, middleware might create it on first run.
+                    // Or, we might need to ensure it's created here if not.
+                    // For now, just try to fetch it.
+                    // The middleware itself should handle creating it if not present on first POST, etc.
+                    // Or a dedicated service could ensure it's always in session for GET requests.
+                }
+                $twig->getEnvironment()->addGlobal('csrf_token', $csrfToken); // For use in meta tags
             }
             return $twig;
         },
@@ -72,60 +76,40 @@ return function (ContainerBuilder $containerBuilder) {
             return $container->get(ResponseFactory::class);
         },
         
-        // PSR-7 Session Management (Odan\Session)
         SessionInterface::class => function (ContainerInterface $container) {
-            $appSettings = $container->get('settings'); // Get all settings
-            $sessionSettings = $appSettings['session'] ?? []; // Get session specific settings
+            $appSettings = $container->get('settings');
+            $sessionSettings = $appSettings['session'] ?? [];
             $phpSessionOptions = [
-                // Use 'bazichic_session' or a name from settings if available
                 'name' => $appSettings['app']['name'] ? str_replace(' ', '_', strtolower($appSettings['app']['name'])) . '_session' : 'bazichic_session',
                 'cache_expire' => $sessionSettings['cache_expire'] ?? 0,
                 'lazy_write' => $sessionSettings['lazy_write'] ?? true,
                 'gc_probability' => $sessionSettings['gc_probability'] ?? 1,
                 'gc_divisor' => $sessionSettings['gc_divisor'] ?? 100,
                 'cookie_httponly' => $sessionSettings['cookie_httponly'] ?? true,
-                'cookie_secure' => $sessionSettings['cookie_secure'] ?? ($_ENV['APP_ENV'] === 'production'), // Example: true in production
+                'cookie_secure' => $sessionSettings['cookie_secure'] ?? ($_ENV['APP_ENV'] === 'production'),
                 'cookie_samesite' => $sessionSettings['cookie_samesite'] ?? 'Lax',
-                'cookie_lifetime' => $sessionSettings['cookie_lifetime'] ?? 3600 * 1, // 1 hour
+                'cookie_lifetime' => $sessionSettings['cookie_lifetime'] ?? 3600 * 1, 
             ];
-            
-            // Session save path from general settings if defined (e.g., settings.php)
-            // if (!empty($appSettings['session_save_path']) && is_writable($appSettings['session_save_path'])) {
-            //    $phpSessionOptions['save_path'] = $appSettings['session_save_path'];
-            // } elseif (is_writable(__DIR__ . '/../storage/sessions')) { // Fallback to a default writable path
-            //    $phpSessionOptions['save_path'] = __DIR__ . '/../storage/sessions';
-            // }
-            // Note: The Odan\Session\PhpSession constructor takes $options as its first argument.
-            // It does not directly handle 'save_path' via constructor options.
-            // save_path is typically set via session_save_path() before session_start()
-            // or via ini_set('session.save_path', ...).
-            // Odan\Session\Middleware\SessionStartMiddleware handles session_start with these options.
-            
             return new PhpSession($phpSessionOptions);
         },
         PhpSession::class => function (ContainerInterface $container) {
             return $container->get(SessionInterface::class);
         },
 
-        // New CSRF Middleware (TheCodingMachine\Tachyons\Csrf)
-        CsrfTokenManagerInterface::class => function (ContainerInterface $container) {
-            return new CsrfTokenManager($container->get(SessionInterface::class));
-        },
-        TachyonsCsrfMiddleware::class => function (ContainerInterface $container) {
-            return new TachyonsCsrfMiddleware(
-                $container->get(CsrfTokenManagerInterface::class),
-                $container->get(ResponseFactoryInterface::class)
-                // Add failure handler if needed:
-                // , function (ServerRequestInterface $request) {
-                //     $response = $this->responseFactory->createResponse(403); // Or your desired status
-                //     $response->getBody()->write('CSRF validation failed.');
-                //     return $response;
-                // }
-            );
+        // New CSRF Header Check Middleware
+        CsrfHeaderCheckMiddleware::class => function (ContainerInterface $container) {
+            $session = $container->get(SessionInterface::class);
+            // Configuration options for CsrfHeaderCheckMiddleware
+            // $headerName = 'X-CSRF-Token'; // Default header name
+            // $sessionKey = 'csrf_token';   // Default session key
+            // $tokenLength = 32;            // Default token length
+            // return new CsrfHeaderCheckMiddleware($session, $headerName, $sessionKey, $tokenLength);
+            // Using defaults:
+            return new CsrfHeaderCheckMiddleware($session);
         },
 
         // Middleware Definitions (existing custom middleware)
-        SessionMiddleware::class => function (ContainerInterface $container) { // Custom session starter
+        SessionMiddleware::class => function (ContainerInterface $container) { 
             return new SessionMiddleware($container->get(Twig::class));
         },
         DeviceDetectionMiddleware::class => function (ContainerInterface $container) {

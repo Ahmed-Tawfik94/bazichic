@@ -65,9 +65,9 @@ if ($container->has(\App\Renderers\HtmlErrorRenderer::class)) {
 // Our custom one. It also starts native session.
 $app->add(\App\Middleware\SessionMiddleware::class);
 
-// New CSRF Protection Middleware (TheCodingMachine\Tachyons\Csrf)
+// New CSRF Header Check Middleware (TheCodingMachine\CsrfHeaderMiddleware)
 // This depends on a session being active.
-$app->add(\TheCodingMachine\Tachyons\Csrf\CsrfMiddleware::class);
+$app->add(\TheCodingMachine\CsrfHeaderMiddleware\CsrfHeaderCheckMiddleware::class);
 
 // Maintenance Mode Middleware
 // Checks for maintenance mode. May depend on session for admin bypass.
