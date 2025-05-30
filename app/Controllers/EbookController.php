@@ -19,6 +19,12 @@ use App\Models\Util;
 use Exception;
 use DateTime;
 
+// Added for Slim 4
+use Psr\Log\LoggerInterface;
+use Slim\Views\Twig;
+use Slim\Interfaces\RouteParserInterface;
+use Illuminate\Database\Capsule\Manager as Capsule;
+
 class EbookController extends BaseController
 {
     protected  $MAGAZINE;
@@ -27,9 +33,18 @@ class EbookController extends BaseController
     protected $STARTER;
     protected $PREMIUM;
     protected $STUDENT;
-    function __construct(ContainerInterface $container)
-    {
-        parent::__construct($container);
+
+    // Constructor matching the new BaseController signature
+    public function __construct(
+        ContainerInterface $container, // Keep for BaseController
+        Twig $twig,
+        Capsule $db,
+        RouteParserInterface $routeParser,
+        LoggerInterface $logger
+    ) {
+        parent::__construct($container, $twig, $db, $routeParser, $logger);
+        
+        // Initialize properties (this logic can remain)
         $this->STUDENT = Plan::where('name', 'Students')->first();
         $this->STARTER = Plan::where('name', 'Starter')->first();
         $this->PREMIUM = Plan::where('name', 'Premium')->first();
@@ -45,10 +60,10 @@ class EbookController extends BaseController
         $this->AUDIOBOOK = $this->AUDIOBOOK ? $this->AUDIOBOOK->id : null;
     }
 
-    public function index(Request $request, Response $response, $args)
+    public function index(Request $request, Response $response, array $args): Response
     {
         $status = 1;
-        $filters = $request->getQueryParams();
+        $filters = (array)$request->getQueryParams();
         $customInfo = [];
         $sqlErrors = [];
         $static_doctype = [];
@@ -200,19 +215,18 @@ class EbookController extends BaseController
             ],
         ];
 
-        return $this->view->render($response, 'e-book-store.twig', $vars);
+        return $this->twig->render($response, 'e-book-store.twig', $vars);
     }
 
-    public function ebookById(Request $request, Response $response, $args)
+    public function ebookById(Request $request, Response $response, array $args): Response
     {
-
-
-        $docQCode = $request->getAttribute('id');
-        if (!Document::isQCodeExists($docQCode)) {
-            $uri = $request->getUri()->withPath($this->container->get('router')->pathFor('notFound'));
-            return $response->withRedirect((string) $uri);
+        $docQCode = $args['id'] ?? null; // Access route argument
+        if (!$docQCode || !Document::isQCodeExists($docQCode)) {
+            $url = $this->routeParser->urlFor('notFound');
+            return $response->withHeader('Location', $url)->withStatus(302);
         }
-        $_SESSION["last_saved"] = $_SERVER['REQUEST_URI'];
+        // Consider if direct $_SESSION modification is best practice here or if it should be handled via a service/response header
+        $_SESSION["last_saved"] = (string)$request->getUri(); 
         $docID = Document::getIDByQCode($docQCode);
         $document = Document::getID($docID);
         $document_audio =null;
@@ -270,7 +284,8 @@ class EbookController extends BaseController
                 $current_user= User::find($_SESSION['userID']);
                 $user_subs = $current_user->subscription;
                     if(!$user_subs){
-                        return $response->withRedirect($this->container->get('router')->pathFor('subscription-plans'));
+                        $url = $this->routeParser->urlFor('subscription-plans');
+                        return $response->withHeader('Location', $url)->withStatus(302);
                     }
                 if (!User::isAdmin($current_user->id)){
 
@@ -388,42 +403,48 @@ class EbookController extends BaseController
                     'my_review' => $my_review
                 ]
             ];
+        } else {
+            // Handle case where document is NULL (e.g., redirect to notFound)
+            $url = $this->routeParser->urlFor('notFound');
+            return $response->withHeader('Location', $url)->withStatus(302);
         }
-        return $this->view->render($response, 'book-detail.twig', $vars);
+        return $this->twig->render($response, 'book-detail.twig', $vars);
     }
-    public function ebookReader(Request $request, Response $response, $args)
-    {
-        $params = $request->getParsedBody();
-        $router = $this->router;
-        $doc_id = $params['doc_id'];
-        $doc_link = $params['doc_link'];
-        $is_downloadable = $params['is_downloadable'];
 
-        if (!Document::isIDExists($doc_id)) {
-            $uri = $request->getUri()->withPath($router->pathFor('notFound'));
-            return $response
-                ->withHeader('Location', (string) $uri)
-                ->withStatus(302);
+    public function ebookReader(Request $request, Response $response, array $args): Response
+    {
+        $params = (array)$request->getParsedBody();
+        // $router = $this->router; // Use $this->routeParser
+        $doc_id = $params['doc_id'] ?? null;
+        $doc_link = $params['doc_link'];
+        $is_downloadable = $params['is_downloadable'] ?? null;
+
+        if (!$doc_id || !Document::isIDExists($doc_id)) {
+            $url = $this->routeParser->urlFor('notFound');
+            return $response->withHeader('Location', $url)->withStatus(302);
         }
 
-
-        //Get Doc Type too
         $target_doc = Document::find($doc_id);
+        if (!$target_doc) { // Handle if document not found after ID check (edge case)
+            $url = $this->routeParser->urlFor('notFound');
+            return $response->withHeader('Location', $url)->withStatus(302);
+        }
         $docTypeID = $target_doc->documentType;
-//        $docTypeName = DocumentType::find($docTypeID)->title;
         $allowReading = true;
         $isTrialPeriodOn = 0;
         $trialMessage = "";
         $userMessage = "Looks like you are not authorized to access this content. ";
 
-        $thisUser = User::getUserByAPIKey($_SESSION["api_key"]);
-        if (!$thisUser) {
-            $uri = $request->getUri()->withPath($router->pathFor('login'));
-            return $response
-                ->withHeader('Location', (string) $uri)
-                ->withStatus(302);
+        $sessionApiKey = $_SESSION["api_key"] ?? null;
+        if (!$sessionApiKey) { // If no API key in session, redirect to login
+            $url = $this->routeParser->urlFor('login');
+            return $response->withHeader('Location', $url)->withStatus(302);
         }
-        /*********************/
+        $thisUser = User::getUserByAPIKey($sessionApiKey);
+        if (!$thisUser) {
+            $url = $this->routeParser->urlFor('login'); // User with API key not found
+            return $response->withHeader('Location', $url)->withStatus(302);
+        }
 
         switch($thisUser->role_id) {
             /**************************************/
@@ -436,12 +457,11 @@ class EbookController extends BaseController
             default:
             $subscription = $thisUser->subscription;
                 if (!$subscription) {
-                    $uri = $request->getUri()->withPath($router->pathFor('subscription-plans'));
-                    return $response
-                        ->withHeader('Location', (string) $uri)
-                        ->withStatus(302);
+                    $url = $this->routeParser->urlFor('subscription-plans');
+                    return $response->withHeader('Location', $url)->withStatus(302);
                 }
-                if ($subscription->count() > 0) {
+                // Ensure $subscription is not null before calling count() if that's a possibility
+                if ($subscription && $subscription->count() > 0) { 
                     $PlanName = Plan::getNameByID($subscription->membership_plan_id);
                     switch ($subscription->status) {
                         case 'active':
@@ -488,31 +508,28 @@ class EbookController extends BaseController
                 'openPage' => $openPage
             ]
         ];
-        return $this->view->render($response, 'ebook-reader.twig', $vars);
+        return $this->twig->render($response, 'ebook-reader.twig', $vars);
     }
 
-    public function Filter(Request $request, Response $response, $args)
+    public function Filter(Request $request, Response $response, array $args): Response
     {
-        $params = $request->getParsedBody();
-        $document_type = $params['documentType'];
-        $search_item = $params['search_item'];
+        $params = (array)$request->getParsedBody();
+        $document_type = $params['documentType'] ?? null;
+        $search_item = $params['search_item'] ?? null;
 
         $vars = [
             'page' => [
-                'title' => 'E-Book Reader | BaziChic - Chinese Metaphysics Consultancy',
+                'title' => 'E-Book Reader | BaziChic - Chinese Metaphysics Consultancy', // Title might be too generic for a filter result
                 'description' => 'Access Unlimited E-Books, Audio Books and Magazines on Chinese Metaphysics',
-                // 'doc_id' => $doc_id,
-                // 'doc_link' => $doc_link,
-                // 'is_downloadable' => $is_downloadable,
-                // 'allowReading' => $allowReading,
-                // 'userMessage' => $userMessage
+                // Data for the e-book-store view after filtering would typically be re-fetched and passed here.
+                // This method seems incomplete as it doesn't re-query or pass filtered data.
+                // For now, just ensuring it returns a Response.
             ],
         ];
-        return $this->view->render($response, 'e-book-store.twig', $vars);
+        return $this->twig->render($response, 'e-book-store.twig', $vars); // Consider if this is the correct template/data
     }
 
-
-    public function Read4Free(Request $request, Response $response, $args)
+    public function Read4Free(Request $request, Response $response, array $args): Response
     {
         $data = Document::getAllFreeEBooks();
         $vars = [
@@ -522,38 +539,56 @@ class EbookController extends BaseController
                 'data' => $data
             ],
         ];
-        return $this->view->render($response, 'read-e-books-online-for-free.twig', $vars);
-
+        return $this->twig->render($response, 'read-e-books-online-for-free.twig', $vars);
     }
 
-    public function systemConfiguration(Request $request, Response $response, $args)
+    // Update signatures for remaining empty methods
+    public function systemConfiguration(Request $request, Response $response, array $args): Response
     {
-
+        // Placeholder: return a response or implement logic
+        $response->getBody()->write("System Configuration placeholder");
+        return $response;
     }
 
-    public function Uploadsettings(Request $request, Response $response, $args)
+    public function Uploadsettings(Request $request, Response $response, array $args): Response
     {
-
+        // Placeholder
+        $response->getBody()->write("Upload Settings placeholder");
+        return $response;
     }
 
-    public function viewProfile(Request $request, Response $response, $args)
+    public function viewProfile(Request $request, Response $response, array $args): Response
     {
-
+        // Placeholder
+        $response->getBody()->write("View Profile placeholder");
+        return $response;
     }
-    public function FreeTrialsSummary(Request $request, Response $response, $args)
-    {
 
+    public function FreeTrialsSummary(Request $request, Response $response, array $args): Response
+    {
+        // Placeholder
+        $response->getBody()->write("Free Trials Summary placeholder");
+        return $response;
     }
-    public function GrantTrial(Request $request, Response $response, $args)
-    {
 
+    public function GrantTrial(Request $request, Response $response, array $args): Response
+    {
+        // Placeholder
+        $response->getBody()->write("Grant Trial placeholder");
+        return $response;
     }
-    function Timeline(Request $request, Response $response, $args)
-    {
 
+    function Timeline(Request $request, Response $response, array $args): Response
+    {
+        // Placeholder
+        $response->getBody()->write("Timeline placeholder");
+        return $response;
     }
-    function ViewContactSubmision(Request $request, Response $response, $args)
-    {
 
+    function ViewContactSubmision(Request $request, Response $response, array $args): Response
+    {
+        // Placeholder
+        $response->getBody()->write("View Contact Submission placeholder");
+        return $response;
     }
 }

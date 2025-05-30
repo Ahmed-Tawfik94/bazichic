@@ -15,14 +15,38 @@ use Exception;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
+// Added for Slim 4
+use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
+use Slim\Views\Twig;
+use Slim\Interfaces\RouteParserInterface;
+use Illuminate\Database\Capsule\Manager as Capsule;
+use Illuminate\Validation\Factory as ValidatorFactory; // Added for validation
+
 class RegisterController extends BaseController
 {
+    protected ValidatorFactory $validatorFactory;
 
-    public function index(Request $request, Response $response, $args)
+    // Constructor matching the new BaseController signature
+    public function __construct(
+        ContainerInterface $container,
+        Twig $twig,
+        Capsule $db,
+        RouteParserInterface $routeParser,
+        LoggerInterface $logger,
+        ValidatorFactory $validatorFactory // Injected validator factory
+        // StripeService $stripeService // Uncomment and add if StripeService is used directly here
+    ) {
+        parent::__construct($container, $twig, $db, $routeParser, $logger);
+        $this->validatorFactory = $validatorFactory;
+        // $this->stripeService = $stripeService; // Uncomment if StripeService is used directly here
+    }
+
+    public function index(Request $request, Response $response, array $args): Response
     {
         if (isset($_SESSION['userID'])) {
-            $url= $this->container->get('router')->pathFor('dashboard');
-            return $response->withHeader('Location', $url);
+            $url = $this->routeParser->urlFor('dashboard');
+            return $response->withHeader('Location', $url)->withStatus(302);
         }
         $countries = (new Helpers())->getCountries();
         $queryParams = $request->getQueryParams();
@@ -37,86 +61,73 @@ class RegisterController extends BaseController
             ],
             'referral_code' => $referralCode, // Pass referral code to the view
         ];
-        return $this->view->render($response, 'register.twig', $vars);
+        return $this->twig->render($response, 'register.twig', $vars);
     }
 
-    public function register(Request $request, Response $response, $args)
+    public function register(Request $request, Response $response, array $args): Response
     {
-        $params = $request->getParsedBody();
+        $params = (array)$request->getParsedBody();
         $output = array();
         $output["note"] = "";
+        
+        $data = $params; // Use the already cast $params as $data for validation
 
-        // Reading post parameters
-        $first_name = $params['first_name'];
-        $last_name = $params['last_name'];
-        $email = $params['email_reg'];
-        $dob = $params['dob'];
-        $country = $params['country'];
+        $rules = [
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email_reg' => 'required|email', // Consider 'unique:users,email' if DB presence verifier is setup
+            'dob' => 'required|date', 
+            'country' => 'required|string',
+            'password' => 'required|string|min:6', // 'confirmed' rule expects 'password_confirmation'
+            'password_repeat' => 'required|same:password', // Manual check for password_repeat
+            // 'referral_code' => 'nullable|string' // Basic check, DB check later
+        ];
+
+        $validator = $this->validatorFactory->make($data, $rules, [
+            'password_repeat.same' => 'Password and Confirm Password do not match.'
+        ]);
+
+        if ($validator->fails()) {
+            $firstMessage = $validator->errors()->all()[0] ?? 'Validation failed. Please check your input.';
+            return $this->jsonResponse($response, [
+                'error' => true,
+                'message' => $firstMessage
+                // Optionally, pass all errors: 'errors' => $validator->errors()->toArray()
+            ], 400);
+        }
+
+        // Extracted validated data (though not strictly necessary here as we use $params directly later)
+        // $validatedData = $validator->validated();
+
         $referral_code = $params['referral_code'] ?? '';
         $ref_user_id = 0;
-        $password = $params['password'];
-        $confirm_password = $params['password_repeat'];
 
-        // Validate password fields
-        if (empty($password) || empty($confirm_password)) {
-            return $this->jsonResponse($response, [
-                'error' => true,
-                'message' => 'Please enter and confirm your password.'
-            ], 400);
-        }
-
-        if ($confirm_password !== $password) {
-            return $this->jsonResponse($response, [
-                'error' => true,
-                'message' => 'Password and Confirm Password do not match.'
-            ], 400);
-        }
-
-        if (strlen($password) < 6) {
-            return $this->jsonResponse($response, [
-                'error' => true,
-                'message' => 'Password must be at least 6 characters long.'
-            ], 400);
-        }
-
-        // Validate required fields
-        foreach (['first_name', 'last_name', 'email_reg', 'dob', 'country'] as $field) {
-            if (empty($params[$field])) {
-                return $this->jsonResponse($response, [
-                    'error' => true,
-                    'message' => ucfirst(str_replace('_', ' ', $field)) . ' cannot be empty 2.'
-                ], 400);
-            }
-        }
-
-        // Check if referral code exists in reward_points
+        // Manual Check for referral code as DB presence verifier is not assumed active
         if (!empty($referral_code)) {
             $referrerReward = RewardPoint::where('referral_code', $referral_code)->first();
-
             if (!$referrerReward) {
                 return $this->jsonResponse($response, [
                     'error' => true,
                     'message' => 'Invalid referral code. Please try again.'
                 ], 400);
             }
-
-            $ref_user_id = $referrerReward->user_id; // Get referrer's user ID
+            $ref_user_id = $referrerReward->user_id;
         }
 
-        $phone = "";
+        $phone = ""; // Remains empty as per original logic
         $date_created = date('Y-m-d H:i:s');
         $api_key = Util::generateApiKey();
-        $user_name = Util::createNewUsername(8);
+        // $user_name = Util::createNewUsername(8); // User model seems to generate this
 
-        // Register user
+        // Register user (passing validated data, or original params if preferred)
         $res = User::register((object)[
-            'first_name' => $first_name,
-            'last_name' => $last_name,
+            'first_name' => $params['first_name'],
+            'last_name' => $params['last_name'],
             'phone' => $phone,
-            'email' => $email,
-            'password' => $password,
-            'dob' => $dob,
-            'country' => $country,
+            'email' => $params['email_reg'],
+            'password' => $params['password'],
+            'dob' => $params['dob'],
+            'country' => $params['country'],
             'status_id' => 3, // Pending approval
             'ref_user_id' => $ref_user_id,
             'api_key' => $api_key,
@@ -128,7 +139,7 @@ class RegisterController extends BaseController
             $output["message"] = "Great! Your new account has been registered successfully.";
             $user_id = $res["id"];
             $output["id"] = $user_id;
-            $output["user_name"] = $user_name;
+            $output["user_name"] = $res["userName"]; // Use userName from User::register response
 
             // Create Stripe customer
             $stripe = new StripeService();
@@ -202,12 +213,13 @@ class RegisterController extends BaseController
     }
 
 
-    public function VerifyAccount(Request $request, Response $response, $args)
+    public function VerifyAccount(Request $request, Response $response, array $args): Response
     {
         $params = $request->getQueryParams();
+        $url = $this->routeParser->urlFor('login'); // Define login URL once
 
         if (!isset($params['token'])) {
-            $url = $this->container->get('router')->pathFor('login', [], ['message' => 'Token not provided.', 'status' => 'error']);
+            $this->flash->error('Token not provided.');
             return $response->withHeader('Location', $url)->withStatus(302);
         }
 
@@ -215,13 +227,13 @@ class RegisterController extends BaseController
         $res = EmailVerifications::verify($token);
 
         if ($res['status'] !== 'success') {
-            $url = $this->container->get('router')->pathFor('login', [], ['message' => $res['message'], 'status' => 'error']);
+            $this->flash->error($res['message'] ?? 'Verification failed.');
             return $response->withHeader('Location', $url)->withStatus(302);
         }
 
         $user = User::find($res['user_id']);
         if (!$user) {
-            $url = $this->container->get('router')->pathFor('login', [], ['message' => 'User not found.', 'status' => 'error']);
+            $this->flash->error('User not found.');
             return $response->withHeader('Location', $url)->withStatus(302);
         }
 
@@ -252,8 +264,8 @@ class RegisterController extends BaseController
         if ($referral) {
             $referral->update(['status' => 1]); // Set referral to approved
         }
-
-        $url = $this->container->get('router')->pathFor('login', [], ['message' => 'Account successfully verified! You can now log in.', 'status' => 'success']);
+        
+        $this->flash->success('Account successfully verified! You can now log in.');
         return $response->withHeader('Location', $url)->withStatus(302);
     }
 
@@ -275,14 +287,15 @@ class RegisterController extends BaseController
         return "{$prefix}{$userId}{$initials}{$uniqueId}";
     }
 
-    public function ResendVerification(Request $request, Response $response, $args): Response
+    public function ResendVerification(Request $request, Response $response, array $args): Response
     {
         $helper = new Helpers();
-        $data = $request->getParsedBody();
+        $data = (array)$request->getParsedBody();
         $email = $data['email'] ?? null;
 
         if (!$email) {
-            return $response->withJson(['message' => 'Email is required.'], 400);
+            // Use $this->jsonResponse from BaseController
+            return $this->jsonResponse($response, ['message' => 'Email is required.'], 400);
         }
 
         // Check if the user exists
@@ -308,13 +321,18 @@ class RegisterController extends BaseController
         // Send the email
         $verificationLink = $_ENV['APP_URL'] . '/verify?token=' . $token;
         $subject = "Verify Your Account";
-        $twig = $this->TwigTemplate();
-        $template = $twig->render('verification-email.twig', ['user' => $user->name, 'verificationLink' => $verificationLink]);
+        // Use $this->twig from BaseController
+        $template = $this->twig->getEnvironment()->render('email/verification-email.twig', [
+            'user' => $user->first_name, // Assuming 'name' property exists, or use 'first_name'
+            'verificationLink' => $verificationLink
+        ]);
         $emailResult = $helper->sendEmail($email, $subject, $template);
         if ($emailResult["status"] === 'success') {
-            return $response->withJson(['message' => 'Verification link has been resent.'], 200);
+            // Use $this->jsonResponse from BaseController
+            return $this->jsonResponse($response, ['message' => 'Verification link has been resent.'], 200);
         } else {
-            return $response->withJson(['message' => 'Failed to send verification email.'], 500);
+            // Use $this->jsonResponse from BaseController
+            return $this->jsonResponse($response, ['message' => 'Failed to send verification email.'], 500);
         }
     }
 }

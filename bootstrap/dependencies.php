@@ -121,5 +121,130 @@ return function (ContainerBuilder $containerBuilder) {
                 $container->get(ResponseFactoryInterface::class)
             );
         },
+
+        // Custom HTML Error Renderer
+        \App\Renderers\HtmlErrorRenderer::class => function (ContainerInterface $container) {
+            return new \App\Renderers\HtmlErrorRenderer(
+                $container->get(Twig::class),
+                $container->get(LoggerInterface::class)
+            );
+        },
+
+        // Illuminate Validation
+        \Illuminate\Contracts\Translation\Translator::class => function (ContainerInterface $container) {
+            // Using ArrayLoader for basic setup without needing language files on disk.
+            // For actual translations, FileLoader and language files in resources/lang would be needed.
+            $loader = new \Illuminate\Translation\ArrayLoader();
+            $locale = 'en'; // Default locale
+            $translator = new \Illuminate\Translation\Translator($loader, $locale);
+            return $translator;
+        },
+
+        \Illuminate\Validation\Factory::class => function (ContainerInterface $container) {
+            $validatorFactory = new \Illuminate\Validation\Factory(
+                $container->get(\Illuminate\Contracts\Translation\Translator::class),
+                $container // Pass the container itself for resolving custom validators, presence verifiers
+            );
+            
+            // Setup database presence verifier (optional, but common for 'unique' rule)
+            // This relies on 'Illuminate\Database\Capsule\Manager' being defined in the container.
+            // if ($container->has(\Illuminate\Database\Capsule\Manager::class)) {
+            //     $dbCapsule = $container->get(\Illuminate\Database\Capsule\Manager::class);
+            //     // Ensure the connection is resolved and available if using default connection
+            //     // $connection = $dbCapsule->getConnection(); 
+            //     $presenceVerifier = new \Illuminate\Validation\DatabasePresenceVerifier($dbCapsule->getDatabaseManager());
+            //     $validatorFactory->setPresenceVerifier($presenceVerifier);
+            // }
+            return $validatorFactory;
+        },
+
+        // Optional: Define DatabasePresenceVerifierInterface if needed separately
+        // \Illuminate\Validation\DatabasePresenceVerifierInterface::class => function (ContainerInterface $container) {
+        //     if (!$container->has(\Illuminate\Database\Capsule\Manager::class)) {
+        //         // Handle missing DB connection for validator - could throw or return a dummy/null verifier
+        //         // For now, returning null or throwing an exception might be appropriate.
+        //         // throw new \Exception('Illuminate\Database\Capsule\Manager not found in container, cannot set up DatabasePresenceVerifier.');
+        //         return null; 
+        //     }
+        //     $dbCapsule = $container->get(\Illuminate\Database\Capsule\Manager::class);
+        //     return new \Illuminate\Validation\DatabasePresenceVerifier($dbCapsule->getDatabaseManager());
+        // }
+
+        // Controller Definitions
+        // BaseController itself is abstract, so no DI definition for it directly.
+        // Child controllers will have their dependencies injected, including those needed by BaseController.
+
+        \App\Controllers\HomeController::class => function (ContainerInterface $container) {
+            return new \App\Controllers\HomeController(
+                $container,
+                $container->get(Twig::class),
+                $container->get(\Illuminate\Database\Capsule\Manager::class),
+                $container->get(RouteParserInterface::class),
+                $container->get(LoggerInterface::class),
+                $container->get(\SimpleFlash\Flash::class)
+            );
+        },
+
+        \App\Controllers\LoginController::class => function (ContainerInterface $container) {
+            return new \App\Controllers\LoginController(
+                $container,
+                $container->get(Twig::class),
+                $container->get(\Illuminate\Database\Capsule\Manager::class),
+                $container->get(RouteParserInterface::class),
+                $container->get(LoggerInterface::class),
+                $container->get(\App\Service\stripe\SubscriptionService::class), // Specific to LoginController
+                $container->get(\SimpleFlash\Flash::class)
+            );
+        },
+
+        \App\Controllers\RegisterController::class => function (ContainerInterface $container) {
+            return new \App\Controllers\RegisterController(
+                $container,
+                $container->get(Twig::class),
+                $container->get(\Illuminate\Database\Capsule\Manager::class),
+                $container->get(RouteParserInterface::class),
+                $container->get(LoggerInterface::class),
+                $container->get(\Illuminate\Validation\Factory::class), // Specific to RegisterController
+                $container->get(\SimpleFlash\Flash::class)
+            );
+        },
+
+        \App\Controllers\EbookController::class => function (ContainerInterface $container) {
+            return new \App\Controllers\EbookController(
+                $container,
+                $container->get(Twig::class),
+                $container->get(\Illuminate\Database\Capsule\Manager::class),
+                $container->get(RouteParserInterface::class),
+                $container->get(LoggerInterface::class),
+                $container->get(\SimpleFlash\Flash::class)
+            );
+        },
+
+        \App\Controllers\AdminController::class => function (ContainerInterface $container) {
+            return new \App\Controllers\AdminController(
+                $container,
+                $container->get(Twig::class),
+                $container->get(\Illuminate\Database\Capsule\Manager::class),
+                $container->get(RouteParserInterface::class),
+                $container->get(LoggerInterface::class),
+                $container->get(\App\Service\stripe\SubscriptionService::class), // Specific to AdminController
+                $container->get(\SimpleFlash\Flash::class)
+            );
+        },
+        
+        // Definition for SubscriptionService if it's not auto-wireable or needs specific config
+        \App\Service\stripe\SubscriptionService::class => function (ContainerInterface $container) {
+            // Assuming SubscriptionService constructor takes DB and Logger, or other DI managed services
+            return new \App\Service\stripe\SubscriptionService(
+                 $container->get(\Illuminate\Database\Capsule\Manager::class), // Example dependency
+                 $container->get(LoggerInterface::class)                   // Example dependency
+            );
+        },
+
+        \SimpleFlash\Flash::class => function (ContainerInterface $container) {
+            // simple-flash will use $_SESSION by default if session is already started.
+            // Our SessionMiddleware should handle starting the session.
+            return \SimpleFlash\Flash::getInstance();
+        },
     ]);
 };

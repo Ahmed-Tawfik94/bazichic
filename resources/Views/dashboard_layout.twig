@@ -110,6 +110,26 @@
 
 <!-- Dashboard -->
 <div id="dashboard">
+
+    {# Flash Messages Display Section for Dashboard #}
+    {% if flash_messages %}
+        <div class="container mx-auto mt-4 px-4 md:px-0"> {# Adjusted padding for dashboard context #}
+            {% for type, messages_for_type in flash_messages %}
+                {% for message in messages_for_type %}
+                    <div class="p-4 mb-4 text-sm rounded-lg 
+                                {% if type == 'success' %} bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100 {% endif %}
+                                {% if type == 'error' %} bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100 {% endif %}
+                                {% if type == 'info' %} bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100 {% endif %}
+                                {% if type == 'warning' %} bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100 {% endif %}"
+                         role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    {% endif %}
+    {# End Flash Messages Display Section #}
+
     {% include 'partials/user_dashboard.twig' %}
     <!-- Content
             ================================================== -->

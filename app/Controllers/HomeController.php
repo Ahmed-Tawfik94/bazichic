@@ -14,32 +14,40 @@ use App\Models\SiteSetting;
 use App\Models\User;
 use function PHPSTORM_META\map;
 
+// Added for Slim 4
+use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
+use Slim\Views\Twig;
+use Slim\Interfaces\RouteParserInterface;
+use Illuminate\Database\Capsule\Manager as Capsule;
+
 class HomeController extends BaseController
 {
-    public function index(Request $request, Response $response, $args)
+    // Constructor matching the new BaseController signature
+    public function __construct(
+        ContainerInterface $container,
+        Twig $twig,
+        Capsule $db,
+        RouteParserInterface $routeParser,
+        LoggerInterface $logger
+    ) {
+        parent::__construct($container, $twig, $db, $routeParser, $logger);
+    }
+
+    public function index(Request $request, Response $response, array $args): Response
     {
         $site= new SiteSetting();
-//        if (isset($_SESSION['userID'])) {
-//            $url= $this->container->get('router')->pathFor('dashboard');
-//            return $response->withHeader('Location', $url);
-//        }
-        $data = Document::getAllDocuments(0);
+        $data = Document::getAllDocuments(0); // Assuming is_published = 0 means all for this context
         $helper=new Helpers();
-        // $testimonials = $docCRUD->getAllTestimonials();
-        // $membership_plans = Plan::getAllActivePlans();
+        
         $membership_plans = Plan::where('is_available', 1)->get()->groupBy('interval')->map(function ($plans) {
             return $plans->map(function ($plan) {
-                $plan->url = $this->router->pathFor('get-membership', ['type' => $plan->id]);
+                // Use $this->routeParser from BaseController
+                $plan->url = $this->routeParser->urlFor('get-membership', ['type' => $plan->id]);
                 return $plan;
             });
         });
 
-//        foreach ($membership_plans as $interval => $plans) {
-//            var_dump($interval);
-//            foreach ($plans as $plan) {
-//                $plan->url = $this->router->pathFor('get-membership', ['type' => $plan->stripe_product_id]);
-//            }
-//        }
         $categories = Category::getAllCategories(1);
         //Get All E-Books
         $ebooks = Document::getAllDocumentsByDocType(1);
@@ -87,10 +95,11 @@ class HomeController extends BaseController
                 'banner_link' => $site->getFrontBannerLink()
             ],
         ];
-        return $this->view->render($response, 'home.twig', $vars);
-
+        // Use $this->twig from BaseController (which is Slim\Views\Twig instance)
+        return $this->twig->render($response, 'home.twig', $vars);
     }
-    function about(Request $request, Response $response, $args)
+
+    function about(Request $request, Response $response, array $args): Response
     {
         $vars = [
             'page' => [
@@ -98,10 +107,10 @@ class HomeController extends BaseController
                 'description' => 'Access Unlimited E-Books, Audio Books and Magazines on Chinese Metaphysics'
             ],
         ];
-
-        return $this->view->render($response, 'about.twig', $vars);
+        return $this->twig->render($response, 'about.twig', $vars);
     }
-    function testimonials(Request $request, Response $response, $args)
+
+    function testimonials(Request $request, Response $response, array $args): Response
     {
         // $testimonials = $docCRUD->getAllTestimonials();
         $vars = [
@@ -111,12 +120,12 @@ class HomeController extends BaseController
                 // 'testimonials' => $testimonials
             ],
         ];
-        return $this->view->render($response, 'testimonials.twig', $vars);
+        return $this->twig->render($response, 'testimonials.twig', $vars);
     }
-    function contact(Request $request, Response $response, $args)
+
+    function contact(Request $request, Response $response, array $args): Response
     {
-        // require_once('recaptcha/recaptchalib.php');
-         $siteKey = $_ENV['RECAPTCHA_PUBLIC_KEY']; // you got this from the signup page
+         $siteKey = $_ENV['RECAPTCHA_PUBLIC_KEY']; 
         // $capcha = recaptcha_get_html($publickey);
         $help_topics=["I need technical help",
         "I need help on refunds",
@@ -142,12 +151,13 @@ class HomeController extends BaseController
             ],
                 'settings' => $settings
         ];
-        return $this->view->render($response, 'contact.twig', $vars);
+        return $this->twig->render($response, 'contact.twig', $vars);
     }
-    function contactSubmit(Request $request, Response $response, $args)
+
+    function contactSubmit(Request $request, Response $response, array $args): Response
     {
-        $params = $request->getParsedBody();
-        $recaptchaResponse = $params['g-recaptcha-response'];
+        $params = (array)$request->getParsedBody(); // Ensure it's an array
+        $recaptchaResponse = $params['g-recaptcha-response'] ?? null;
         $name = $params['name'];
         $email = $params['email'];
         $message = $params['comments'];
@@ -215,32 +225,31 @@ class HomeController extends BaseController
 
 
     }
-    public function ComingSoon(Request $request, Response $response, array $args)
+    public function ComingSoon(Request $request, Response $response, array $args): Response
     {
         $helper = new Helpers();
-        $router = $this->container->get('router');
-        if ($helper->isMaintenanceModeOn($this->db)) {
+        // $router = $this->container->get('router'); // Use $this->routeParser
+        if ($helper->isMaintenanceModeOn($this->db)) { // Assuming isMaintenanceModeOn is static or $helper has $db
             $vars = [
                 'page' => [
                     'title' => 'Coming Soon | Bazichic - Chinese Metaphysics Consultancy',
                     'description' => 'Access Unlimited E-Books, Audio Books and Magazines on Chinese Metaphysics'
                 ],
             ];
-            return $this->view->render($response, 'coming-soon.html', $vars);
+            return $this->twig->render($response, 'coming-soon.html', $vars);
         } else {
-            
-            $uri = $request->getUri()->withPath($this->container->get('router')->pathFor('404'));
-            return $router->withRedirect((string) $uri);
+            $url = $this->routeParser->urlFor('notFound'); // Use 'notFound' as defined in web.php
+            return $response->withHeader('Location', $url)->withStatus(302);
         }
-
     }
+
     public function CustomerReport(object $data): array
     {
         $helper = new Helpers();
         $userEmail = $data->email;
         $subject = "Bazichic Customer Report";
-        $twig = $this->TwigTemplate();
-        $template = $twig->render('customer_report.twig', [
+        // Use $this->twig from BaseController
+        $template = $this->twig->getEnvironment()->render('email/customer_report.twig', [
             "customerName"=>$data->name,
             "customerEmail"=>$data->email,
             "ReportTopic"=>$data->subject,

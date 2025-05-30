@@ -51,6 +51,13 @@ $errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, $logErrors, $l
 //    $errorHandler->setLogger($logger);
 // }
 
+// Register custom HTML error renderer
+$errorHandler = $errorMiddleware->getDefaultErrorHandler();
+if ($container->has(\App\Renderers\HtmlErrorRenderer::class)) {
+    $errorHandler->registerErrorRenderer('text/html', $container->get(\App\Renderers\HtmlErrorRenderer::class));
+}
+
+
 // --- Global Middleware ---
 // Add middleware. Middleware is executed in Last-In-First-Out (LIFO) order.
 

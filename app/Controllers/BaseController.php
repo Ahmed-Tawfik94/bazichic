@@ -12,31 +12,39 @@ use App\Models\RewardPoint;
 use App\Models\User;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
+
+// Added for Slim 4
+use Psr\Log\LoggerInterface;
+use Slim\Views\Twig;
+use Slim\Interfaces\RouteParserInterface;
+use Illuminate\Database\Capsule\Manager as Capsule; // Assuming this is the DB service type
+use SimpleFlash\Flash; // Added for flash messages
+
 abstract class BaseController
 {
-    protected $container;
-    protected $view;
-    protected $db;
-    protected $router;
-    protected $logger;
+    protected ContainerInterface $container; // Keep for now
+    protected Twig $twig; // Changed from generic 'view'
+    protected Capsule $db; // Assuming Capsule is the DB service type
+    protected RouteParserInterface $routeParser; // Changed from generic 'router'
+    protected LoggerInterface $logger;
+    protected Flash $flash; // Added for flash messages
 
-    public function __construct(ContainerInterface $container)
-    {
-        $this->container = $container;
-        $this->view = $container->get("view");
-        $this->db = $container->get('db');
-        $this->router = $container->get("router");
-        $this->logger =  $container->get('logger');
+    public function __construct(
+        ContainerInterface $container, // Keep for now, for phased refactoring of child classes
+        Twig $twig,
+        Capsule $db, // Or your DB service type
+        RouteParserInterface $routeParser,
+        LoggerInterface $logger,
+        Flash $flash // Injected Flash service
+    ) {
+        $this->container = $container; // Keep for children that might still use it
+        $this->twig = $twig;
+        $this->db = $db;
+        $this->routeParser = $routeParser;
+        $this->logger = $logger;
+        $this->flash = $flash; // Store Flash service
     }
-//    function jsonResponse($response, array $data,$status = 200) {
-//        return $response->withHeader('Content-Type', 'application/json')->withStatus($status)->getBody()->write(json_encode($data));
-//    }
-//    function jsonResponse($response, array $data, $status = 200) {
-//        $response = $response->withHeader('Content-Type', 'application/json')
-//            ->withStatus($status)
-//            ->withJson($data);
-//        return $response;
-//    }
+
     function jsonResponse($response, array $data, $status = 200) {
         $response = $response->withHeader('Content-Type', 'application/json')
             ->withStatus($status);
@@ -44,11 +52,7 @@ abstract class BaseController
 
         return $response;
     }
-    function TwigTemplate(){
-        $loader = new FilesystemLoader(__DIR__.'/../../resources/Views/email');
-        $twig = new Environment($loader);
-        return $twig;
-    }
+    // Removed TwigTemplate() method
     /**
      * @param $first_name
      * @param $user_id
@@ -91,10 +95,13 @@ abstract class BaseController
             $generated_token = EmailVerifications::createVerification($user_id, $token);
             if ($generated_token) {
                 $subject = "Welcome to BaziChic";
-                $twig= $this->TwigTemplate();
-                $template = $twig->render('welcome-email.twig', ['first_name' => $first_name,
+                // Use the injected $this->twig instance
+                // Assuming 'email/' is a namespace or subdirectory within the main Twig path
+                $template = $this->twig->getEnvironment()->render('email/welcome-email.twig', [
+                    'first_name' => $first_name,
                     'token' => $token,
-                    'app_url' => $_ENV['APP_URL']]);
+                    'app_url' => $_ENV['APP_URL']
+                ]);
                 $emailResult = $helper->sendEmail($email, $subject, $template);
                 if ($emailResult["status"] === 'success') {
                     $output["message"] .= " We have sent further instructions to your registered email address.";
