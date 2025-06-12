@@ -1,0 +1,19 @@
+{# Converted from resources/Views/list_items/favourite.twig #}
+{# Expects a 'document' object in context (passed via `with {'document': doc}`) #}
+<a href="{{ url_for('ebook.ebook_detail', ebook_id=document.id if document.id else document.qcode if document.qcode else '0') }}" class="listing-item-container compact"> {# Use ID preferably, fallback to qcode for URL #}
+    <div class="listing-item">
+        {% if document.cover %}
+            <img src="{{ url_for('static', filename=document.cover) }}" alt="{{ document.title }}">
+        {% else %}
+            <img src="{{ url_for('static', filename='images/books/default.png') }}" alt="Default cover">
+        {% endif %}
+
+        {% if document.tag %} {# Assuming 'tag' is a direct attribute or property #}
+            <div class="listing-badge now-open">{{ document.tag }}</div>
+        {% endif %}
+
+        <div class="listing-item-content">
+            <h5 style="color:#ffffff;">{{ document.title }}</h5> {# Changed h3 to h5 for better semantics if it's a list item #}
+        </div>
+    </div>
+</a>

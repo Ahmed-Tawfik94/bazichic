@@ -1,0 +1,63 @@
+{# Converted from resources/Views/maintenance.twig #}
+{# This is a standalone HTML page, does not extend any layout. #}
+<!doctype html>
+<html lang="en"> {# Added lang attribute #}
+<head>
+    <meta charset="utf-8"> {# Added charset #}
+    <title>Site Maintenance - BaziChic</title> {# Added site name to title #}
+    <meta name="viewport" content="width=device-width, initial-scale=1"> {# Added viewport #}
+    <style>
+        html { width: 100%; height: 100%; }
+        body {
+            text-align: center;
+            margin: 0px;
+            padding: 20px; /* Added some padding */
+            height: 100%;
+            color: #fff;
+            font-family: Arial, sans-serif; /* Common sans-serif font */
+            background: linear-gradient(-45deg, #EE7752, #E73C7E, #23A6D5, #23D5AB);
+            background-size: 400% 400%;
+            -webkit-animation: Gradient 15s ease infinite;
+            -moz-animation: Gradient 15s ease infinite;
+            animation: Gradient 15s ease infinite;
+            display: flex; /* Use flexbox for centering */
+            align-items: center; /* Vertical center */
+            justify-content: center; /* Horizontal center */
+        }
+        /* Removed .vh and .vh > div as body now handles centering */
+        img { max-width: 100%; } /* Should be within .wrap if an image is used */
+        .wrap {text-align: center;}
+        .wrap h1 {font-size: 2.5em; font-weight: 700; margin: 0 0 40px; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); } /* Adjusted margins, added shadow */
+        .wrap h2 {font-size: 1.5em; font-weight: 400; line-height: 1.6; margin: 0 0 40px; }
+        .wrap p {font-size: 1em; margin-top: 20px;}
+
+        @-webkit-keyframes Gradient {
+            0% {background-position: 0% 50%}
+            50% {background-position: 100% 50%}
+            100% {background-position: 0% 50%}
+        }
+        @-moz-keyframes Gradient {
+            0% {background-position: 0% 50%}
+            50% {background-position: 100% 50%}
+            100% {background-position: 0% 50%}
+        }
+        @keyframes Gradient {
+            0% {background-position: 0% 50%}
+            50% {background-position: 100% 50%}
+            100% {background-position: 0% 50%}
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        {# Optional: Add logo image here if desired #}
+        {# <img src="{{ url_for('static', filename='images/logo_white.png') }}" alt="BaziChic Logo" style="max-width: 200px; margin-bottom: 30px;"> #}
+        <h1>Maintenance Mode</h1>
+        <h2><p>Sorry for the inconvenience.<br>Our website is currently undergoing scheduled maintenance.<br><br></p></h2>
+        <p>Thank you for your understanding.</p>
+        {# You could add an estimated time if known, or contact email #}
+        {# <p>We expect to be back shortly.</p> #}
+        {# <p>For urgent inquiries, please contact <a href="mailto:support@example.com" style="color: #fff;">support@example.com</a>.</p> #}
+    </div>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ title | default("Payment Cancelled - BaziChic") }}{% endblock %}
+
+{% block slider %}{% endblock %} {# This block was empty in the Twig version #}
+
+{% block content %}
+<!-- Container -->
+<div class="container my-5"> {# Added my-5 for spacing #}
+    <div class="row">
+        <div class="col-md-12 text-center"> {# Added text-center for content #}
+            <div class="booking-confirmation-page">
+                <img src="{{ url_for('static', filename='images/failure.png') }}" style="width:80px;height:80px; margin-bottom: 1rem;" alt="Payment Cancelled">
+                <h2 class="margin-top-10">Payment Cancelled</h2>
+                <p>Looks like you have cancelled this transaction.</p>
+                {% if display_message %}
+                <p>{{ display_message | safe }}</p> {# Assuming display_message is passed in context #}
+                {% endif %}
+                <a href="{{ url_for('main.home') }}" class="button btn btn-primary text-white margin-top-30">Back to Home</a> {# Changed to primary button and Home #}
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Container / End -->
+{% endblock %}

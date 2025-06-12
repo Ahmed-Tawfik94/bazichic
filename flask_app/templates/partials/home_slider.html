@@ -1,0 +1,25 @@
+{# Converted from resources/Views/partials/home_slider.twig #}
+{# This was included in home.twig's slider block. #}
+{# Parallax effect might require specific JS/CSS (e.g., from the original template's 'custom.js') #}
+<div class="parallax"
+     data-background="{{ url_for('static', filename='images/main_banner.png') }}"
+     data-color="#36383e" {# These data attributes are for the JS that enables parallax #}
+     data-color-opacity="0.6"
+     data-img-width="800" {# These might be less relevant if CSS handles background well #}
+     data-img-height="305">
+    <!-- Infobox -->
+    <div class="text-content white-font">
+        <div class="container text-center">
+            <div class="row">
+                <div class="col-lg-12 col-sm-12">
+                    <h2>Welcome To Bazichic - Chinese Metaphysics Consultancy</h2>
+                    <p>Access Unlimited E-Books, Audio Books and Magazines. Read, Review, Share and Earn Reward Points.</p>
+                    {# Assuming 'subscription.list_subscription_plans' is the correct route for membership.html #}
+                    <a href="{{ url_for('subscription.list_subscription_plans') }}" class="button btn btn-primary text-white margin-top-25">READ FREE FOR 30 DAYS</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Infobox / End -->
+</div>
+<!-- Parallax / End -->

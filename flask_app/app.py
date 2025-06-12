@@ -46,11 +46,53 @@ from flask_app.models.app_usage import AppUsage
 from flask_app.models.testimonial import Testimonial
 from flask_app.models.currency import Currency
 
-@app.route('/')
-def hello_world():
-    return 'Hello, World!'
+# Import Blueprints
+from flask_app.routes.main_routes import main_bp
+from flask_app.routes.auth_routes import auth_bp
+from flask_app.routes.admin.admin_main_routes import admin_main_bp
+from flask_app.routes.ebook_routes import ebook_bp
+from flask_app.routes.subscription_routes import subscription_bp
+from flask_app.routes.calendar_routes import calendar_bp
+from flask_app.routes.dashboard_routes import dashboard_bp
+from flask_app.routes.referral_routes import referral_bp
+from flask_app.routes.payment_routes import payment_bp
+from flask_app.routes.document_actions_routes import doc_actions_bp
+# New Admin Blueprints
+from flask_app.routes.admin.admin_document_routes import admin_doc_bp
+from flask_app.routes.admin.admin_faq_routes import admin_faq_bp
+from flask_app.routes.admin.admin_category_routes import admin_cat_bp
+from flask_app.routes.admin.admin_plan_routes import admin_plan_bp
+from flask_app.routes.admin.admin_subscription_routes import admin_subscription_bp
+from flask_app.routes.admin.admin_reward_routes import admin_reward_bp
+from flask_app.routes.admin.admin_user_routes import admin_user_bp
+from flask_app.routes.admin.admin_system_routes import admin_system_bp # Import admin_system_bp
+from flask_app.routes.admin.admin_notification_routes import admin_notification_bp # Import admin_notification_bp
+
+
+# Register Blueprints
+app.register_blueprint(main_bp)
+app.register_blueprint(auth_bp)
+app.register_blueprint(admin_main_bp) # Handles /admin/ (dashboard)
+app.register_blueprint(ebook_bp)
+app.register_blueprint(subscription_bp)
+app.register_blueprint(calendar_bp)
+app.register_blueprint(dashboard_bp)
+app.register_blueprint(referral_bp)
+app.register_blueprint(payment_bp)
+app.register_blueprint(doc_actions_bp)
+# Register new Admin Blueprints
+app.register_blueprint(admin_doc_bp) # Handles /admin/documents/*
+app.register_blueprint(admin_faq_bp) # Handles /admin/faqs/*
+app.register_blueprint(admin_cat_bp) # Handles /admin/categories/*
+app.register_blueprint(admin_plan_bp)
+app.register_blueprint(admin_subscription_bp)
+app.register_blueprint(admin_reward_bp)
+app.register_blueprint(admin_user_bp)
+app.register_blueprint(admin_system_bp) # Register admin_system_bp
+app.register_blueprint(admin_notification_bp) # Register admin_notification_bp
 
 # main driver function
 if __name__ == '__main__':
     # app.run(debug=True) # Typically not run this way when using Flask CLI / migrations
+    # The Flask CLI (`flask run`) is preferred for development.
     pass

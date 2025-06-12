@@ -1,0 +1,30 @@
+{# Converted from resources/Views/404.twig #}
+{# This template conditionally extended admin_layout.twig or layout.twig.
+   In Flask, error handlers usually have their own simpler context.
+   We'll make it extend the general "layout.html".
+   If a more specific admin 404 is needed, that would be a separate template
+   and error handler.
+#}
+{% extends "layout.html" %}
+
+{% block title %}{{ title | default("Page Not Found - BaziChic") }}{% endblock %}
+
+{% block content %}
+<div class="container my-5"> {# Added my-5 for spacing #}
+    <div class="row">
+        <div class="col-md-12">
+            <section id="not-found" class="text-center card shadow-sm p-5"> {# Styled as card and centered #}
+                <h2><i class="fa fa-question-circle fa-3x text-danger mb-3"></i></h2> {# Larger icon, margin #}
+                <h1>404 - Page Not Found</h1>
+                <p>We're sorry, but the page you were looking for doesn't exist.</p>
+                <div class="row mt-4">
+                    <div class="col-lg-8 offset-lg-2"> {# Centered button #}
+                        <a href="{{ url_for('main.home') }}" class="button btn btn-primary">Go to Home page</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+<!-- Container / End -->
+{% endblock content %}

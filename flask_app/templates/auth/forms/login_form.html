@@ -1,0 +1,82 @@
+<div id="login_overlay" style="display:none;">
+	<div style="margin: 30px; text-align: center;">
+		<img src="{{ url_for('static', filename='images/preloader.gif') }}" width="60" alt="Authenticating..."/>
+		<h4>
+			<strong>Authenticating...</strong>
+		</h4>
+		<h5>Please wait...</h5>
+		<div id="login_msg"></div> {# For AJAX messages #}
+	</div>
+</div>
+
+{# Flash messages - Flask style #}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category if category != 'message' else 'info' }}" role="alert">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<form method="POST" action="{{ url_for('auth.login_post') }}" class="login" name="loginForm" id="loginForm">
+    {# Flask-WTF will add CSRF token: {{ form.csrf_token }} #}
+	<div class="text-center">
+		<p style="color:#333;font-weight:500;">Sign in to access thousands of E-Books, Audio Books and Magazines brought to you by BaziChic. Don't have an account yet!
+			<a href="{{ url_for('auth.register_get') }}" class="text-decoration-underline cursor-pointer">Register here.</a>
+		</p>
+	</div>
+	<div class="form-group ">
+		<label for="email">Email:</label>
+		<i class="im im-icon-Male position-absolute"></i>
+        {# Example with Flask-WTF: {{ form.email(class="form-control input-text position-relative", placeholder="Your registered email") }} #}
+		<input type="email" class="form-control input-text position-relative"
+			   id="email"
+			   name="email"
+			   pattern="^[A-Za-z0-9](([_\.\-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$"
+			   placeholder="Your registered email"
+               value="{{ request.form.get('email', '') }}"
+			   required>
+	</div>
+	<div class="form-group ">
+		<label for="password">Password:</label>
+		<i class="im im-icon-Lock-2 position-absolute"></i>
+		<div class="position-relative">
+			<i id="togglePassword" class="bi bi-eye position-absolute register_show_hide_pass" ></i>
+            {# Example with Flask-WTF: {{ form.password(class="form-control input-text position-relative", placeholder="Your Password") }} #}
+			<input type="password" class="form-control input-text position-relative" id="password" name="password" placeholder="Your Password" required>
+		</div>
+	</div>
+	<div class="form-group">
+		<a href="{{ url_for('auth.password_recovery_get') }}" class="text-decoration-none cursor-pointer">
+			Password Recovery
+		</a>
+	</div>
+
+	<div class="d-flex justify-content-center">
+		<button type="submit" class="button btn btn-purple text-white">
+			<i class="fa fa-unlock-alt"></i>
+			Log In
+		</button>
+	</div>
+</form>
+
+<script>
+	$(document).ready(function () {
+		$('#togglePassword').on('click', function () {
+			let passwordField = $('#password'); // Changed from login_password to password to match input id
+			let icon = $(this);
+
+			if (passwordField.attr('type') === 'password') {
+				passwordField.attr('type', 'text');
+				icon.removeClass('bi-eye').addClass('bi-eye-slash');
+			} else {
+				passwordField.attr('type', 'password');
+				icon.removeClass('bi-eye-slash').addClass('bi-eye');
+			}
+		});
+        // Note: The AJAX submission logic from the original page (login.twig) would go here or in a separate JS file.
+        // For now, this is a standard form submission.
+	});
+</script>

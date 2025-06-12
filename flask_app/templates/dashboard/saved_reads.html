@@ -1,0 +1,116 @@
+{% extends "dashboard/dashboard_layout.html" %}
+
+{% block page_title %}{{ title | default("My Saved Reads - BaziChic") }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+    <div class="col-lg-12 col-md-12">
+        <div class="dashboard-list-box margin-top-0">
+
+            <!-- Sort by -->
+            <div class="sort-by">
+                <div class="sort-by-select">
+                    <label for="selectSavedStatus">Filter by Status:</label> {# Added label for accessibility #}
+                    {# Assuming 'status_options' is a list of tuples/objects like [(id, value), ...] passed in context #}
+                    <select data-placeholder="Default order" name="selectSavedStatus" id="selectSavedStatus" class="chosen-select-no-single form-control">
+                        <option value="">All</option> {# Default "All" option #}
+                        {% for status_item in status_options | default([]) %}
+                        <option value="{{ status_item.id }}">{{ status_item.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Reply to review popup (if used on this page, seems out of place for saved reads) -->
+            {#
+            <div id="small-dialog" class="zoom-anim-dialog mfp-hide">
+                <div>
+                    {% include "forms/dialog_document_review_form.html" ignore missing %}
+                </div>
+            </div>
+            #}
+
+            <h4>SAVED READS</h4>
+
+            <div class="messages-container margin-top-0">
+                {# Assuming 'saved_documents_list' is passed in context #}
+                {% if saved_documents_list and saved_documents_list|length > 0 %}
+                <ul id="booklist">
+                    {% for document_save_item in saved_documents_list %}
+                        {# Assuming 'saved_doc_list_item.html' is a partial for displaying a saved document.
+                           This partial needs to be created/converted.
+                           Context for the partial would be 'document_save_item'.
+                        #}
+                        {% include "list_items/saved_doc_list_item.html" with {'document_save': document_save_item} ignore missing %}
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div style="text-align: center;padding: 40px 0;">
+                    <h1><i class="sl sl-icon-book-open"></i></h1>
+                    <h3 class="margin-top-10">Looks like you have not started reading yet.</h3>
+                    <p>Once you start reading, you can always continue from where you left off here.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {# Pagination would go here if implemented #}
+    </div>
+</div>
+{% endblock %}
+
+{% block js_footer_dashboard %}
+    {{ super() }}
+    <script>
+    $(document).ready(function() {
+        const booklist = $('#booklist');
+        $('#selectSavedStatus').change(function () {
+            var status = $(this).val();
+            // This URL should point to a Flask endpoint that filters saved reads by status
+            // For now, using a placeholder or assuming current page re-renders with query param.
+            var filter_url = "{{ url_for('dashboard.my_saved_reads_get') }}";
+
+            if (status) {
+                filter_url += "?status=" + status; // Example: /dashboard/saved-reads?status=2
+            }
+            window.location.href = filter_url; // Simple page reload with filter
+
+            // The original AJAX logic was complex and specific to how list items were rendered.
+            // A full AJAX implementation would require an endpoint that returns HTML partials or JSON data.
+            // Example structure for AJAX (if an endpoint like 'dashboard.filter_saved_reads' existed):
+            /*
+            $.ajax({
+                url: '{{ url_for("dashboard.filter_saved_reads") }}', // Replace with actual endpoint
+                method: 'POST', // Or GET, depending on endpoint
+                dataType: 'json', // Or 'html' if returning rendered partials
+                data: {
+                    status: status,
+                    _csrf_token: "{{ csrf_token() if csrf_token else '' }}" // If using CSRF with AJAX
+                },
+                success: function (response) {
+                    booklist.empty();
+                    if (!response.documents || response.documents.length == 0) {
+                        let status_text = parseInt(status) === 2 ? 'completed' : 'started';
+                        booklist.append(`
+                        <div style="text-align: center;padding: 40px 0;">
+                            <h1><i class="sl sl-icon-book-open"></i></h1>
+                            <h3 class="margin-top-10">Looks like you have not ${status_text} reading yet.</h3>
+                            <p>Once you ${status_text} reading you can always start from where you left.</p>
+                        </div>`);
+                    } else {
+                        response.documents.forEach((doc) => {
+                            // This would require a Jinja-like template client-side or server-rendered partials
+                            // For simplicity, this part is illustrative and would need a robust solution
+                            // Example: booklist.append(render_saved_doc_item(doc));
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    console.error("Error filtering saved reads:", xhr);
+                    toastr.error("Could not filter saved reads.");
+                }
+            });
+            */
+        });
+    });
+    </script>
+{% endblock %}

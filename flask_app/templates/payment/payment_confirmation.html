@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ title | default("Payment Confirmation - BaziChic") }}{% endblock %}
+
+{% block slider %}{% endblock %} {# This block was empty in the Twig version #}
+
+{% block content %}
+<!-- Container -->
+<div class="container my-5"> {# Added my-5 for spacing #}
+    <div class="row">
+        <div class="col-md-12 text-center"> {# Added text-center for content #}
+            <div class="booking-confirmation-page">
+                <i class="fa fa-check-circle text-success" style="font-size: 4rem; margin-bottom: 1rem;"></i> {# Enhanced icon #}
+                <h2 class="margin-top-30">Thanks for your subscription!</h2>
+                <p>You'll receive a confirmation in your registered email.</p>
+                {% if display_message %}
+                <p>{{ display_message | safe }}</p> {# Assuming display_message is passed in context #}
+                {% endif %}
+
+                {# Assuming 'account_url' and 'invoice_url' are passed in context #}
+                <a href="{{ account_url | default(url_for('dashboard.user_dashboard')) }}" class="button btn btn-primary text-white margin-top-30">My Account</a>
+                {% if invoice_url %}
+                <a href="{{ invoice_url }}" class="button btn btn-secondary text-white margin-top-10" style="background-color:#444444;color:#ffffff;">View Invoice</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Container / End -->
+{% endblock %}

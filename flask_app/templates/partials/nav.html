@@ -1,0 +1,69 @@
+<div class="navbar navbar-expand-md navbar-primary position-relative ">
+    <a class="navbar-brand" href="{{ url_for('main.home') }}"> {# Assuming main_bp and home route #}
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="BaziChic Chinese Metatphysics Consultancy" width="64" />
+	</a>
+        <button class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-list" style="font-size:20px"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="{{ url_for('main.home') }}">Home <span class="sr-only">(current)</span></a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('ebook.list_ebooks') }}">Browse</a> {# Assuming ebook_bp and list_ebooks route #}
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.about') }}">About Us</a> {# Assuming main_bp and about route #}
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.contact_get') }}">Contact Us</a> {# Assuming main_bp and contact_get route #}
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('calendar.show_calendar') }}">e-TongShu</a> {# Assuming calendar_bp and show_calendar route #}
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.home') }}#faqs">Help Centre</a> {# Placeholder, assuming FAQs are on home or a dedicated page later #}
+                </li>
+
+            </ul>
+            {% if session.get('user_id') %} {# Check for user_id or a specific logged_in flag in session #}
+            <div class="dropdown px-0 px-md-4" style="user-select: none;">
+                <a class="dropdown-toggle text-decoration-none text-dark " type="button" data-toggle="dropdown" aria-expanded="false">
+                    {% if session.get('user_image') %}
+                        <img src="{{ url_for('static', filename=session.get('user_image')) }}" alt="{{ session.get('first_name') }}" class="rounded-full" width="40" height="40">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='images/avatar.jpg') }}" alt="placeholder" class="rounded-full"  width="40" height="40">
+                    {% endif %}
+                    {{ session.get('first_name', 'User') }}
+                </a>
+                <div class="dropdown-menu right-0">
+                    <a class="dropdown-item" href="{{ url_for('dashboard.user_dashboard')}}"><i class="fa fa-line-chart mr-2"></i>Dashboard</a> {# Assuming dashboard_bp #}
+                    <a class="dropdown-item" href="{{ url_for('auth.logout')}}"><i class="sl sl-icon-power mr-2"></i>Logout</a> {# Assuming auth_bp #}
+                </div>
+            </div>
+            {% else %}
+                <a href="#sign-in-dialog" class="sign-in popup-with-zoom-anim text-decoration-none btn-link text-dark"  style="user-select: none;">
+                    <i class="sl sl-icon-login"></i>
+                    Login</a>
+            {% endif %}
+        </div>
+
+        <!-- Sign In Popup -->
+        <div id="sign-in-dialog" class="zoom-anim-dialog mfp-hide">
+            <div class="small-dialog-header">
+                <h3>Sign In</h3>
+            </div>
+            <div class="sign-in-form style-1">
+                {% include "forms/login_form.html" %} {# Assuming this form will be created #}
+            </div>
+        </div>
+        <!-- Sign In Popup / End -->
+</div>
+{# <div class="row d-none d-md-flex"> #}
+    <div class="col-lg-12 col-md-12 col-sm-12 d-none d-md-block " >
+        {% include "forms/noboot-search-form.html" %} {# Assuming this form will be created #}
+    </div>
+{# </div> #}

@@ -1,0 +1,353 @@
+{% extends "dashboard/dashboard_layout.html" %} {# Assuming dashboard_layout.html exists #}
+
+{% block page_title %}{{ title | default("User Dashboard - BaziChic") }}{% endblock %}
+
+{% block dashboard_content %}
+<!-- Notice for general page warning -->
+{% if page_warning %} {# Renamed from page.warning to avoid conflict with Flask's page object if any #}
+<div class="row">
+    <div class="col-md-12">
+        <div class="notification success closeable margin-bottom-30"> {# Consider standard Bootstrap alerts #}
+            <h5>
+                <strong><i class="fa fa-bell"></i> ALERT</strong>
+            </h5>
+            <p><strong>{{ page_warning | safe }}</strong></p> {# Used safe filter for raw HTML if intended #}
+            <a class="close" href="#"></a> {# This close needs JS or to be a Bootstrap dismiss button #}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Notice for trial message -->
+{% if trial_message %} {# Renamed from page.trialMessage #}
+<div class="row">
+    <div class="col-md-12">
+        <div class="notification success margin-bottom-30">  {# Consider standard Bootstrap alerts #}
+            <h5>
+                <strong><i class="fa fa-bell"></i> ATTENTION</strong>
+            </h5>
+            <p><strong>{{ trial_message | safe }}</strong></p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# Assuming current_user object is passed with type attribute for affiliate check #}
+{% if current_user and current_user.type == 'Affiliate' %} {# Adjusted 'Åffiliate' to 'Affiliate' #}
+<!-- Start Affiliate Content -->
+<div class="row">
+    <div class="col-lg-6">
+        <div class="bazicard mb-3"> {# Simplified margin #}
+            <div class="p-3 text-center firstTour"> {# Simplified padding #}
+                <h1 style="font-weight: 500;font-size:50px;margin-top:0px;"><i class="im im-icon-Conference"></i></h1>
+                <h3>Start as an Affiliate</h3>
+                <h4>Generate referrals code that you can share with anyone. Win reward points and credits that you will redeem with Bazichic.</h4>
+                <div class="text-center mt-3 mb-3 d-inline-block"> {# Simplified margin & display #}
+                    <button id="startTourBtn" class="button btn btn-success" type="button"> {# Changed to button type, adjusted class #}
+                        <i class="fa fa-arrow-circle-right"></i> Start Tour
+                    </button>
+                    <a href="{{ url_for('dashboard.my_connections_dashboard_get') }}" class="button btn btn-dark ml-2" style="display:inline-block;"> {# Added ml-2 for spacing #}
+                        <i class="fa fa-edit"></i> My Referrals
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="bazicard mb-3 secondTour">
+            <div class="p-3 text-center">
+                <h1 style="font-weight: 500;font-size:50px;margin-top:0px;"><i class="fa fa-code"></i></h1>
+                <h3>Generate Referral Code</h3>
+                <h4>Create a referral code that you can share with anyone. Earn affiliate benefits when users register using your code.</h4>
+                {# Assuming referral_bp.generate_referral_code_post route #}
+                <form role="form" method="POST" name="createReferralForm" id="createReferralForm" action="{{ url_for('referral.generate_referral_code_post') }}">
+                    {# Flask-WTF CSRF token would go here #}
+                    {# user_id from session, no need for hidden input usually #}
+                    <button class="button btn btn-success btn-sm rounded-pill mt-3 mb-3" type="submit"> {# Adjusted classes #}
+                        <i class="fa fa-arrow-circle-right"></i> Generate Code Now
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End of Affiliate Content -->
+
+<div class="row mt-2"> {# Added margin top #}
+    <div class="col-lg-12">
+        <div class="bazicards"> {# Typo fixed from bazicards to bazicard or handle plural if intended #}
+            {% if my_connections %} {# Renamed from page.my_connections #}
+            <div class="table-responsive mt-3">
+                <table id="datatable1" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th>S.No.</th>
+                            <th>Name</th>
+                            <th>Referral Code</th>
+                            <th>Date Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row_index, row_data in enumerate(my_connections) %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ row_data.first_name }} {{ row_data.last_name }}</td>
+                            <td>{{ row_data.referral_code }}</td>
+                            <td>{{ row_data.date_created | strftime('%Y-%m-%d') if row_data.date_created else '' }}</td> {# Example date formatting #}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="clear"></div>
+{% if my_referral_codes and my_referral_codes|length > 0 %} {# Renamed from page.my_referral_codes #}
+<div class="row mt-2">
+    <div class="col-lg-12 text-center"> {# Added text-center #}
+        <div class="table-responsive mt-3">
+            <table class="table table-striped table-bordered" width="100%" style="background-color:#ffffff;">
+                <thead>
+                    <tr>
+                        <th>CODE</th>
+                        <th>Date Generated</th>
+                        <th>Total Redeems</th>
+                        <th>Share Code</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for coderow in my_referral_codes %}
+                        {% include "partials/widgets/referral_code_widget.html" ignore missing with context %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p>Note: Copy the code to share with someone you refer. You can also share your code on social networks and whatsApp group.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endif %} {# End of Affiliate content block #}
+
+<!-- General User Stats -->
+<div class="row">
+    <div class="col-lg-3 col-md-6">
+        <a href="{{ url_for('dashboard.my_saved_reads_get') }}">
+            <div class="dashboard-stat color-bazi custTour1">
+                <div class="dashboard-stat-content">
+                    <h4 style="color:#ffffff;">{{ num_saves | default(0) }}</h4> {# Renamed from page.num_saves #}
+                    <span style="color:#ffffff;">My Saved Reads</span>
+                </div>
+                <div class="dashboard-stat-icon"><i style="color:#ffffff;" class="im im-icon-Data-Cloud"></i></div>
+            </div>
+        </a>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <a href="{{ url_for('admin_document.manage_reviews_get') }}"> {# Assuming admin_doc_bp for manage-reviews #}
+            <div class="dashboard-stat color-bazi custTour2">
+                <div class="dashboard-stat-content">
+                    <h4 style="color:#ffffff;">{{ num_reviews | default(0) }}</h4> {# Renamed from page.num_reviews #}
+                    <span style="color:#ffffff;">My Reviews</span>
+                </div>
+                <div class="dashboard-stat-icon"><i style="color:#ffffff;" class="sl sl-icon-speech"></i></div>
+            </div>
+        </a>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <a href="{{ url_for('dashboard.my_bookmarks_get') }}">
+            <div class="dashboard-stat color-bazi custTour3">
+                <div class="dashboard-stat-content">
+                    <h4>{{ num_likes | default(0) }}</h4> {# Renamed from page.num_likes #}
+                    <span style="color:#ffffff;">My Favourites</span>
+                </div>
+                <div class="dashboard-stat-icon"><i style="color:#ffffff;" class="im im-icon-Love-User"></i></div>
+            </div>
+        </a>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <a href="{{ url_for('admin_reward.reward_points_summary_get') }}"> {# Assuming admin_reward_bp for reward-points #}
+            <div class="dashboard-stat color-bazi custTour4">
+                <div class="dashboard-stat-content">
+                    <h4>{{ reward_points | default(0) }}</h4> {# Renamed from page.reward_points #}
+                    <span style="color:#ffffff;">My Reward Points</span>
+                </div>
+                <div class="dashboard-stat-icon"><i class="im im-icon-Dollar"></i></div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- MemberCard -->
+<div class="row">
+    {% if membership_info %} {# Renamed from page.membership_info #}
+    <div class="boxed-widget margin-top-35 margin-bottom-35">
+        <div class="hosted-by-title">
+            <h4>
+                <a href="#">{{ session.get('first_name') }} {{ session.get('last_name') }}</a>
+                <span>Premium Member</span> {# This should be dynamic based on actual membership #}
+            </h4>
+            <a href="{{ url_for('dashboard.my_profile_get') }}" class="hosted-by-avatar">
+                <img src="{{ url_for('static', filename=session.get('user_image', 'images/avatar.jpg')) }}" alt="User Avatar">
+            </a>
+        </div>
+        <ul class="listing-details-sidebar">
+            <li><i class="sl sl-icon-present"></i> {{ reward_points | default(0) }} Reward Points</li>
+            <li><i class="sl sl-icon-like"></i> Expiring {{ membership_info.date_expiring | strftime('%Y-%m-%d') if membership_info.date_expiring else 'N/A' }}</li>
+            <li><i class="sl sl-icon-badge"></i> {{ membership_info.plan_name | default('N/A') }} Member</li>
+        </ul>
+
+        <div id="join-bazichic" class="zoom-anim-dialog mfp-hide" style="max-width: 100%;">
+            <div class="small-dialog-header"><h3>New to BaziChic?</h3></div>
+            <div class="message-reply margin-top-0">
+                {% include "auth/forms/register_form.html" ignore missing %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+<!-- MemberCard / End-->
+
+<div class="row">
+    <!-- Recent Activity -->
+    {% if recent_activities and recent_activities|length > 0 %} {# Renamed from page.recent_activities #}
+    <div class="col-lg-6 col-md-12">
+        <div class="dashboard-list-box with-icons margin-top-20">
+            <h4>Recent Activities</h4>
+            <ul>
+                {% for activity in recent_activities %}
+                <li>
+                    <i class="list-box-icon sl sl-icon-clock"></i>
+                    <strong>{{ activity.message }}</strong>
+                    {# Assuming activity.action_link is a full URL or needs url_for if it's an internal route #}
+                    <a href="{{ activity.action_link if activity.action_link else '#' }}" class="close-list-item"><i class="fa fa-close"></i></a>
+                </li>
+                {% endfor %}
+            </ul>
+            {# Assuming a timeline route will be created #}
+            <a href="{{ url_for('main.home') }}#timeline" class="button" style="margin-top:12px;margin-bottom:12px;margin-right:8px;float:right;">
+                <i class="fa fa-arrow-right"></i> View All Activities
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- My Notifications -->
+    {% if dash_notifications and dash_notifications|length > 0 %} {# Renamed from page.dash_notis #}
+    <div class="col-lg-6 col-md-12">
+        <div class="dashboard-list-box with-icons margin-top-20">
+            <h4>My Notifications</h4>
+            <ul>
+                {% for notification in dash_notifications %}
+                <li>
+                    <i class="list-box-icon sl sl-icon-bell"></i>
+                    <strong>{{ notification.message }}</strong>
+                    {# Assuming dashboard_bp and mark_notification_read_post route, or a general view route #}
+                    <a href="{{ url_for('dashboard.mark_notification_read_post', notification_id=notification.id) if notification.id else '#' }}" class="close-list-item"><i class="fa fa-check"></i> Mark Read</a>
+                </li>
+                {% endfor %}
+            </ul>
+            <a href="{{ url_for('dashboard.list_my_notifications_get') }}" class="button" style="margin-top:12px;margin-bottom:12px;margin-right:8px;float:right;">
+                <i class="fa fa-arrow-right"></i> View All Notifications
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Document Saves -->
+{% if saved_documents %} {# Renamed from page.saved_docs #}
+<div class="row">
+    <div class="col-lg-12 col-md-12">
+        <div class="dashboard-list-box invoices with-icons margin-top-20">
+            <h4>Recently Reading</h4>
+            <ul>
+                {% for doc_save in saved_documents %}
+                <li>
+                    <i class="list-box-icon im im-icon-Arrow-LeftinCircle"></i>
+                    <strong>{{ doc_save.title }}</strong>
+                    <ul>
+                        <li class="unpaid">Started {{ doc_save.date_created | strftime('%Y-%m-%d') if doc_save.date_created else '' }}</li>
+                        <li>{{ doc_save.read_status | default ('Not Started') }}</li>
+                        {% if doc_save.date_updated %}
+                        <li>Last Read: {{ doc_save.date_updated | strftime('%Y-%m-%d %H:%M') if doc_save.date_updated else '' }}</li>
+                        {% endif %}
+                        {% if doc_save.qcode %}
+                        <li><a href="{{ url_for('ebook.ebook_detail', ebook_id=doc_save.id) }}">View Detail</a></li> {# Assuming ebook_id is the document id for detail view #}
+                        {% endif %}
+                    </ul>
+                    <div class="buttons-to-right">
+                        {# Assuming ebook_bp and ebook_reader_post route #}
+                        <form action="{{ url_for('ebook.ebook_reader_post') }}" name="launchReaderForm" method="POST" style="margin-top:10px;margin-bottom:10px;">
+                             {# Flask-WTF CSRF token #}
+                            <input type="hidden" name="doc_id" value="{{ doc_save.id }}">
+                            <input type="hidden" name="doc_link" value="{{ doc_save.link }}">
+                            <input type="hidden" name="is_downloadable" value="{{ '1' if doc_save.is_downloadable else '0' }}">
+                            <input type="hidden" name="last_read_page" value="{{ doc_save.page | default(0) }}">
+                            <button type="submit" class="button btn btn-purple text-white">
+                                <i class="fa fa-arrow-right"></i> {{ doc_save.access_verb | default('Read') }} NOW
+                            </button>
+                        </form>
+                        {# userRole check might be current_user.role #}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block js_footer_dashboard %} {# Renamed from jsfooter #}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='scripts/shepherd.js/dist/css/shepherd.css') }}"/>
+    <script src="{{ url_for('static', filename='scripts/shepherd.js/dist/js/shepherd.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/tour.js') }}"></script> {# This file needs to be in static/scripts #}
+    <script type="text/javascript">
+    function showAffiliateTour(first_name) {
+        if (typeof Shepherd === 'undefined') return;
+        const tour = new Shepherd.Tour({
+            defaultStepOptions: {
+                cancelIcon: { enabled: true },
+                classes: 'class-1 class-2',
+                scrollTo: { behavior: 'smooth', block: 'center' }
+            }
+        });
+
+        tour.addStep({
+            title: 'LET US START',
+            text: 'Hi ' + first_name + '! First generate your referral code that you can share with anyone. You can optionally generate multiple referral codes to track your conversions based on an audience or event.',
+            attachTo: { element: '.firstTour', on: 'bottom' },
+            buttons: [{ action() { return this.next(); }, text: 'Next' }],
+            id: 'creating'
+        });
+
+        tour.addStep({
+            title: 'MAKE CONNECTIONS',
+            text: 'Earn affiliate benefits when your connections grow. Update your paypal account email in profile page to redeem your earnings.',
+            attachTo: { element: '.secondTour', on: 'bottom' },
+            buttons: [
+                { action() { return this.back(); }, classes: 'shepherd-button-secondary', text: 'Back' },
+                { action() { return this.complete(); }, text: 'Finish' }
+            ],
+            id: 'creating2'
+        });
+        tour.start();
+    }
+
+    $(document).ready(function () {
+        var thisUserType = "{{ current_user.type if current_user else '' }}"; // Assuming current_user is available
+        var first_name = "{{ current_user.first_name if current_user else 'Guest' }}";
+
+        $("#startTourBtn").click(function () {
+            if (thisUserType == 'Affiliate') { // Adjusted 'Åffiliate'
+                showAffiliateTour(first_name);
+            } else {
+                // showCustomerTour(first_name); // Define showCustomerTour if needed
+            }
+        });
+    });
+    </script>
+{% endblock %}

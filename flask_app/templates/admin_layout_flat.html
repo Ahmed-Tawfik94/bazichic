@@ -1,0 +1,180 @@
+{# Converted from resources/Views/admin/admin_layout.twig #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>{% block title %}{{ title | default("Admin - BaziChic") }}{% endblock %}</title>
+    <meta name="description" content="{{ description | default("BaziChic Admin Panel") }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}"/>
+
+    {# CSS - Assuming these are shared or specific admin styles are needed #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}"> {# Admin specific customisations #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/colors/main.css') }}" id="colors">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/invoice.css') }}"> {# If admin views invoices #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link href="{{ url_for('static', filename='css/plugins/datedropper.css') }}" rel="stylesheet" type="text/css">
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+
+    <script type="text/javascript">
+        toastr.options = {
+            "closeButton": true, "debug": false, "newestOnTop": true, "progressBar": true,
+            "positionClass": "toast-top-right", "preventDuplicates": true, "onclick": null,
+            "showDuration": "300", "hideDuration": "1000", "timeOut": "5000", "extendedTimeOut": "1000",
+            "showEasing": "swing", "hideEasing": "linear", "showMethod": "fadeIn", "hideMethod": "fadeOut"
+        };
+        var authorization_token = "{{ session.get('api_key', '') }}"; // For JS that might need API key
+
+        // Utility JS functions from admin_layout.twig
+        function docImgPreview() {
+            var oFReader = new FileReader();
+            if(document.getElementById("cover_image").files.length === 0) return;
+            oFReader.readAsDataURL(document.getElementById("cover_image").files[0]);
+            oFReader.onload = function (oFREvent) {
+                document.getElementById("cover_image_preview").src = oFREvent.target.result;
+                // Consider if $('#docMediaUploadForm').submit(); is still needed or handled differently
+            };
+        }
+        function logoPreview() { // For site settings logo
+            var input = document.getElementById("logo_image");
+            var preview = document.getElementById("logo_image_preview");
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(event) {
+                    preview.src = event.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        function profileImgPreview() {
+            var oFReader = new FileReader();
+            if(document.getElementById("profile_image").files.length === 0) return;
+            oFReader.readAsDataURL(document.getElementById("profile_image").files[0]);
+            oFReader.onload = function (oFREvent) {
+                document.getElementById("profilePreview").src = oFREvent.target.result;
+            };
+        }
+        function showPdfPreview() {
+            if(document.getElementById("doc_link").files.length === 0) return;
+            parseDoc(); // Call parseDoc to get num_pages if that logic is kept
+            var pdffile = document.getElementById("doc_link").files[0];
+            var pdffile_url = URL.createObjectURL(pdffile);
+            $('#viewer').attr('src', pdffile_url); // Assuming an iframe or embed with id="viewer"
+            // Consider if $('#docFileUploadForm').submit(); is needed
+        }
+        function parseDoc() { // To get PDF page count
+            var input = document.getElementById("doc_link");
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onloadend = function () { // Changed from readAsBinaryString due to deprecation and complexity
+                    // PDF page count parsing client-side is complex. Usually done server-side or with library like pdf.js
+                    // For now, this function might not accurately get page count from client-side alone.
+                    // Placeholder for actual page count logic if required by form.
+                    // var count = reader.result.match(/\/Type[\s]*\/Page[^s]/g).length; // This regex is unreliable for all PDFs
+                    // $('#num_pages').attr('value', count);
+                    console.warn("Client-side PDF page counting is unreliable and has been simplified/stubbed.");
+                };
+                // reader.readAsBinaryString(input.files[0]); // Deprecated in some browsers for files
+                reader.readAsArrayBuffer(input.files[0]); // More modern approach
+            }
+        }
+    </script>
+    <style>
+        body { background: #f7f7f7; }
+    </style>
+    {% block jstriggers %}{% endblock %} {# Page specific JS triggers #}
+    <script type="text/javascript" src="{{ url_for('static', filename='scripts/front_script.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='scripts/script.js') }}"></script> {# Admin specific JS? #}
+    <script src="https://unpkg.com/mustache@latest"></script>
+    <script>
+        const customTags = [ '<%', '%>' ]; // For Mustache if used alongside Jinja
+        Mustache.tags = customTags;
+    </script>
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+<div id="wrapper">
+    <header id="header-container" class="fixed fullwidth dashboard">
+        {# Placeholder for admin/partials/top_header.twig (or header.twig) #}
+        {% include "admin/partials/header.html" ignore missing %}
+        <!-- Admin header content would go here -->
+    </header>
+</div>
+<!-- Header / End -->
+<div class="clearfix"></div>
+<!-- Header Container / End -->
+
+<!-- Dashboard -->
+<div id="dashboard">
+    {# Placeholder for admin/partials/dash_nav.twig (or sidebar.twig) #}
+    {% include "admin/partials/sidebar.html" ignore missing %}
+    <!-- Admin sidebar navigation would go here -->
+
+    <!-- Content -->
+    <div class="dashboard-content">
+        {# Flash messages for admin pages #}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="container-fluid" style="padding-top: 20px;"> {# Adjust container as needed #}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block dashboard_admin_content %}{% endblock %} {# Changed block name for admin content #}
+    </div>
+</div>
+<!-- END OF DASHBOARD -->
+<!-- Wrapper / End -->
+
+<!-- Scripts -->
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/mmenu.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/chosen.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/slick.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/rangeslider.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/magnific-popup.min.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/bazisearch/extention/flatpickr.js') }}"></script>
+<script src="https://unpkg.com/counterup2@2.0.2/dist/index.js"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/jquery-ui.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/tooltips.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/custom.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/sweetalert2.all.min.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
+        crossorigin="anonymous"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        if (typeof flatpickr !== 'undefined') {
+            flatpickr("#dob", { // General selector for DOB, might need to be page-specific
+                dateFormat: "d-m-Y",
+                minDate: "01-01-1901",
+                maxDate: "31-12-2019", // Example range
+                defaultDate: null,
+                disableMobile: true,
+            });
+            // For other date pickers (e.g. start_date, end_date on admin dashboard)
+            flatpickr(".flatpickr-date", { // Use a class for generic date inputs
+                dateFormat: "Y-m-d",
+                disableMobile: true,
+            });
+        }
+    });
+</script>
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/src/referrals.js') }}"></script>
+{% block js_admin_footer %}{% endblock %} {# Specific JS block for admin pages #}
+</body>
+</html>

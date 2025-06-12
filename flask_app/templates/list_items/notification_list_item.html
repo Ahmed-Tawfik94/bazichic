@@ -1,0 +1,70 @@
+{# Converted from resources/Views/list_items/notification_list_item.twig #}
+{# Expects a 'notification' object in context. #}
+<li class="list-group-item px-0 {% if not notification.seen %}font-weight-bold unread-notification{% endif %}" style="background-color: {% if not notification.seen %}#f8f9fa{% else %}transparent{% endif %};">
+    <div class="media justify-content-between align-items-center">
+        <div class="rounded-circle border border-secondary" style="width: 70px;height: 70px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            {# Assuming notification.sender is a User object with user_image attribute #}
+            {% if notification.sender and notification.sender.user_image %}
+                <img class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover;"
+                     src="{{ url_for('static', filename=notification.sender.user_image) }}" alt="{{ notification.sender.username if notification.sender else 'System' }}">
+            {% elif notification.sender %}
+                {# Gravatar fallback or default avatar if sender exists but no image #}
+                <img class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover;"
+                     src="https://www.gravatar.com/avatar/{{ notification.sender.email | md5 }}?d=mp&s=70" alt="{{ notification.sender.username }}">
+            {% else %}
+                 {# System notification avatar #}
+                <img class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover;"
+                     src="{{ url_for('static', filename='images/logo_icon.png') }}" alt="System Notification"> {# Placeholder system icon #}
+            {% endif %}
+        </div>
+
+        <div class="media-body px-3">
+            <h5>{{ notification.title }}</h5>
+            <div class="d-flex justify-content-between">
+                <p class="p-0 m-0">{{ notification.message }}</p>
+                {# Assuming 'moment.js' is available for fromNow functionality, or use Flask-Moment #}
+                {# For Flask-Moment: <span class="text-sm text-muted time_ago">{{ moment(notification.created_at).fromNow() }}</span> #}
+                <span class="text-sm text-muted time_ago" data-timestamp="{{ notification.created_at.isoformat() if notification.created_at else '' }}" style="display: none;">
+                    {{ notification.created_at | strftime('%Y-%m-%d %H:%M:%S') if notification.created_at else 'N/A' }}
+                </span>
+            </div>
+             {# Action link if target_type and target_id are set #}
+            {% if notification.target_type and notification.target_id %}
+                {# This requires a helper function or more complex url_for logic to build target URL #}
+                {# Example: <a href="{{ url_for_dynamic_target(notification.target_type, notification.target_id) }}">View Details</a> #}
+            {% endif %}
+            {% if not notification.seen %}
+                 {# Assuming a route to mark as read: dashboard.mark_notification_read_post(notification_id=notification.id) #}
+                <form action="{{ url_for('dashboard.mark_notification_read_post', notification_id=notification.id) }}" method="POST" class="d-inline float-right">
+                    {# {{ csrf_token_field() }} #}
+                    <button type="submit" class="btn btn-sm btn-link text-primary">Mark as Read</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</li>
+
+{# The JS block from original twig should be global if using moment.js, or part of a site-wide JS file #}
+{# If this is the only place using moment for time_ago, it can be here.
+   It's better in a global JS file that initializes on DOMContentLoaded.
+#}
+{% block js_footer_dashboard %} {# Or a more general block if this partial is used outside dashboard #}
+    {{ super() }}
+    <script>
+    // Ensure moment.js is loaded before this script runs.
+    // This script should ideally run once after all such list items are loaded.
+    // If this partial is loaded multiple times, this script will also run multiple times.
+    // A better approach is to have a global script that initializes all .time_ago elements.
+    $(document).ready(function () {
+        $('.time_ago').each(function(idx, el) {
+            let timestamp = $(el).data('timestamp');
+            if (timestamp && typeof moment !== 'undefined') {
+                let timeAgo = moment(timestamp).fromNow();
+                $(el).text(timeAgo).show();
+            } else if (timestamp) { // Moment not loaded, show raw if available
+                $(el).show();
+            }
+        });
+    });
+    </script>
+{% endblock %}

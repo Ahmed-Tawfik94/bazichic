@@ -1,0 +1,262 @@
+Parse error near line 27: table `activities` already exists
+  CREATE TABLE `activities` (   `id` int NOT NULL,   `who_id` int NOT NULL,   `t
+               ^--- error here
+Parse error near line 44: table `app_usage` already exists
+  CREATE TABLE `app_usage` (   `id` int NOT NULL,   `api_key` varchar(40) NOT NU
+               ^--- error here
+Parse error near line 59: table `categories` already exists
+  CREATE TABLE `categories` (   `id` int NOT NULL,   `title` varchar(50) NOT NUL
+               ^--- error here
+Parse error near line 76: table `contacts` already exists
+  CREATE TABLE `contacts` (   `id` int NOT NULL,   `name` varchar(40) NOT NULL,
+               ^--- error here
+Parse error near line 91: table `currencies` already exists
+  CREATE TABLE `currencies` (   `id` int NOT NULL,   `currency` varchar(30) NOT
+               ^--- error here
+Parse error near line 105: table `documents` already exists
+  CREATE TABLE `documents` (   `id` int NOT NULL,   `title` varchar(100) NOT NUL
+               ^--- error here
+Parse error near line 138: table `document_audios` already exists
+  CREATE TABLE `document_audios` (   `id` int NOT NULL,   `title` varchar(100)
+               ^--- error here
+Parse error near line 154: table `document_likes` already exists
+  CREATE TABLE `document_likes` (   `id` int NOT NULL,   `doc_id` int NOT NULL,
+               ^--- error here
+Parse error near line 167: table `document_reviews` already exists
+  CREATE TABLE `document_reviews` (   `id` int NOT NULL,   `doc_id` int NOT NULL
+               ^--- error here
+Parse error near line 183: table `document_saves` already exists
+  CREATE TABLE `document_saves` (   `id` int NOT NULL,   `user_id` int NOT NULL,
+               ^--- error here
+Parse error near line 199: table `document_types` already exists
+  CREATE TABLE `document_types` (   `id` int NOT NULL,   `title` varchar(100) NO
+               ^--- error here
+Parse error near line 212: table `document_views` already exists
+  CREATE TABLE `document_views` (   `id` int NOT NULL,   `document_id` int NOT N
+               ^--- error here
+Parse error near line 225: table `doc_keywords` already exists
+  CREATE TABLE `doc_keywords` (   `id` int NOT NULL,   `doc_id` int NOT NULL,
+               ^--- error here
+Parse error near line 238: table `faqs` already exists
+  CREATE TABLE `faqs` (   `id` int NOT NULL,   `title` varchar(200) NOT NULL,
+               ^--- error here
+Parse error near line 258: table `faq_categories` already exists
+  CREATE TABLE `faq_categories` (   `id` int NOT NULL,   `title` varchar(100) NO
+               ^--- error here
+Parse error near line 271: table `faq_sub_categories` already exists
+  CREATE TABLE `faq_sub_categories` (   `id` int NOT NULL,   `title` varchar(200
+               ^--- error here
+Parse error near line 286: table `free_trials` already exists
+  CREATE TABLE `free_trials` (   `id` int NOT NULL,   `user_id` int NOT NULL,
+               ^--- error here
+Parse error near line 301: table `generated_otps` already exists
+  CREATE TABLE `generated_otps` (   `id` int NOT NULL,   `email` varchar(50) NOT
+               ^--- error here
+Parse error near line 316: table `membersip_plans` already exists
+  CREATE TABLE `membersip_plans` (   `id` int NOT NULL,   `title` varchar(200) N
+               ^--- error here
+Parse error near line 339: table `notifications` already exists
+  CREATE TABLE `notifications` (   `id` int NOT NULL,   `sender_id` int NOT NULL
+               ^--- error here
+Parse error near line 357: table `paypal_tests` already exists
+  CREATE TABLE `paypal_tests` (   `id` int NOT NULL,   `user_id` int NOT NULL,
+               ^--- error here
+Parse error near line 371: near ")": syntax error
+  ULL, --   `note` varchar(200) NOT NULL DEFAULT '' )  ;
+                                      error here ---^
+Parse error near line 387: table `reward_points` already exists
+  CREATE TABLE `reward_points` (   `id` int NOT NULL,   `user_id` int NOT NULL,
+               ^--- error here
+Parse error near line 403: table `site_settings` already exists
+  CREATE TABLE `site_settings` (   `id` int NOT NULL,   `name` varchar(100) NOT
+               ^--- error here
+Parse error near line 425: table `store_tags` already exists
+  CREATE TABLE `store_tags` (   `id` int NOT NULL,   `title` varchar(30) NOT NUL
+               ^--- error here
+Parse error near line 438: table `subscription_logs` already exists
+  CREATE TABLE `subscription_logs` (   `id` int NOT NULL,   `log` varchar(500) N
+               ^--- error here
+Parse error near line 451: table `testimonials` already exists
+  CREATE TABLE `testimonials` (   `id` int NOT NULL,   `name` varchar(50) NOT NU
+               ^--- error here
+Parse error near line 465: table `transaction_details` already exists
+  CREATE TABLE `transaction_details` (   `id` int NOT NULL,   `user_id` int NOT
+               ^--- error here
+Parse error near line 489: table `users` already exists
+  CREATE TABLE `users` (   `id` int NOT NULL,   `first_name` varchar(20) NOT NUL
+               ^--- error here
+Parse error near line 524: table `user_memberships` already exists
+  CREATE TABLE `user_memberships` (   `id` int NOT NULL,   `user_id` int NOT NUL
+               ^--- error here
+Parse error near line 544: near "PRIMARY": syntax error
+  ALTER TABLE `activities`   ADD PRIMARY KEY (`id`);
+                   error here ---^
+Parse error near line 550: near "PRIMARY": syntax error
+  ALTER TABLE `app_usage`   ADD PRIMARY KEY (`id`);
+                  error here ---^
+Parse error near line 556: near "PRIMARY": syntax error
+  ALTER TABLE `categories`   ADD PRIMARY KEY (`id`);
+                   error here ---^
+Parse error near line 562: near "PRIMARY": syntax error
+  ALTER TABLE `contacts`   ADD PRIMARY KEY (`id`);
+                 error here ---^
+Parse error near line 568: near "PRIMARY": syntax error
+  ALTER TABLE `currencies`   ADD PRIMARY KEY (`id`);
+                   error here ---^
+Parse error near line 574: near "PRIMARY": syntax error
+  ALTER TABLE `documents`   ADD PRIMARY KEY (`id`);
+                  error here ---^
+Parse error near line 580: near "PRIMARY": syntax error
+  ALTER TABLE `document_audios`   ADD PRIMARY KEY (`id`);
+                        error here ---^
+Parse error near line 586: near "PRIMARY": syntax error
+  ALTER TABLE `document_likes`   ADD PRIMARY KEY (`id`);
+                       error here ---^
+Parse error near line 592: near "PRIMARY": syntax error
+  ALTER TABLE `document_reviews`   ADD PRIMARY KEY (`id`),   ADD UNIQUE KEY `doc
+                         error here ---^
+Parse error near line 599: near "PRIMARY": syntax error
+  ALTER TABLE `document_saves`   ADD PRIMARY KEY (`id`);
+                       error here ---^
+Parse error near line 605: near "PRIMARY": syntax error
+  ALTER TABLE `document_types`   ADD PRIMARY KEY (`id`);
+                       error here ---^
+Parse error near line 611: near "PRIMARY": syntax error
+  ALTER TABLE `document_views`   ADD PRIMARY KEY (`id`);
+                       error here ---^
+Parse error near line 617: near "PRIMARY": syntax error
+  ALTER TABLE `doc_keywords`   ADD PRIMARY KEY (`id`);
+                     error here ---^
+Parse error near line 623: near "PRIMARY": syntax error
+  ALTER TABLE `faqs`   ADD PRIMARY KEY (`id`),   ADD UNIQUE KEY `url` (`url`);
+             error here ---^
+Parse error near line 630: near "PRIMARY": syntax error
+  ALTER TABLE `faq_categories`   ADD PRIMARY KEY (`id`);
+                       error here ---^
+Parse error near line 636: near "PRIMARY": syntax error
+  ALTER TABLE `faq_sub_categories`   ADD PRIMARY KEY (`id`);
+                           error here ---^
+Parse error near line 642: near "PRIMARY": syntax error
+  ALTER TABLE `free_trials`   ADD PRIMARY KEY (`id`);
+                    error here ---^
+Parse error near line 648: near "PRIMARY": syntax error
+  ALTER TABLE `generated_otps`   ADD PRIMARY KEY (`id`);
+                       error here ---^
+Parse error near line 654: near "PRIMARY": syntax error
+  ALTER TABLE `membersip_plans`   ADD PRIMARY KEY (`id`);
+                        error here ---^
+Parse error near line 660: near "PRIMARY": syntax error
+  ALTER TABLE `notifications`   ADD PRIMARY KEY (`id`);
+                      error here ---^
+Parse error near line 666: near "PRIMARY": syntax error
+  ALTER TABLE `paypal_tests`   ADD PRIMARY KEY (`id`);
+                     error here ---^
+Parse error near line 672: no such table: referrals
+Parse error near line 678: near "PRIMARY": syntax error
+  ALTER TABLE `reward_points`   ADD PRIMARY KEY (`id`);
+                      error here ---^
+Parse error near line 684: near "PRIMARY": syntax error
+  ALTER TABLE `site_settings`   ADD PRIMARY KEY (`id`);
+                      error here ---^
+Parse error near line 690: near "PRIMARY": syntax error
+  ALTER TABLE `store_tags`   ADD PRIMARY KEY (`id`);
+                   error here ---^
+Parse error near line 696: near "PRIMARY": syntax error
+  ALTER TABLE `testimonials`   ADD PRIMARY KEY (`id`);
+                     error here ---^
+Parse error near line 702: near "PRIMARY": syntax error
+  ALTER TABLE `transaction_details`   ADD PRIMARY KEY (`id`);
+                            error here ---^
+Parse error near line 708: near "PRIMARY": syntax error
+  ALTER TABLE `users`   ADD PRIMARY KEY (`id`),   ADD UNIQUE KEY `user_name` (`u
+              error here ---^
+Parse error near line 716: near "PRIMARY": syntax error
+  ALTER TABLE `user_memberships`   ADD PRIMARY KEY (`id`),   ADD UNIQUE KEY `qco
+                         error here ---^
+Parse error near line 727: near "MODIFY": syntax error
+  ALTER TABLE `activities`   MODIFY `id` int NOT NULL ;
+               error here ---^
+Parse error near line 733: near "MODIFY": syntax error
+  ALTER TABLE `app_usage`   MODIFY `id` int NOT NULL ;
+              error here ---^
+Parse error near line 739: near "MODIFY": syntax error
+  ALTER TABLE `categories`   MODIFY `id` int NOT NULL ;
+               error here ---^
+Parse error near line 745: near "MODIFY": syntax error
+  ALTER TABLE `contacts`   MODIFY `id` int NOT NULL ;
+             error here ---^
+Parse error near line 751: near "MODIFY": syntax error
+  ALTER TABLE `currencies`   MODIFY `id` int NOT NULL ;
+               error here ---^
+Parse error near line 757: near "MODIFY": syntax error
+  ALTER TABLE `documents`   MODIFY `id` int NOT NULL ;
+              error here ---^
+Parse error near line 763: near "MODIFY": syntax error
+  ALTER TABLE `document_audios`   MODIFY `id` int NOT NULL ;
+                    error here ---^
+Parse error near line 769: near "MODIFY": syntax error
+  ALTER TABLE `document_likes`   MODIFY `id` int NOT NULL ;
+                   error here ---^
+Parse error near line 775: near "MODIFY": syntax error
+  ALTER TABLE `document_reviews`   MODIFY `id` int NOT NULL ;
+                     error here ---^
+Parse error near line 781: near "MODIFY": syntax error
+  ALTER TABLE `document_saves`   MODIFY `id` int NOT NULL ;
+                   error here ---^
+Parse error near line 787: near "MODIFY": syntax error
+  ALTER TABLE `document_types`   MODIFY `id` int NOT NULL ;
+                   error here ---^
+Parse error near line 793: near "MODIFY": syntax error
+  ALTER TABLE `document_views`   MODIFY `id` int NOT NULL ;
+                   error here ---^
+Parse error near line 799: near "MODIFY": syntax error
+  ALTER TABLE `doc_keywords`   MODIFY `id` int NOT NULL ;
+                 error here ---^
+Parse error near line 805: near "MODIFY": syntax error
+  ALTER TABLE `faqs`   MODIFY `id` int NOT NULL ;
+                       ^--- error here
+Parse error near line 811: near "MODIFY": syntax error
+  ALTER TABLE `faq_categories`   MODIFY `id` int NOT NULL ;
+                   error here ---^
+Parse error near line 817: near "MODIFY": syntax error
+  ALTER TABLE `faq_sub_categories`   MODIFY `id` int NOT NULL ;
+                       error here ---^
+Parse error near line 823: near "MODIFY": syntax error
+  ALTER TABLE `free_trials`   MODIFY `id` int NOT NULL ;
+                error here ---^
+Parse error near line 829: near "MODIFY": syntax error
+  ALTER TABLE `generated_otps`   MODIFY `id` int NOT NULL ;
+                   error here ---^
+Parse error near line 835: near "MODIFY": syntax error
+  ALTER TABLE `membersip_plans`   MODIFY `id` int NOT NULL ;
+                    error here ---^
+Parse error near line 841: near "MODIFY": syntax error
+  ALTER TABLE `notifications`   MODIFY `id` int NOT NULL ;
+                  error here ---^
+Parse error near line 847: near "MODIFY": syntax error
+  ALTER TABLE `paypal_tests`   MODIFY `id` int NOT NULL ;
+                 error here ---^
+Parse error near line 853: near "MODIFY": syntax error
+  ALTER TABLE `referrals`   MODIFY `id` int NOT NULL ;
+              error here ---^
+Parse error near line 859: near "MODIFY": syntax error
+  ALTER TABLE `reward_points`   MODIFY `id` int NOT NULL ;
+                  error here ---^
+Parse error near line 865: near "MODIFY": syntax error
+  ALTER TABLE `site_settings`   MODIFY `id` int NOT NULL ;
+                  error here ---^
+Parse error near line 871: near "MODIFY": syntax error
+  ALTER TABLE `store_tags`   MODIFY `id` int NOT NULL ;
+               error here ---^
+Parse error near line 877: near "MODIFY": syntax error
+  ALTER TABLE `testimonials`   MODIFY `id` int NOT NULL ;
+                 error here ---^
+Parse error near line 883: near "MODIFY": syntax error
+  ALTER TABLE `transaction_details`   MODIFY `id` int NOT NULL ;
+                        error here ---^
+Parse error near line 889: near "MODIFY": syntax error
+  ALTER TABLE `users`   MODIFY `id` int NOT NULL ;
+                        ^--- error here
+Parse error near line 895: near "MODIFY": syntax error
+  ALTER TABLE `user_memberships`   MODIFY `id` int NOT NULL ;
+                     error here ---^

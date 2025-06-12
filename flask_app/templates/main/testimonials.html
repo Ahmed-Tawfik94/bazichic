@@ -1,0 +1,124 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ title | default("Testimonials - BaziChic") }}{% endblock %}
+
+{% block slider %}
+    <div id="titlebar" class="bg-primary"> {# Assuming bg-primary gives a suitable background #}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h2 class="text-white">Testimonials</h2>
+                    <nav id="breadcrumbs" class="text-white"> {# Made breadcrumbs white #}
+                        <ul>
+                            <li><a class="text-light" href="{{ url_for('main.home') }}">Home</a></li>
+                            <li><a class="text-light" href="{{ url_for('main.testimonials') }}">Testimonials</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+<section class="fullwidth margin-top-20 padding-top-20 padding-bottom-70" data-background-color="#fff">
+    <!-- Info Section -->
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center"> {# Added text-center for headline #}
+                <h3 class="headline centered">
+                    What Readers Say
+                    <span class="margin-top-25 d-block">We collect reviews from our users so you can get an honest opinion of what an experience with our reads are really like!</span>
+                </h3>
+            </div>
+        </div>
+    </div>
+    <!-- Info Section / End -->
+
+    <!-- Testimonials Carousel -->
+    {# This requires Slick carousel or a similar JS library to be initialized.
+       The original `testimonial-carousel testimonials` classes suggest Slick.
+       If using Swiper (from home.html), the structure would need to adapt to Swiper's requirements.
+       For now, a simple loop is shown; actual carousel needs JS init.
+    #}
+    <div class="fullwidth-carousel-container margin-top-20">
+        <div class="testimonial-carousel testimonials owl-carousel owl-theme"> {# Assuming Owl Carousel or similar #}
+            {# Expects 'testimonials_list' in context (renamed from page.testimonials) #}
+            {% for testimonial_item in testimonials_list | default([]) %}
+            <div class="fw-carousel-review item"> {# Added item class for Owl Carousel #}
+                <div class="testimonial-box">
+                    <div class="testimonial">{{ testimonial_item.review_text | safe }}</div>
+                </div>
+                <div class="testimonial-author">
+                    {# Assuming user object is nested or name/company are direct attributes #}
+                    <img src="{{ url_for('static', filename=testimonial_item.user.user_image if testimonial_item.user and testimonial_item.user.user_image else 'images/avatar.jpg') }}" alt="{{ testimonial_item.user.username if testimonial_item.user else 'Anonymous' }}">
+                    <h4>{{ testimonial_item.user.username if testimonial_item.user else testimonial_item.name | default('Anonymous') }}
+                        <span>{{ testimonial_item.user.company if testimonial_item.user and testimonial_item.user.company else 'Valued Reader' }}</span>
+                    </h4>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12 text-center"><p>No testimonials yet. Be the first to share your thoughts!</p></div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Parallax Section -->
+<div class="parallax"
+     data-background="{{ url_for('static', filename='images/banner3.jpg') }}"
+     data-color="#36383e" data-color-opacity="0.6" data-img-width="800" data-img-height="505">
+    <div class="text-content white-font">
+        <div class="container">
+            <div class="row align-items-center"> {# Added align-items-center #}
+                <div class="col-lg-6 col-sm-12 text-center text-lg-left mb-4 mb-lg-0">
+                    <h2>Read E-Books, Favourite, Review & Share</h2>
+                    <p class="text-white">Refer BaziChic to your friends who love reading and earn reward points. Read & Share Anything. Anywhere.</p>
+                    <a href="{{ url_for('auth.register_get') }}" class="button btn btn-primary mt-3">Get Started</a> {# Changed margin-top-25 to mt-3, updated button class #}
+                </div>
+                <div class="col-lg-6 col-sm-12 d-none d-lg-block text-center"> {# Added text-center for image #}
+                    <img src="{{ url_for('static', filename='images/rewardpoints.png') }}" alt="Read E-Books, Favourite, Review & Share on BaziChic" class="img-fluid"> {# Added img-fluid #}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Parallax / End -->
+{% endblock %}
+
+{% block jsbottomincludes %}
+    {{ super() }}
+    {# Initialize testimonial carousel (e.g., Slick or Owl Carousel) here if not done globally #}
+    <script>
+    $(document).ready(function() {
+        if ($('.testimonial-carousel.testimonials').length > 0 && typeof $.fn.owlCarousel === 'function') {
+            $('.testimonial-carousel.testimonials').owlCarousel({
+                loop: true,
+                margin: 10,
+                nav: false, // Or true if you want nav arrows
+                dots: true,
+                autoplay: true,
+                autoplayTimeout: 5000,
+                responsive:{
+                    0:{ items:1 },
+                    600:{ items:2 },
+                    1000:{ items:3 }
+                }
+            });
+        } else if ($('.testimonial-carousel.testimonials').length > 0 && typeof Swiper !== 'undefined') {
+             // Fallback or alternative with Swiper if Owl is not used
+            new Swiper('.testimonial-carousel.testimonials', {
+                loop: true,
+                slidesPerView: 1,
+                spaceBetween: 10,
+                autoplay: { delay: 5000 },
+                pagination: { el: '.swiper-pagination', clickable: true },
+                breakpoints: {
+                    640: { slidesPerView: 2, spaceBetween: 20 },
+                    1024: { slidesPerView: 3, spaceBetween: 30 }
+                }
+            });
+        }
+    });
+    </script>
+{% endblock %}

@@ -1,0 +1,37 @@
+{# Placeholder for resources/Views/partials/widgets/membership_table.twig (Not Found) #}
+{# This partial is included in list_subscription_plans.html #}
+{# It should display a table or cards for subscription plans. #}
+{# Expects a list of 'plans_list' or similar in context. #}
+
+<div class="row">
+    {% if plans_list and plans_list|length > 0 %}
+        {% for plan in plans_list %}
+        <div class="col-lg-4 col-md-6">
+            <div class="card pricing-card text-center mb-4">
+                <div class="card-header">
+                    <h4 class="card-title">{{ plan.name }}</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-price">${{ "%.2f"|format(plan.price | float) }} / {{ plan.interval }}</h5>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        {% if plan.description %}
+                            {% for feature in plan.description.split('\n') %}
+                                <li>{{ feature.strip() }}</li>
+                            {% endfor %}
+                        {% else %}
+                            <li>Basic access</li>
+                        {% endif %}
+                    </ul>
+                    {# The action URL should lead to a checkout or subscription confirmation page for this plan #}
+                    {# Example: url_for('subscription.confirm_subscription', plan_id=plan.id) or similar #}
+                    <a href="{{ url_for('subscription.confirm_subscription', ref_code=plan.id|string) }}" class="btn btn-lg btn-block btn-primary">Sign Up</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <p class="text-center">No subscription plans are currently available. Please check back later.</p>
+        </div>
+    {% endif %}
+</div>

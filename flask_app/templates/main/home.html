@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+
+{% block jstriggers %}
+{{ super() }} {# Include parent block content if any, though layout.html's jstriggers is empty #}
+<script type="text/javascript">
+ $(document).ready(function() {
+//setTimeout(function(){
+//alert("Bazichic Welcomes You.");
+//showWelcome();
+//}, 6200);
+});
+</script>
+{% endblock %}
+
+{% block slider %}
+{# Placeholder for slider content if it was part of home.twig directly #}
+{# Twig included 'partials/widgets/filter_slide.twig' which would need conversion and inclusion here #}
+{% include "partials/widgets/filter_slide.html" ignore missing %}
+{% endblock %}
+
+{% block content %}
+{# Twig included 'partials/widgets/membership_plan.twig' #}
+{% include "partials/widgets/membership_plan.html" ignore missing %}
+
+{# Twig included 'partials/widgets/document_filter_tab.twig' #}
+{% include "partials/widgets/document_filter_tab.html" ignore missing %}
+
+{# Twig included 'partials/widgets/info_section.twig' #}
+{% include "partials/widgets/info_section.html" ignore missing %}
+{% endblock %}
+
+{% block jsbottomincludes %}
+{{ super() }} {# Include parent block content #}
+<!-- REVOLUTION SLIDER SCRIPT (assuming it's still needed, was heavily commented out) -->
+{#
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/themepunch.tools.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/themepunch.revolution.min.js') }}"></script>
+#}
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+        if (typeof Swiper !== 'undefined') {
+            if (window.mySwiper) {
+                window.mySwiper.destroy(true, true);
+            }
+            window.mySwiper = new Swiper('.swiper', {
+                direction: 'horizontal',
+                speed: 400,
+                autoplay: {
+                    delay: 5000,
+                },
+                slidesPerView: 4,
+                slidesPerGroup: 1,
+                spaceBetween: 20,
+                breakpoints: {
+                    320: { slidesPerView: 2, spaceBetween: 20 },
+                    480: { slidesPerView: 3, spaceBetween: 20 },
+                    640: { slidesPerView: 4, spaceBetween: 20 }
+                },
+                freeMode: true,
+                // loop: true, // Consider if loop is truly needed
+                pagination: {
+                    el: '.swiper-pagination',
+                    dynamicBullets: true
+                },
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+                scrollbar: {
+                    el: '.swiper-scrollbar',
+                },
+            });
+        }
+    });
+</script>
+{% endblock %}

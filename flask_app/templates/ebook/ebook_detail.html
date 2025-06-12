@@ -1,0 +1,194 @@
+{% extends "layout.html" %} {# Or a more specific detail page layout if available #}
+
+{% block title %}{{ document.title if document else title | default("Book Detail - BaziChic") }}{% endblock %}
+
+{% block jstriggers %}
+    {{ super() }}
+    <script type="text/javascript">
+    $(document).ready(function () {
+        $('#rating').on('change', function () {
+            let msg = "Please select a rating.";
+            // This is just for display, actual rating submission would be via form.
+            // Flask-WTF might handle this differently.
+            let ratingValue = parseInt(this.value);
+            switch (ratingValue) {
+                case 1: msg = "POOR"; break;
+                case 2: msg = "AVERAGE"; break;
+                case 3: msg = "GOOD"; break;
+                case 4: msg = "VERY GOOD"; break;
+                case 5: msg = "EXCELLENT"; break;
+                default: msg = "N/A"; break;
+            }
+            $('#ratingMsg').text("You selected " + ratingValue + "/5: " + msg);
+        });
+    });
+    </script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-3 p-md-5"> {# Added responsive padding #}
+    <div class="row sticky-wrapper"> {# sticky-wrapper might need custom CSS/JS #}
+        <div class="col-lg-3 col-md-4 margin-top-20 sticky">
+            {# ebookrow.twig partial needs to be converted and included #}
+            {% include "partials/widgets/ebook_detail_sidebar_widget.html" with {'document': document} ignore missing %}
+
+            {# Action Buttons #}
+            {% if session.get('user_id') %} {# User is logged in #}
+                {# Ebook Reader Link/Button #}
+                <form action="{{ url_for('ebook.ebook_reader_post') }}" name="launchReaderForm" id="launchReaderForm" method="POST" class="my-2">
+                    {# {{ csrf_token_field() }} #}
+                    <input type="hidden" name="doc_id" value="{{ document.id }}">
+                    <input type="hidden" name="doc_link" value="{{ document.link }}">
+                    <input type="hidden" name="is_downloadable" value="{{ '1' if document.is_downloadable else '0' }}">
+                    {# last_read_page might come from a DocumentSave record #}
+                    <input type="hidden" name="last_read_page" value="{{ last_read_page | default(0) }}">
+                    <button type="submit" class="button btn btn-primary text-white w-100">
+                        <i class="fa fa-book-reader"></i> {{ unlock_title | default("Read Now") }} {# unlock_title from context #}
+                    </button>
+                </form>
+
+                {# Save to Library / Saved to Library Button #}
+                {% if document.is_saved_by_current_user %} {# Assuming this boolean is passed in context #}
+                    <a href="{{ url_for('dashboard.my_saved_reads_get') }}" class="button btn btn-success text-white w-100 mb-2">
+                        <i class="fa fa-check"></i> Saved to Library
+                    </a>
+                {% else %}
+                    {# Assuming doc_actions_bp.save_document_progress_post handles this #}
+                    <form action="{{ url_for('doc_actions.save_document_progress_post', document_id=document.id) }}" name="saveDocForm" method="POST" class="saveDocForm mb-2">
+                        {# {{ csrf_token_field() }} #}
+                        <input type="hidden" name="page" value="0"> {# Default values for initial save #}
+                        <input type="hidden" name="progress" value="0">
+                        <button type="submit" class="button btn btn-outline-primary w-100">
+                            <i class="fa fa-plus"></i> SAVE TO LIBRARY
+                        </button>
+                    </form>
+                {% endif %}
+            {% else %} {# User not logged in #}
+                 <a href="#sign-in-dialog-public-top" class="button btn btn-primary text-white w-100 my-2 popup-with-zoom-anim text-decoration-none">
+                    <i class="fa fa-book-reader"></i> {{ unlock_title | default("Read Now (Login Required)") }}
+                </a>
+                <a href="#sign-in-dialog-public-top" class="button btn btn-outline-primary w-100 mb-2 popup-with-zoom-anim text-decoration-none">
+                    <i class="fa fa-save"></i> SAVE TO LIBRARY (Login Required)
+                </a>
+            {% endif %}
+
+            <!-- Share / Like -->
+            <div class="listing-share margin-top-40 margin-bottom-40 no-border">
+                {% if session.get('user_id') %}
+                    {# Favourite button - needs JS for AJAX #}
+                    <button class="like-button favouriteDocument btn btn-outline-danger w-100 mb-2" data-id="{{ document.id }}" data-liked="{{ '1' if document.is_liked_by_current_user else '0' }}">
+                        <i class="fa {% if document.is_liked_by_current_user %}fa-heart{% else %}fa-heart-o{% endif %}"></i>
+                        {% if document.is_liked_by_current_user %}You Liked It!{% else %}Love this {{ document.document_type.name if document.document_type else "Item" }}?{% endif %}
+                    </button>
+                    {% if document.likes and document.likes|length > 0 and document.is_liked_by_current_user %}
+                        <span>{{ document.likes|length }} {% if document.likes|length == 1 %}other likes{% else %}others like{% endif %} this.</span>
+                    {% elif document.likes and document.likes|length > 0 %}
+                         <span>{{ document.likes|length }} {% if document.likes|length == 1 %}like{% else %}likes{% endif %}.</span>
+                    {% endif %}
+                {% else %}
+                    <a href="#sign-in-dialog-public-top" class="button btn btn-outline-danger w-100 mb-2 popup-with-zoom-anim text-decoration-none">
+                        <i class="fa fa-heart-o"></i> Love this? (Login to Favourite)
+                    </a>
+                {% endif %}
+                <div class="sharethis-inline-share-buttons py-2"></div> {# Ensure ShareThis script is in layout #}
+                <div class="clearfix"></div>
+            </div>
+
+            <!-- MemberCard -->
+            {# This section seems to be about user's current subscription status.
+               It might be better in a global context or fetched via an include if needed on many pages.
+               Assuming 'is_membership_active', 'free_trial_active', 'active_plan' are passed in context.
+            #}
+            {% if is_membership_active or free_trial_active %}
+                <div class="boxed-widget margin-top-35 margin-bottom-35">
+                    <a class="hosted-by-title" href="{{ url_for('dashboard.my_profile_get') }}">
+                        <h4>
+                            {{ session.get('first_name') }} {{ session.get('last_name') }}
+                            <span>
+                                <i class="sl sl-icon-badge"></i>
+                                {{ active_plan.title if active_plan else ("Free Trial Active" if free_trial_active else "Member") }}
+                            </span>
+                        </h4>
+                        {% if session.get('user_image') %}
+                            <p class="hosted-by-avatar"><img src="{{ url_for('static', filename=session.get('user_image')) }}" alt="User Avatar"></p>
+                        {% else %}
+                            <p class="hosted-by-avatar"><img src="{{ url_for('static', filename='images/avatar.jpg') }}" alt="Default Avatar"></p>
+                        {% endif %}
+                    </a>
+                    {# membership_info_text might be passed in context #}
+                    {% if membership_info_text %}
+                    <ul class="nav"><li class="nav-link">{{ membership_info_text }}</li></ul>
+                    {% endif %}
+                </div>
+            {% else %} {# Not subscribed and no active trial #}
+                <div class="boxed-widget booking-widget margin-top-35 text-center">
+                    <h2><i class="fa fa-trophy"></i></h2>
+                    <h3>START YOUR 10 DAYS FREE TRIAL</h3>
+                    <p>Exclusive 10 days trial to our library. Subscribe and access thousands of E-Books, Audio Books and Magazines brought to you by BaziChic.</p>
+                    <a href="{{ url_for('subscription.list_subscription_plans') }}" class="button btn btn-success text-white my-2 book-now fullwidth margin-top-5 text-decoration-none"> {# Changed btn-purple to btn-success #}
+                        <i class="fa fa-arrow-right"></i> Get Started
+                    </a>
+                    {% if not session.get('user_id') %}
+                        <a href="#sign-in-dialog-public-top" class="button btn btn-info text-white book-now fullwidth margin-top-5 popup-with-zoom-anim text-decoration-none"> {# Changed btn-purple to btn-info #}
+                            <i class="fa fa-users"></i> Join Bazichic
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+            <!-- MemberCard / End-->
+        </div>
+
+        <div class="col-lg-9 col-md-8 padding-right-10"> {# Ensure padding classes are Bootstrap 5 if used #}
+            <div id="titlebar" class="listing-titlebar">
+                <div class="listing-titlebar-title">
+                    <h2 style="color:#333;">{{ document.title if document else "Document Title" }}
+                        {% if document and document.tag %}
+                            <span class="listing-tag">{{ document.tag }}</span>
+                        {% endif %}
+                    </h2>
+                    <span>
+                        <a href="#listing-location" class="listing-address"> {# What is listing-location? #}
+                            <i class="fa fa-tags"></i>
+                            {{ document.category.title if document and document.category else "Uncategorized" }}
+                        </a>
+                    </span>
+
+                    {% if document and document.keywords and document.keywords|length > 0 %}
+                    <p>
+                        <span>
+                            {% for kw in document.keywords %}
+                            <a href="#" style="padding: 0px 10px;" class="rate-review"> {# Search by keyword link? #}
+                                <i class="sl sl-icon-tag"></i> {{ kw.keyword }}
+                            </a>
+                            {% endfor %}
+                        </span>
+                    </p>
+                    {% endif %}
+
+                    {% if document and document.reviews_received and document.reviews_received|length > 0 %}
+                        {# Assuming avg_rating is calculated and passed with document object #}
+                        <div class="star-rating" data-rating="{{ document.avg_rating | default(0) }}">
+                            <div class="rating-counter">
+                                <a href="#listing-reviews">({{ document.reviews_received|length }} reviews)</a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="sharethis-inline-share-buttons" style="display:block;margin-bottom:16px;"></div>
+
+            {# book_detail_tab.twig partial needs to be converted and included #}
+            {% include "partials/widgets/book_detail_tab.html" with {'document': document} ignore missing %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js_footer_dashboard %} {# Changed from jsfooter to match dashboard_layout #}
+    {{ super() }}
+    {# Add any page-specific JS here, e.g., for AJAX calls for reviews, favourites, etc. #}
+    <script>
+    // Add JS for favouriteDocument button click if not handled globally
+    // Add JS for saveDocForm submission if it's AJAX based
+    </script>
+{% endblock %}

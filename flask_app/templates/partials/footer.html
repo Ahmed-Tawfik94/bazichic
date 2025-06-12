@@ -1,0 +1,73 @@
+<div id="footer" class="bg-primary-900 text-white">
+    <!-- Main -->
+    <div class="container">
+        <div class="row text-white">
+            <div class="col-md-4 col-sm-6">
+                <h4 class="text-white">About Bazichic</h4>
+                <p class="text-white">BaziChic is a Chinese Metaphysics consultancy offering Feng Shui audits, BaZi
+                    consultations, and Date Selection services. We aim to help you achieve a fulfilling life with
+                    happiness, prosperity, and balance. We are here to support you through every stage of your journey,
+                    providing guidance and advice as you work toward your goals. Your well-being and success are
+                    important to us, and we’re dedicated to assisting you in creating the life you desire. </p>
+                <a class=" btn btn-link text-secondary" href="{{ url_for('main.about') }}">Learn more</a> {# Assuming main_bp and about route #}
+            </div>
+
+            <div class="col-md-4 col-sm-6">
+                <h4 class="text-white">Helpful Links</h4>
+                <ul class="footer-links text-white" style="width: 90%;">
+                    <li><a class="text-white" href="{{ url_for('main.home') }}">Home</a></li>
+                    <li><a class="text-white" href="{{ url_for('main.about') }}">About Us</a></li>
+                    <li><a class="text-white" href="{{ url_for('ebook.list_ebooks') }}">Browse</a></li> {# Assuming ebook_bp #}
+                    <li><a class="text-white" href="{{ url_for('subscription.list_subscription_plans') }}">Membership Plans</a></li> {# Assuming subscription_bp #}
+                    <li><a class="text-white" href="{{ url_for('main.contact_get') }}">Contact Us</a></li>
+                    <li><a class="text-white" href="{{ url_for('main.testimonials') }}">Testimonials</a></li>
+                    {% if session.get('user_id') %}
+                        <li><a class="text-white" href="{{ url_for('dashboard.my_profile_get') }}"> My Profile</a></li> {# Assuming dashboard_bp #}
+                        <li><a class="text-white" href="{{ url_for('dashboard.user_dashboard') }}"> My Dashboard</a></li>
+                        <li><a class="text-white" href="{{ url_for('auth.logout') }}"> Logout</a></li> {# Assuming auth_bp #}
+                    {% else %}
+                        <li><a class="text-white" href="{{ url_for('auth.login_get') }}"> Login</a></li>
+                        <li><a class="text-white" href="{{ url_for('auth.register_get') }}"> Create your BaziChic Account</a></li>
+                    {% endif %}
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="col-md-4 col-sm-12">
+                <h4 class="text-white">Contact Us</h4>
+                <div class="d-flex flex-column gap-2">
+					<div class="text-white d-flex gap-2">
+                        <i class="bi bi-geo-alt-fill"  style="font-size:20px"></i>
+                        <span>BaziChic Chinese Metaphysics Consultancy Taman Sri Rampai, 53300</span> {# Placeholder for dynamic settings #}
+                    </div>
+
+                    <div class="text-white d-flex gap-2 ">
+                        <i class="bi bi-whatsapp" style="font-size:20px"></i>
+                        <span> +6011 6326 1781</span> {# Placeholder for dynamic settings #}
+                    </div>
+                    <div class="text-white d-flex gap-2">
+                        <i class="bi bi-envelope" style="font-size:20px"></i>
+                        <a href="#" class="text-white">customer_support@bazichic.com</a> {# Placeholder for dynamic settings #}
+                    </div>
+                </div>
+
+                <div class="d-flex mt-2">
+                    <div><a class="btn btn-outline-secondary text-white" target="_blank" href="https://www.facebook.com/BaziChic">
+                            <i class="bi bi-facebook" style="font-size:20px"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Copyright -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="copyrights text-white">© 2019 -2024 | <a href="#" class="text-primary-100">BaziChic Chinese Metaphysics Consultancy</a> | All {# Updated year #}
+                    Rights Reserved.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Footer / End -->

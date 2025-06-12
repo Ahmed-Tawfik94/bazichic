@@ -1,0 +1,414 @@
+{% extends "admin_layout_flat.html" %}
+
+{% block title %}{{ title | default("Admin Dashboard - BaziChic") }}{% endblock %}
+
+{% block dashboard_admin_content %}
+<style>
+    /* Styles from admin-dashboard.twig, scoped here or moved to a CSS file */
+    .card-custom {
+        background: #ffffff;
+        color: #3A1078; /* Example color */
+        border-radius: 15px;
+        padding: 20px;
+        width: 100%;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Softer shadow */
+        position: relative;
+        margin-bottom: 20px; /* Added margin */
+    }
+    .header-title {
+        font-size: 2rem; /* Responsive font size */
+        font-weight: bold;
+    }
+    .sub-title {
+        color: #A0A0A0;
+        font-size: 0.9rem;
+    }
+    .list-group-item {
+        background: transparent;
+        color: #3A1078; /* Example color */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: none;
+        padding: 10px 0;
+        font-size: 1rem;
+    }
+    .list-group-item img { /* For country flags */
+        width: 24px;
+        height: 16px;
+        margin-right: 10px;
+        border-radius: 3px;
+    }
+    .top-arrow {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .top-arrow i {
+        color: #3A1078; /* Example color */
+        font-size: 14px;
+    }
+    .dashboard-stat-content h4 { /* Ensure specificity if these are global */
+        color: #3A1078 !important; /* Example color */
+    }
+    .dashboard-stat { /* Added from user dashboard for consistency if desired */
+        background: #fff;
+        padding: 20px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        color: #fff; /* Default text color for stats, overridden by h4 */
+    }
+    .dashboard-stat .dashboard-stat-content span { color: #333; } /* Default span color */
+    .dashboard-stat.color-1 { background: #6A4C9C; } /* Example colors */
+    .dashboard-stat.color-2 { background: #907AD6; }
+    .dashboard-stat.color-3 { background: #C1A4FF; }
+    .dashboard-stat.color-bazi { background: #3795BD; } /* From user dashboard */
+
+
+</style>
+
+{# Assuming 'page_data' is the context dictionary replacing 'page' from Twig #}
+{% set stats = page_data.data_stats if page_data and page_data.data_stats else {} %}
+{% set earningsArr = stats.earningsArr if stats else [] %}
+{% set countries_stat = stats.countries_stat if stats else [] %}
+
+
+<div class="container-fluid dashboard-content-area p-3 p-md-4"> {# Added padding #}
+    {% if page_data.is_filtered %}
+        <div class="mb-3">
+            <button type="button" class="btn btn-info">
+                Filtered: ({{ page_data.start_date | default('N/A') }} to {{ page_data.end_date | default('N/A') }})
+                <a href="{{ url_for('admin_main.dashboard') }}" class="badge badge-light ml-2"><i class="bi bi-x"></i> Clear</a>
+            </button>
+        </div>
+    {% else %}
+        <h3 class="mb-3">All-Time Data</h3>
+    {% endif %}
+
+    <form method="GET" action="{{ url_for('admin_main.dashboard') }}" class="mb-4">
+        <div class="row">
+            <div class="col-md-4 form-group">
+                <label for="start_date">Start Date</label>
+                <input type="date" id="start_date" name="start_date" class="form-control flatpickr-date" value="{{ request.args.get('start_date', '') }}">
+            </div>
+            <div class="col-md-4 form-group">
+                <label for="end_date">End Date</label>
+                <input type="date" id="end_date" name="end_date" class="form-control flatpickr-date" value="{{ request.args.get('end_date', '') }}">
+            </div>
+            <div class="col-md-4 form-group">
+                <label>&nbsp;</label>
+                <button id="filterButton" type="submit" class="btn btn-primary btn-block"><i class="bi bi-filter mr-2"></i>Apply Filter</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="row">
+        <div class="col-lg-6 col-md-6 col-sm-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Subscription Overview</h5>
+                    <div id="subscriptionChart"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-12 mb-4">
+             <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Content Overview</h5>
+                    <div id="contentChart"></div> {# Renamed from myChart for clarity #}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mt-4 mb-3 section-title">Transaction Summary</h4>
+    <div class="row">
+        <div class="col-lg-6 col-md-6 mb-4">
+            <a href="{{ url_for('admin_subscription.manage_subscriptions_get') }}" class="text-decoration-none">
+                <div class="dashboard-stat card-custom color-1">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ stats.amountPaid | default('0.00') }} USD</h4>
+                        <span>Total Amount Received</span>
+                    </div>
+                    <div class="dashboard-stat-icon"><i class="im im-icon-Dollar"></i></div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-6 col-md-6 mb-4">
+            <a href="{{ url_for('admin_subscription.manage_subscriptions_get') }}" class="text-decoration-none">
+                <div class="dashboard-stat card-custom color-2">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ stats.amountUnPaid | default('0.00') }} USD</h4>
+                        <span>Total Amount On Hold</span>
+                    </div>
+                    <div class="dashboard-stat-icon"><i class="sl sl-icon-wallet"></i></div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <h4 class="mt-4 mb-3 section-title">Active Subscriptions Summary</h4>
+    <div class="row">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <a href="{{ url_for('admin_subscription.manage_subscriptions_get') }}" class="text-decoration-none">
+                <div class="dashboard-stat card-custom">
+                    <div class="dashboard-stat-content"><h4>{{ stats.activeSubscribers | default(0) }}</h4><span>Total Active Subscriptions</span></div>
+                    <div class="dashboard-stat-icon"><i class="sl sl-icon-badge"></i></div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+             <a href="{{ url_for('admin_subscription.manage_subscriptions_get', plan_filter='Starter') }}" class="text-decoration-none"> {# Example filter #}
+                <div class="dashboard-stat card-custom">
+                    <div class="dashboard-stat-content"><h4>{{ stats.currentMembersWithStarter | default(0) }}</h4><span>Starter Subscribers</span></div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <a href="{{ url_for('admin_subscription.manage_subscriptions_get', plan_filter='Premium') }}" class="text-decoration-none">
+                <div class="dashboard-stat card-custom">
+                    <div class="dashboard-stat-content"><h4>{{ stats.currentMembersWithPremium | default(0) }}</h4><span>Premium Subscribers</span></div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <a href="{{ url_for('admin_subscription.manage_subscriptions_get', plan_filter='Student') }}" class="text-decoration-none">
+                <div class="dashboard-stat card-custom">
+                    <div class="dashboard-stat-content"><h4>{{ stats.currentMembersWithStudent | default(0) }}</h4><span>Student Subscribers</span></div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <h4 class="mt-4 mb-3 section-title">Users Summary</h4>
+    <div class="row">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <a href="{{ url_for('admin_user.manage_users_get') }}" class="text-decoration-none">
+                <div class="dashboard-stat card-custom">
+                    <div class="dashboard-stat-content"><h4>{{ stats.totalMembers | default(0) }}</h4><span>Total User Accounts</span></div>
+                    <div class="dashboard-stat-icon"><i class="sl sl-icon-people"></i></div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <a href="{{ url_for('admin_reward.reward_points_summary_get') }}" class="text-decoration-none">
+                <div class="dashboard-stat card-custom">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ stats.totalRewardPoints | default(0) }}</h4><span>Total Reward Points</span>
+                        {% if stats.numPeopleRewarded and stats.numPeopleRewarded > 0 %}
+                            <span style="display:block;font-size: 0.8em;line-height: 1.2;font-style: italic;">({{ stats.numPeopleRewarded }}
+                                {{ 'Person' if stats.numPeopleRewarded == 1 else 'People' }} Rewarded)</span>
+                        {% endif %}
+                    </div>
+                    <div class="dashboard-stat-icon"><i class="sl sl-icon-wallet"></i></div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <a href="{{ url_for('admin_plan.free_trials_summary_get') }}" class="text-decoration-none">
+                <div class="dashboard-stat card-custom">
+                    <div class="dashboard-stat-content"><h4>{{ stats.totalFreeTrialsActive | default(0) }}</h4><span>Total Free Trials</span></div>
+                    <div class="dashboard-stat-icon"><i class="sl sl-icon-plane"></i></div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <a href="{{ url_for('admin_main.view_contact_submissions_get') }}" class="text-decoration-none">
+                <div class="dashboard-stat card-custom">
+                    <div class="dashboard-stat-content"><h4>{{ stats.numTotalContacts | default(0) }}</h4><span>Received Messages</span></div>
+                    <div class="dashboard-stat-icon"><i class="sl sl-icon-envelope-open"></i></div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <h4 class="mt-4 mb-3 section-title">Resources Summary</h4>
+    <div class="row">
+        <div class="col-lg-4 col-md-6 mb-4">
+            <a href="{{ url_for('admin_document.manage_reviews_get') }}" class="text-decoration-none">
+                <div class="dashboard-stat card-custom">
+                    <div class="dashboard-stat-content"><h4>{{ stats.numDocReviews | default(0) }}</h4><span>User Reviews</span></div>
+                    <div class="dashboard-stat-icon"><i class="sl sl-icon-speech"></i></div>
+                </div>
+            </a>
+        </div>
+         <div class="col-lg-4 col-md-6 mb-4">
+            {# This link was to 'bookmarks' which is a user dashboard route. Admin might have a different view or this is a misnomer. #}
+            {# Assuming an admin view for document likes if it exists, or remove/change link. For now, placeholder link. #}
+            <a href="#" class="text-decoration-none">
+                <div class="dashboard-stat card-custom">
+                    <div class="dashboard-stat-content"><h4>{{ stats.numDocLikes | default(0) }}</h4><span>User Likes</span></div>
+                    <div class="dashboard-stat-icon"><i class="im im-icon-Love-User"></i></div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+            {# Same as above for saved reads #}
+            <a href="#" class="text-decoration-none">
+                <div class="dashboard-stat card-custom">
+                    <div class="dashboard-stat-content"><h4>{{ stats.numDocSaves | default(0) }}</h4><span>Total Reads Saved</span></div>
+                    <div class="dashboard-stat-icon"><i class="im im-icon-Data-Cloud"></i></div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <a href="{{ url_for('admin_document.manage_documents_get') }}" class="text-decoration-none">
+                <div class="dashboard-stat card-custom">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ stats.numEbooks | default(0) }}</h4><span>E-Books</span>
+                        {% if stats.numEbooksPending and stats.numEbooksPending > 0 %}
+                            <span style="display:block;font-size: 0.8em;line-height: 1.2;font-style: italic;">({{ stats.numEbooksPending }} Draft)</span>
+                        {% endif %}
+                    </div>
+                    <div class="dashboard-stat-icon"><i class="sl sl-icon-book-open"></i></div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <a href="{{ url_for('admin_document.manage_documents_get') }}" class="text-decoration-none">
+                <div class="dashboard-stat card-custom">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ stats.numMagazines | default(0) }}</h4><span>Magazines</span>
+                        {% if stats.numMagazinesPending and stats.numMagazinesPending > 0 %}
+                           <span style="display:block;font-size: 0.8em;line-height: 1.2;font-style: italic;">({{ stats.numMagazinesPending }} Draft)</span>
+                        {% endif %}
+                    </div>
+                    <div class="dashboard-stat-icon"><i class="sl sl-icon-layers"></i></div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <a href="{{ url_for('admin_category.manage_categories_get') }}" class="text-decoration-none">
+                <div class="dashboard-stat card-custom">
+                    <div class="dashboard-stat-content">
+                        <h4>{{ stats.numDocCategories | default(0) }}</h4><span>Categories</span>
+                        {% if stats.numDocCategoriesDraft and stats.numDocCategoriesDraft > 0 %}
+                            <span style="display:block;font-size: 0.8em;line-height: 1.2;font-style: italic;">({{ stats.numDocCategoriesDraft }} Draft)</span>
+                        {% endif %}
+                    </div>
+                    <div class="dashboard-stat-icon"><i class="sl sl-icon-tag"></i></div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6 mb-4">
+            <div class="card-custom">
+                <div class="top-arrow shadow-sm"><i class="bi bi-arrow-up-right"></i></div>
+                <div class="header-title">${{ stats.amountPaid | default('0.00') }}</div>
+                <div class="sub-title">Last Transactions</div>
+                <ul class="list-group mt-3">
+                    {% for earningRow in earningsArr %}
+                        <li class="list-group-item">
+                            <div>{{ earningRow.date_end | strftime('%Y-%m-%d') if earningRow.date_end else 'N/A' }}</div>
+                            <div>${{ "%.2f"|format(earningRow.earning | float) if earningRow.earning is not none else '0.00' }}</div>
+                        </li>
+                    {% else %}
+                        <li class="list-group-item">No transaction data available.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card-custom">
+                <div class="top-arrow shadow-sm"><i class="bi bi-arrow-up-right"></i></div>
+                <div class="header-title">{{ stats.totalMembers | default(0) }}</div>
+                <div class="sub-title">Impressions worldwide</div>
+                <ul class="list-group mt-3">
+                    {% for countryRow in countries_stat %}
+                        {% if countryRow.country %}
+                            <li class="list-group-item">
+                                <div>
+                                    {# Assuming country_code filter/function exists or is passed #}
+                                    {# <img src="https://flagcdn.com/w40/{{ countryRow.country | country_code }}.png" alt="{{ countryRow.country }}"> #}
+                                    {{ countryRow.country }}
+                                </div>
+                                <div>{{ countryRow.numUsers }}</div>
+                            </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="list-group-item">No country data available.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center align-items-center mt-3">
+        <div class="col-md-12">
+            <div class="copyrights text-center text-muted small">© {{ "now"|strftime("%Y") }} BaziChic Chinese Metaphysics Consultancy | All Rights Reserved.</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js_admin_footer %}
+    {{ super() }}
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Default values for charts if stats are not available
+        var starterSubsActive = parseFloat("{{ stats.currentMembersWithStarter | default(0) }}");
+        var premiumSubsActive = parseFloat("{{ stats.currentMembersWithPremium | default(0) }}");
+        var studentSubsActive = parseFloat("{{ stats.currentMembersWithStudent | default(0) }}");
+        var totalActiveSubs = parseFloat("{{ stats.activeSubscribers | default(0) }}");
+
+        var starterSubsTotal = parseFloat("{{ stats.totalMembersWithStarter | default(0) }}");
+        var premiumSubsTotal = parseFloat("{{ stats.totalMembersWithPremium | default(0) }}");
+        var studentSubsTotal = parseFloat("{{ stats.totalMembersWithStudent | default(0) }}");
+        var totalSubs = parseFloat("{{ stats.totalSubscribers | default(0) }}");
+
+        var ebooksPublished = parseFloat("{{ stats.numEbooks | default(0) }}");
+        var magazinesPublished = parseFloat("{{ stats.numMagazines | default(0) }}");
+        var ebooksDraft = parseFloat("{{ stats.numEbooksPending | default(0) }}");
+        var magazinesDraft = parseFloat("{{ stats.numMagazinesPending | default(0) }}");
+
+        if (typeof ApexCharts !== 'undefined') {
+            var subscriptionChartOptions = {
+                chart: { type: 'bar', height: 350 },
+                series: [
+                    { name: 'Active Subscribers', data: [starterSubsActive, premiumSubsActive, studentSubsActive, totalActiveSubs] },
+                    { name: 'Total Subscriptions', data: [starterSubsTotal, premiumSubsTotal, studentSubsTotal, totalSubs] }
+                ],
+                xaxis: { categories: ['Starter', 'Premium', 'Student', 'All Plans Total'] },
+                yaxis: { title: { text: 'Number of Subscriptions' } },
+                colors: ['#3795BD', '#FFC107'], // Example colors
+                plotOptions: { bar: { horizontal: false, columnWidth: '50%' } },
+                dataLabels: { enabled: false },
+                legend: { position: 'top' }
+            };
+            var subscriptionChart = new ApexCharts(document.querySelector("#subscriptionChart"), subscriptionChartOptions);
+            subscriptionChart.render();
+
+            var contentChartOptions = {
+                chart: { type: 'bar', height: 350 },
+                series: [
+                    { name: 'Published', data: [ebooksPublished, magazinesPublished] },
+                    { name: 'Draft', data: [ebooksDraft, magazinesDraft] }
+                ],
+                xaxis: { categories: ['E-Books', 'Magazines'] },
+                yaxis: { title: { text: 'Number of Documents' } },
+                colors: ['#28A745', '#FD7E14'], // Example colors
+                plotOptions: { bar: { horizontal: false, columnWidth: '40%' } },
+                dataLabels: { enabled: false },
+                legend: { position: 'top' }
+            };
+            var contentChart = new ApexCharts(document.querySelector("#contentChart"), contentChartOptions);
+            contentChart.render();
+        } else {
+            console.error("ApexCharts library not loaded.");
+        }
+
+        // Date filter button functionality (already present in Twig, ensuring it's fine)
+        // Removed the direct form submission via JS, using standard GET form submission now.
+    });
+    </script>
+{% endblock %}

@@ -1,0 +1,141 @@
+{# Converted from resources/Views/forms/profile_form.twig #}
+{# This form is used in both user profile and admin editing a user.
+   Context variable 'admin_mode' (boolean) and 'action' (string like 'update-user')
+   and 'form_user' (the user object being edited, replacing page.thisUser) will be needed.
+#}
+
+{% set form_action = url_for('dashboard.my_profile_post') %} {# Default for user's own profile #}
+{% if admin_mode and action == 'update-user' and form_user %}
+    {% set form_action = url_for('admin_user.edit_user_post', user_id=form_user.id) %} {# Assuming admin_user blueprint #}
+{% elif admin_mode %}
+    {# What is the default admin profile update action if not specific user?
+       This might point to an admin's own profile if such a route exists.
+       For now, assume it's an error or points to a generic admin profile update.
+       Let's assume admin_main.update_admin_profile() for admin's own profile.
+    #}
+    {# {% set form_action = url_for('admin_main.update_admin_profile_post') %} #}
+    {# Or, if it's always for a specific user when admin_mode is true, the first condition should catch it. #}
+{% endif %}
+
+<div id="profileFormOverlay" style="display:none;">
+    <div style="margin: 30px; text-align: center;">
+        <img src="{{ url_for('static', filename='images/preloader.gif') }}" width="60" alt="Saving..."/>
+        <h4><strong>Saving Profile...</strong></h4>
+        <h5>Please wait...</h5>
+        <div id="profile_form_msg"></div> {# Changed from login_msg for clarity #}
+    </div>
+</div>
+
+{# Flash messages - Flask style #}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category if category != 'message' else 'info' }}" role="alert">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<form method="POST" role="form" name="profileForm" id="profileForm" action="{{ form_action }}" enctype="multipart/form-data">
+    {# Flask-WTF: {{ form.csrf_token }} #}
+    {% if admin_mode %}
+        <input type="hidden" value="1" name="admin_mode" id="admin_mode">
+    {% endif %}
+
+    {# Assuming form_user is passed in context, representing the user whose profile is being edited #}
+    {# For Flask-WTF, these would be form fields e.g. {{ form.user_id() }} if using hidden tag #}
+    <input type="hidden" value="{{ form_user.id if form_user else '' }}" name="user_id" id="user_id">
+
+    <div class="my-profile">
+        <div class="row with-forms">
+            <div class="col-md-4">
+                <div class="edit-profile-photo">
+                    {% if form_user and form_user.user_image %}
+                        <img id="profilePreview" src="{{ url_for('static', filename=form_user.user_image) }}" class="NO-CACHE" alt="user-image">
+                    {% else %}
+                        <img id="profilePreview" src="{{ url_for('static', filename='images/avatar.jpg') }}" alt="placeholder">
+                    {% endif %}
+                    <div class="change-photo-btn">
+                        <div class="photoUpload">
+                            <span><i class="fa fa-upload"></i> Upload Profile Picture</span>
+                            {# Flask-WTF: {{ form.profile_image(class="upload", onchange="profileImgPreview();", accept="image/*") }} #}
+                            <input type="file" id="profile_image" name="profile_image" class="upload" onchange="profileImgPreview();" accept="image/*"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="row with-forms">
+                    <div class="col-md-6">
+                        <label for="first_name" style="margin-top: 0px;">First Name</label>
+                        <input value="{{ form_user.first_name if form_user else request.form.get('first_name', '') }}" name="first_name" id="first_name" type="text" placeholder="Enter first name">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="last_name" style="margin-top: 0px;">Last Name</label>
+                        <input value="{{ form_user.last_name if form_user else request.form.get('last_name', '') }}" name="last_name" id="last_name" type="text" placeholder="Enter last name">
+                    </div>
+                </div>
+
+                <div class="row with-forms">
+                    <div class="col-md-6">
+                        <div>
+                            <label for="dob" style="margin-top: 0px;">Date of Birth</label>
+                            <input type="text" name="dob" id="dob" class="form-control" placeholder="Select date of birth" value="{{ form_user.dob.strftime('%d-%m-%Y') if form_user and form_user.dob else request.form.get('dob', '') }}"/>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div>
+                            <label for="country" style="margin-top: 0px;">Country</label>
+                            {# Assuming 'countries' list is passed in context #}
+                            <select class="chosen-select-no-single form-control" name="country" id="country" required="required">
+                                <option value="">Click to select</option>
+                                {% for country_name in countries | default([]) %}
+                                    <option value="{{ country_name }}" {% if (form_user and form_user.country == country_name) or (request.form.get('country') == country_name) %}selected{% endif %}>{{ country_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {% if admin_mode and action == 'update-user' and form_user %}
+                <div class="row with-forms">
+                    <div class="col-md-6">
+                        <div>
+                            <label for="userTypes" style="margin-top: 0px;">Select User Role <span class="text-danger">*</span></label> {# Changed from type to role #}
+                            {# Assuming 'roles_list' (list of Role objects) is passed in context #}
+                            <select id="userTypes" class="chosen-select-no-single form-control" name="role_id" required="required">
+                                {% for role_item in roles_list | default([]) %}
+                                    <option value="{{ role_item.id }}" {% if form_user and form_user.role_id == role_item.id %}selected{% endif %}>{{ role_item.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6 my-2">
+                        <div>
+                            <label for="status_id" style="margin-top: 0px;">User Status</label>
+                            {# Assuming 'statuses_list' (list of Status objects) is passed in context #}
+                            <select class="chosen-select-no-single form-control" name="status_id" id="status_id" required="required">
+                                {% for status_item in statuses_list | default([]) %}
+                                <option value="{{ status_item.id }}" {% if form_user and form_user.status_id == status_item.id %} selected {% endif %}>{{ status_item.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <label for="email" style="margin-top: 0px;">Email</label>
+                <input value="{{ form_user.email if form_user else '' }}" name="email" id="email" type="email" readonly> {# Email usually not editable or requires special verification #}
+            </div>
+        </div>
+
+        <label for="description">Short Description About you
+            <i class="tip" data-tip-content="Write a short intro that describes you."></i>
+        </label>
+        <textarea class="search-field form-control" name="description" id="description" rows="2" placeholder="Write a short intro that describes you." minlength="200">{{ form_user.description if form_user else request.form.get('description', '') }}</textarea>
+    </div>
+
+    <button type="submit" class="button btn btn-purple text-white margin-top-15">Save Changes</button> {# Changed from simple 'button' to 'button btn btn-purple' #}
+</form>
+{# profileImgPreview() and flatpickr for #dob are in dashboard_layout.html #}

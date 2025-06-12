@@ -1,0 +1,212 @@
+{# Converted from resources/Views/dashboard_layout.twig #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>{% block page_title %}{{ title | default("User Dashboard - BaziChic") }}{% endblock %}</title>
+    <meta name="description" content="{{ description | default("User dashboard for BaziChic.") }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}"/>
+
+    {# Styles specific to dashboard might be fewer than main layout #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}"> {# Main from general layout for consistency #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}"> {# Assuming custom dashboard styles #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/colors/main.css') }}" id="colors">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/invoice.css') }}"> {# If invoice viewing is part of dashboard #}
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link href="{{ url_for('static', filename='css/plugins/datedropper.css') }}" rel="stylesheet" type="text/css"> {# Check if still used #}
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+
+    <script type="text/javascript">
+        // var authorization = '{{ session.get("api_key") }}'; // Example if api_key is needed client-side
+
+        function docImgPreview() { // Used in profile_form for document cover
+            var oFReader = new FileReader();
+            oFReader.readAsDataURL(document.getElementById("cover_image").files[0]);
+            oFReader.onload = function (oFREvent) {
+                document.getElementById("cover_image_preview").src = oFREvent.target.result;
+                // $('#docMediaUploadForm').submit(); // This was in original, might need specific form
+            };
+        }
+
+        function profileImgPreview() { // Used in profile_form for user image
+            var oFReader = new FileReader();
+            oFReader.readAsDataURL(document.getElementById("profile_image").files[0]);
+            oFReader.onload = function (oFREvent) {
+                document.getElementById("profilePreview").src = oFREvent.target.result;
+            };
+        }
+
+        // showPdfPreview and parseDoc seem specific to document upload forms, maybe for admin section
+        // Keeping them here if dashboard_layout is also used by some admin pages that might reuse these.
+        function showPdfPreview() {
+            // parseDoc(); // Call this if it's a prerequisite
+            var pdffile = document.getElementById("doc_link").files[0];
+            if (pdffile) {
+                var pdffile_url = URL.createObjectURL(pdffile);
+                $('#viewer').attr('src', pdffile_url); // Assuming an element with id="viewer"
+                // $('#docFileUploadForm').submit(); // This was in original
+            }
+        }
+
+        function parseDoc() {
+            var input = document.getElementById("doc_link");
+            if (input && input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.readAsBinaryString(input.files[0]); // Note: readAsBinaryString is deprecated in some contexts
+                reader.onloadend = function () {
+                    if (reader.result) {
+                        var match = reader.result.match(/\/Type[\s]*\/Page[^s]/g);
+                        var count = match ? match.length : 0;
+                        $('#num_pages').val(count); // Assuming an element with id="num_pages"
+                    }
+                }
+            }
+        }
+    </script>
+    {% block jstriggers %}{% endblock %} {# For page-specific JS triggers #}
+    <script type="text/javascript" src="{{ url_for('static', filename='scripts/front_script.js') }}"></script>
+    {# <script type="text/javascript" src="{{ url_for('static', filename='scripts/script.js') }}"></script> #} {# script.js might be admin specific #}
+    <style>
+        body {
+            background: #F7F7F7 !important;
+        }
+         /* Styles for bottom-nav were here, moving to where it's included if specific */
+    </style>
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+<div id="wrapper">
+    <header id="header-container" class="fixed fullwidth dashboard">
+        {# Assumes public_top_navbar.twig contains the top navigation bar suitable for logged-in users #}
+        {% include "partials/public_top_navbar.html" ignore missing %}
+    </header>
+</div>
+<!-- Header / End -->
+<div class="clearfix"></div>
+<!-- Header Container / End -->
+
+<!-- Dashboard -->
+<div id="dashboard">
+    {# Assumes user_dashboard.twig was for the sidebar navigation in dashboard #}
+    {% include "partials/dashboard_sidebar.html" ignore missing %}
+
+    <!-- Content -->
+    <div class="dashboard-content">
+        {% block dashboard_content %}{% endblock %}
+    </div>
+</div>
+<!-- END OF DASHBOARD -->
+
+{# Mobile bottom nav - was part of dashboard_layout.twig #}
+<nav class="navbar navbar-dark bg-dark text-white bottom-nav d-block d-md-none px-0 py-2">
+    <div class="container d-flex">
+        <a class="nav-item nav-link text-white {% if request.blueprint == 'dashboard' and request.endpoint.endswith('user_dashboard') %}active{% endif %}"
+           href="{{ url_for('dashboard.user_dashboard') }}">
+            <i class="sl sl-icon-rocket" style="font-size: 20px"></i>
+        </a>
+        <a class="nav-item nav-link text-white {% if request.blueprint == 'dashboard' and request.endpoint.endswith('list_my_notifications_get') %}active{% endif %}"
+           href="{{ url_for('dashboard.list_my_notifications_get') }}">
+            <i class="bi bi-bell" style="font-size: 20px"></i>
+        </a>
+        <a class="nav-item nav-link text-white {% if request.blueprint == 'dashboard' and request.endpoint.endswith('my_referral_codes_dashboard_get') %}active{% endif %}"
+           href="{{ url_for('dashboard.my_referral_codes_dashboard_get') }}">
+            <i class="sl sl-icon-tag" style="font-size: 20px"></i> {# Changed icon from rocket to tag #}
+        </a>
+        <a class="nav-item nav-link text-white position-relative {% if request.blueprint == 'dashboard' and request.endpoint.endswith('my_saved_reads_get') %}active{% endif %}"
+           href="{{ url_for('dashboard.my_saved_reads_get') }}">
+            <i class="im im-icon-Arrow-LeftinCircle" style="font-size: 20px"></i> {# Corrected icon class #}
+            {% if session.get('num_saves') %}
+                <span class="badge badge-danger rounded-circle position-absolute " style="top:0">{{ session.get('num_saves') }}</span>
+            {% endif %}
+        </a>
+        <a class="nav-item nav-link text-white {% if request.blueprint == 'dashboard' and request.endpoint.endswith('my_bookmarks_get') %}active{% endif %}"
+           href="{{ url_for('dashboard.my_bookmarks_get') }}">
+            <i class="sl sl-icon-heart" style="font-size: 20px"></i>
+        </a>
+        <a class="nav-item nav-link text-white {% if request.blueprint == 'dashboard' and request.endpoint.endswith('my_profile_get') %}active{% endif %}"
+           href="{{ url_for('dashboard.my_profile_get') }}">
+            <i class="sl sl-icon-user" style="font-size: 20px"></i>
+        </a>
+        <a class="nav-item nav-link text-white {% if request.blueprint == 'subscription' and request.endpoint.endswith('get_my_subscriptions') %}active{% endif %}"
+           href="{{ url_for('subscription.get_my_subscriptions') }}">
+            <i class="sl sl-icon-shield" style="font-size: 20px"></i>
+        </a>
+        <a class="nav-item nav-link text-white" href="{{ url_for('auth.logout') }}">
+            <i class="sl sl-icon-power" style="font-size: 20px"></i>
+        </a>
+    </div>
+</nav>
+<style>
+    .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        background-color: #fff; /* Or your preferred bg color */
+        border-top: 1px solid #ddd;
+        z-index: 1000; /* Ensure it's above other content */
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+    }
+    .bottom-nav .nav-item { /* Ensure nav-item is direct child for flex to work if container is d-flex */
+        flex: 1;
+        text-align: center;
+    }
+    .bottom-nav .nav-link {
+        padding: 10px 5px; /* Adjust padding */
+        font-size: 12px; /* Adjust font size */
+        color: #555;
+        white-space: nowrap; /* Prevent line breaks if text is added */
+    }
+    .bottom-nav .nav-link.active {
+        color: #007bff; /* Or your active color */
+    }
+    .bottom-nav .nav-link i {
+        display: block; /* Make icon take full width for centering */
+        font-size: 18px; /* Adjust icon size */
+        margin-bottom: 2px;
+    }
+</style>
+
+<!-- Scripts -->
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/mmenu.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/chosen.min.js') }}"></script> {# Assuming chosen.jquery.min.js #}
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/slick.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/rangeslider.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/magnific-popup.min.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/bazisearch/extention/flatpickr.js') }}"></script> {# Assuming this is the correct path for flatpickr #}
+<script src="https://unpkg.com/counterup2@2.0.2/dist/index.js"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/jquery-ui.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/tooltips.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/custom.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/sweetalert2.all.min.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment-with-locales.min.js"
+        integrity="sha512-4F1cxYdMiAW98oomSLaygEwmCnIP38pb4Kx70yQYqRwLVCs3DbRumfBq82T08g/4LJ/smbFGFpmeFlQgoDccgg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        if (typeof flatpickr !== 'undefined') {
+            flatpickr("#dob", { // General selector, might need to be more specific if multiple #dob inputs
+                dateFormat: "d-m-Y",
+                minDate: "01-01-1901",
+                maxDate: "31-12-2019",
+                defaultDate: null,
+                disableMobile: true, // Always use Flatpickr's calendar UI
+                // yearRange: [1901, 2019] // This seems to be an issue with flatpickr, use enable: [{from:..., to:...}] or other methods
+            });
+        }
+    });
+</script>
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/src/referrals.js') }}"></script>
+{% block js_footer_dashboard %}{% endblock %} {# Renamed from jsfooter to avoid conflict with layout.html's block #}
+</body>
+</html>

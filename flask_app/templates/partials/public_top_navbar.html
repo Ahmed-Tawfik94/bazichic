@@ -1,0 +1,65 @@
+{# Converted from resources/Views/partials/public_top_navbar.twig #}
+{# This seems very similar to nav.html, possibly for dashboard layout header #}
+<div class="navbar navbar-expand-md navbar-light position-relative ">
+    <a class="navbar-brand" href="{{ url_for('main.home') }}">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="BaziChic Chinese Metatphysics Consultancy" width="64"/>
+    </a>
+    <button class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#navbarSupportedContentPublicTop"
+            aria-controls="navbarSupportedContentPublicTop" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContentPublicTop">
+        <ul class="navbar-nav mr-auto" style="width: 600px;"> {# Consider removing fixed width #}
+            <li class="nav-item {% if request.endpoint == 'main.home' %}active{% endif %}">
+                <a class="nav-link" href="{{ url_for('main.home') }}">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item {% if request.blueprint == 'ebook' %}active{% endif %}">
+                <a class="nav-link" href="{{ url_for('ebook.list_ebooks') }}">Browse</a>
+            </li>
+            <li class="nav-item {% if request.endpoint == 'main.about' %}active{% endif %}">
+                <a class="nav-link" href="{{ url_for('main.about') }}">About Us</a>
+            </li>
+            <li class="nav-item {% if request.endpoint == 'main.contact_get' %}active{% endif %}">
+                <a class="nav-link" href="{{ url_for('main.contact_get') }}">Contact Us</a>
+            </li>
+            <li class="nav-item {% if request.blueprint == 'calendar' %}active{% endif %}">
+                <a class="nav-link" href="{{ url_for('calendar.show_calendar') }}">e-TongShu</a>
+            </li>
+            <li class="nav-item"> {# Assuming FAQ link points to a section or future page #}
+                <a class="nav-link" href="{{ url_for('main.home') }}#faqs">Help Centre</a>
+            </li>
+        </ul>
+        {% if session.get('user_id') %} {# Check for user_id or a specific logged_in flag #}
+        <div class="dropdown px-0 px-md-4" style="user-select: none;">
+            <a class="dropdown-toggle text-decoration-none text-dark " type="button" data-toggle="dropdown" aria-expanded="false">
+                {% if session.get('user_image') %}
+                    <img src="{{ url_for('static', filename=session.get('user_image')) }}" alt="{{ session.get('first_name') }}" width="40" height="40" class="rounded-circle"> {# Added rounded-circle #}
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/avatar.jpg') }}" alt="placeholder" width="40" height="40" class="rounded-circle">
+                {% endif %}
+                {{ session.get('first_name', 'User') }}
+            </a>
+            <div class="dropdown-menu dropdown-menu-right"> {# Added dropdown-menu-right for better positioning #}
+                <a class="dropdown-item" href="{{ url_for('dashboard.user_dashboard')}}"><i class="fa fa-line-chart mr-2"></i>Dashboard</a>
+                <a class="dropdown-item" href="{{ url_for('auth.logout')}}"><i class="sl sl-icon-power mr-2"></i>Logout</a>
+            </div>
+        </div>
+        {% else %}
+        <a href="#sign-in-dialog" class="sign-in popup-with-zoom-anim text-decoration-none btn-link text-dark" style="user-select: none;">
+            <i class="sl sl-icon-login"></i>
+            Login
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Sign In Popup (ensure this modal ID is unique if nav.html also has one, or reuse) -->
+    <div id="sign-in-dialog-public-top" class="sign-in-dialog zoom-anim-dialog mfp-hide"> {# Changed ID to be unique #}
+        <div class="small-dialog-header">
+            <h3>Sign In</h3>
+        </div>
+        <div class="sign-in-form style-1">
+            {% include "auth/forms/login_form.html" ignore missing %}
+        </div>
+    </div>
+    <!-- Sign In Popup / End -->
+</div>

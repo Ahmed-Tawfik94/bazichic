@@ -1,0 +1,157 @@
+{% extends "layout.html" %}
+
+{% block jstriggers %}
+    {{ super() }}
+    {# Assuming reCAPTCHA site key will be passed in context as site_key #}
+    {% if site_key %}
+    <script src="https://www.google.com/recaptcha/api.js?render={{ site_key }}"></script>
+    <script>
+        grecaptcha.ready(function() {
+            grecaptcha.execute('{{ site_key }}', {action: 'submit'}).then(function(token) {
+                // Add token to the form
+                var form = document.getElementById("siteContactForm");
+                if (form) {
+                    var input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = "g-recaptcha-response";
+                    input.value = token;
+                    form.appendChild(input);
+                }
+            });
+        });
+
+        $(document).ready(function() {
+            $("#siteContactForm").submit(function (e) {
+              e.preventDefault();
+              // Ensure base_url is available or construct URL properly
+              // var base_url = "{{ request.url_root }}"; // Example if needed for AJAX url
+              $.ajax({
+                url: $(this).attr("action"), // Action is set in the form tag
+                type: "POST",
+                data: $(this).serialize(),
+                dataType: "json",
+                success: function (data) {
+                    if (typeof swal !== 'undefined') {
+                        swal({
+                          title: "Message Sent Successfully.",
+                          html: "<b>" + data.message + "</b>",
+                          type: "success", // For older swal versions, type might be icon
+                          icon: "success", // For newer swal versions
+                          showCancelButton: false,
+                          confirmButtonColor: "#3085d6",
+                          focusConfirm: false,
+                        });
+                    } else {
+                        alert("Message Sent Successfully: " + data.message);
+                    }
+                    setTimeout(function () {
+                      window.location.replace("{{ url_for('main.home') }}"); // Redirect to home
+                    }, 2200);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                  var errorMsg = "An error occurred.";
+                  if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                  } else if (thrownError) {
+                    errorMsg = thrownError;
+                  }
+                  if (typeof swal !== 'undefined') {
+                    swal({
+                        title: "Error",
+                        html: "<b>" + errorMsg + "</b>",
+                        type: "error",
+                        icon: "error",
+                        showCancelButton: false,
+                        allowOutsideClick: false,
+                        confirmButtonColor: "#3085d6",
+                        focusConfirm: false,
+                    });
+                  } else {
+                    alert("Error: " + errorMsg);
+                  }
+                },
+              });
+            });
+        });
+    </script>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <!-- Container / Start -->
+    <div class="container my-5">
+        <div class="row">
+            <!-- Contact Details -->
+            <div class="col-md-5">
+                <h4 class="headline margin-bottom-30">Get In Touch</h4>
+                <div class="sidebar-textbox">
+                    <p>Feel free to contact us if you have any inquiry about our services.</p>
+                    <ul class="contact-details">
+                        {# Assuming 'settings' object will be passed in context #}
+                        {% if settings and settings.phone %}
+                            <li><i class="im im-icon-Phone-2"></i> <strong>Phone:</strong>
+                                <span> {{ settings.phone }} </span></li>
+                        {% endif %}
+                        {% if settings and settings.email %}
+                            <li><i class="im im-icon-Envelope"></i> <strong>E-Mail:</strong> <span><a
+                                            href="mailto:{{settings.email}}">{{ settings.email }}</a></span></li>
+                        {% endif %}
+                        {% if settings and settings.link %}
+                            <li><i class="im im-icon-Globe"></i> <strong>Web:</strong> <span><a
+                                            href="#">{{ settings.link }}</a></span></li>
+                        {% endif %}
+                        {% if settings and settings.address %}
+                            <li>
+                                <i class="im im-icon-Address-Book"></i>
+                                <strong>Address:</strong>
+                                <p>{{ settings.address }}</p></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="col-md-7">
+                <section id="contact" class="card">
+                    <div class="card-body">
+                    <h4 class="headline margin-bottom-35">Contact Form</h4>
+                    <div id="contact-message"></div>
+                    {# Assuming contact_post route in main blueprint #}
+                    <form role="form" name="siteContactForm" id="siteContactForm" action="{{ url_for('main.contact_post') }}" method="post" autocomplete="off">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div>
+                                    <input name="name" type="text" id="name" placeholder="Your Name"
+                                           required="required"/>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div>
+                                    <input name="email" type="email" id="email" placeholder="Email Address"
+                                           pattern="^[A-Za-z0-9](([_\.\-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$"
+                                           required="required"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            {# Assuming help_topics will be passed in context #}
+                            <select class="chosen-select-no-single" name="subject" required>
+                                <option label="Select a subject" value="">Select a subject</option> {# Added empty value for placeholder #}
+                                {% for topic in help_topics | default([]) %}
+                                    <option value="{{ topic }}">{{ topic }}</option> {# Use topic itself as value or a key if available #}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <textarea name="comments" cols="40" rows="3" id="comments" minLength="30"
+                                      placeholder="Message" spellcheck="true" required="required"></textarea>
+                        </div>
+                        <input type="submit" class="submit button" id="submit" value="Submit Message"/>
+                    </form>
+                    </div>
+                </section>
+            </div>
+            <!-- Contact Form / End -->
+        </div>
+    </div>
+{% endblock %}

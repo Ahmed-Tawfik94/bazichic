@@ -1,0 +1,260 @@
+{% extends "dashboard/dashboard_layout.html" %}
+
+{% block page_title %}{{ title | default("Referral Codes & Rewards - BaziChic") }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+    {# Assuming current_user.role_id == 1 is for admin-like users or specific affiliate roles #}
+    {% if current_user and current_user.role_id == 1 %} {# Adjust condition as needed #}
+    <div class="col-lg-6 col-md-6">
+        <section style="padding: 20px; text-align: center; background-color:#ffffff;" class="center card shadow-sm mb-4"> {# Added card and shadow for better styling #}
+            <h1 style="font-weight: 500; font-size:50px; margin-top:0px;"><i class="im im-icon-Conference"></i></h1>
+            <p style="padding-bottom: 3px;font-size:16px;line-height:16px;font-weight:500;">Generate referral codes that you can share with friends and family. Win reward points that you will redeem.</p>
+            <div class="text-center">
+                <form role="form" method="POST" name="createReferralForm" id="createReferralForm" action="{{ url_for('referral.generate_referral_code_post') }}">
+                    {# {{ form.csrf_token() }} #}
+                    {# user_id is usually implicit from session #}
+                    <button class="button btn btn-purple text-white button-3d button-rounded button-small button-green" type="submit">
+                        <i class="fa fa-arrow-circle-right"></i> Generate New Referral Code
+                    </button>
+                </form>
+            </div>
+        </section>
+    </div>
+    {% endif %}
+
+    <div class="{% if current_user and current_user.role_id == 1 %}col-lg-6 col-md-6{% else %}col-lg-12 col-md-12{% endif %}">
+        <div class="row">
+            <div class="col-lg-6 col-md-12">
+                <a href="{{ url_for('dashboard.my_connections_dashboard_get') }}">
+                    <div class="dashboard-stat color-3">
+                        <div class="dashboard-stat-content"><h4>{{ num_connections | default(0) }}</h4> <span style="color:#ffffff;">My Connections</span></div>
+                        <div class="dashboard-stat-icon"><i class="im im-icon-Conference"></i></div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-lg-6 col-md-12">
+                 {# This pointed to /reward-points which is admin_reward.reward_points_summary_get in admin blueprint.
+                    For a user dashboard, it should point to user's reward points summary if that exists,
+                    or be conditional if this page is also for admin.
+                    Assuming a user-specific reward points page might be part of dashboard or referral blueprint later.
+                    For now, linking to where it was in Twig, but this might need adjustment.
+                 #}
+                <a href="{{ url_for('admin_reward.reward_points_summary_get') }}">
+                    <div class="dashboard-stat color-3">
+                        <div class="dashboard-stat-content"><h4>{{ user_reward_points | default(0) }}</h4> <span style="color:#ffffff;">Reward Points</span></div>
+                        <div class="dashboard-stat-icon"><i class="im im-icon-Coins-3"></i></div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="clear"></div>
+
+<div class="row mt-4">
+    <div class="col-lg-12 text-center">
+        <ul class="nav flex-column flex-md-row justify-content-center" data-submenu-title="Your Referral Code" style="gap:20px">
+            {% if current_user and current_user.referral_code %}
+            <li class="nav-item mb-2 mb-md-0">
+                <a href="#" class="text-decoration-none nav-link bg-dark text-white rounded-lg"
+                   onclick="copyToClipboard('{{ current_user.referral_code }}'); return false;" id="referral-code">
+                    <i class="sl sl-icon-tag"></i>
+                    Referral Code: <span id="referral-code-text">{{ current_user.referral_code }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                {# Assuming 'auth.register_get' for registration page #}
+                <a href="#" class="text-decoration-none nav-link bg-dark text-white rounded-lg"
+                   onclick="copyToClipboard('{{ url_for('auth.register_get', referral_code=current_user.referral_code, _external=True) }}'); return false;"
+                   id="referral-url">
+                    <i class="sl sl-icon-link"></i>
+                    Copy Referral URL
+                </a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                {# This button calls JS 'generateReferralCode()' which makes a POST request.
+                   The form above for generating code is another way. Consolidate if needed. #}
+                <button class="btn btn-success" onclick="generateReferralCodeUserDashboard()" id="generate-referral-button">
+                    <i class="sl sl-icon-tag"></i>
+                    Generate My Referral Code
+                </button>
+            </li>
+            {% endif %}
+        </ul>
+
+        <!-- Redeem & Withdrawal Buttons -->
+        <div class="row mt-4 justify-content-center">
+            <div class="col-lg-5 col-md-6 mb-2">
+                <button id="redeem-reward-btn" class="btn btn-primary btn-lg btn-block" style="font-size: 14px;"
+                        onclick="confirmRedeemReward()" {% if (user_reward_points | default(0)) < 100 %}disabled{% endif %}>
+                    <i class="fa fa-gift"></i> Redeem Reward (100 Points)
+                </button>
+            </div>
+            <div class="col-lg-5 col-md-6 mb-2">
+                <button id="withdraw-money-btn" class="btn btn-warning btn-lg btn-block" style="font-size: 14px;"
+                        onclick="confirmWithdrawMoney()" {% if (user_reward_points | default(0)) < 1000 %}disabled{% endif %}>
+                    <i class="fa fa-money"></i> Withdraw Money (1000 Points)
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js_footer_dashboard %}
+{{ super() }}
+<script>
+    // Ensure sweetalert (swal) is loaded, typically in layout.html or dashboard_layout.html
+    function copyToClipboard(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    if (typeof swal !== 'undefined') {
+                        swal.fire({ title: '', html: 'Copied to clipboard: ' + text, icon: 'success', confirmButtonColor: '#3085d6' });
+                    } else { alert('Copied to clipboard: ' + text); }
+                })
+                .catch(err => {
+                    if (typeof swal !== 'undefined') {
+                        swal.fire({ title: 'Error', html: 'Failed to copy. Please try again.', icon: 'error', confirmButtonColor: '#3085d6' });
+                    } else { alert('Failed to copy.');}
+                    console.error('Error copying to clipboard:', err);
+                });
+        } else { // Fallback for older browsers
+            const tempInput = document.createElement('input');
+            tempInput.style.position = 'absolute';
+            tempInput.style.left = '-9999px';
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            try {
+                document.execCommand('copy');
+                 if (typeof swal !== 'undefined') {
+                    swal.fire({ title: '', html: 'Copied to clipboard', icon: 'success', confirmButtonColor: '#3085d6' });
+                 } else { alert('Copied to clipboard.'); }
+            } catch (err) {
+                if (typeof swal !== 'undefined') {
+                    swal.fire({ title: 'Error', html: 'Failed to copy. Please try again.', icon: 'error', confirmButtonColor: '#3085d6' });
+                } else { alert('Failed to copy.'); }
+                console.error('Fallback copy failed:', err);
+            }
+            document.body.removeChild(tempInput);
+        }
+    }
+
+    function generateReferralCodeUserDashboard() { // Renamed to avoid conflict if global generateReferralCode exists
+        // Assumes referral_bp.generate_referral_code_post is the target
+        fetch("{{ url_for('referral.generate_referral_code_post') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json',
+                       'X-CSRFToken': "{{ csrf_token() if csrf_token else '' }}" // Add CSRF token if using Flask-WTF/CSRFProtect
+                     },
+            // body: JSON.stringify({ user_id: '{{ session.get("user_id") }}' }) // User ID usually from session server-side
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.referral_code) {
+                if(typeof swal !== 'undefined') swal.fire('Success', 'Referral code generated: ' + data.referral_code, 'success'); else alert('Referral code generated: ' + data.referral_code);
+                // Dynamically update the page or reload
+                location.reload(); // Simple reload to show new code
+            } else {
+                if(typeof swal !== 'undefined') swal.fire('Error', data.message || 'Failed to generate referral code.', 'error'); else alert(data.message || 'Failed to generate referral code.');
+            }
+        })
+        .catch(err => {
+            if(typeof swal !== 'undefined') swal.fire('Error', 'An error occurred.', 'error'); else alert('An error occurred.');
+            console.error('Error generating referral code:', err);
+        });
+    }
+
+    function confirmRedeemReward() {
+        if (typeof swal === 'undefined') { alert('Redemption system not available.'); return; }
+        swal.fire({
+            title: "Confirm Redemption",
+            text: "Are you sure you want to redeem 100 points for a reward?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, redeem it!"
+        }).then((result) => {
+            if (result.isConfirmed) { // Changed from result.value for newer swal
+                redeemReward();
+            }
+        });
+    }
+
+    function redeemReward() {
+        // Assumes referral_bp.redeem_reward_post is the target
+        fetch("{{ url_for('referral.redeem_reward_post') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': "{{ csrf_token() if csrf_token else '' }}" },
+            // body: JSON.stringify({ user_id: '{{ session.get("user_id") }}' }) // User ID from session server-side
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                swal.fire("Success", data.message || "Reward redemption request submitted!", "success").then(() => location.reload());
+            } else {
+                swal.fire("Error", data.message || "Redemption failed.", "error");
+            }
+        })
+        .catch(err => {
+            swal.fire("Error", "An error occurred while redeeming the reward.", "error");
+            console.error('Error:', err);
+        });
+    }
+
+    function confirmWithdrawMoney() {
+        if (typeof swal === 'undefined') { alert('Withdrawal system not available.'); return; }
+        swal.fire({
+            title: "Withdraw Money",
+            text: "Enter amount to withdraw (Minimum: $100)", // This should be based on points, e.g. 1000 points = $X
+            input: "number",
+            inputAttributes: { min: "100", step: "10" }, // Example values
+            showCancelButton: true,
+            confirmButtonText: "Withdraw",
+        }).then((result) => {
+            if (result.isConfirmed && result.value) {
+                const amount = parseFloat(result.value);
+                if (isNaN(amount) || amount < 100) { // Example minimum
+                    swal.fire("Error", "Minimum withdrawal is $100.", "error");
+                    return;
+                }
+                withdrawMoney(amount);
+            }
+        });
+    }
+
+    function withdrawMoney(amount) {
+        // This logic needs to align with how points convert to currency and server-side validation
+        // let pointsRequired = amount * 10; // Example conversion, adjust as per system rules
+        // let availablePoints = {{ user_reward_points | default(0) }};
+        // if (pointsRequired > availablePoints) {
+        //     swal.fire("Error", "You do not have enough points to withdraw this amount.", "error");
+        //     return;
+        // }
+
+        // Assumes referral_bp.request_withdrawal_post is the target
+        fetch("{{ url_for('referral.request_withdrawal_post') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': "{{ csrf_token() if csrf_token else '' }}" },
+            body: JSON.stringify({ amount: amount }) // User ID from session server-side
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                swal.fire("Success", data.message || `Withdrawal request for $${amount} submitted!`, "success").then(() => location.reload());
+            } else {
+                swal.fire("Error", data.message || "Withdrawal failed.", "error");
+            }
+        })
+        .catch(err => {
+            swal.fire("Error", "An error occurred while processing the withdrawal.", "error");
+            console.error('Error:', err);
+        });
+    }
+</script>
+{% endblock %}

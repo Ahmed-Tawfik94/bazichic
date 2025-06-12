@@ -1,0 +1,51 @@
+{% extends "dashboard/dashboard_layout.html" %}
+
+{% block page_title %}{{ title | default("My Bookmarks - BaziChic") }}{% endblock %}
+
+{% block dashboard_content %}
+<div class=""> {# Removed redundant class="" #}
+    <div class="row">
+        {# Assuming 'bookmarked_documents' is a list of document objects passed in context #}
+        {% if bookmarked_documents and bookmarked_documents|length > 0 %}
+            {% for doc in bookmarked_documents %}
+            <!-- Listing Item -->
+            <div class="col-lg-3 col-md-3">
+                {# Assuming 'favourite.html' is a partial for displaying a bookmarked item.
+                   This partial needs to be created/converted.
+                   For now, using a placeholder structure.
+                #}
+                {% include "list_items/favourite_item.html" with {'document': doc} ignore missing %}
+                {# Fallback basic display if partial is missing #}
+                {% if not loop.last and not loop.first %} {# Example conditional logic #}
+                {# <div class="clearfix"></div> #}
+                {% endif %}
+            </div>
+            <!-- Listing Item / End -->
+            {% endfor %}
+        {% else %}
+        <div class="col-md-12">
+            <section style="padding: 30px; text-align: center; background-color:#ffffff;" class="center margin-top-30 margin-bottom-30">
+                <h2 style="text-align: center; font-size: 40px; line-height: 50px; font-weight: 500;color:#666;">
+                    <i class="fa fa-heart fa-2x"></i>
+                </h2>
+                <h3>No Favourites Yet!</h3>
+                <h4>You have not bookmarked anything yet. Once you start exploring, all your favourite marked documents will appear here.</h4>
+                <hr>
+                <div class="row">
+                    <div class="col-lg-8 offset-lg-2"> {# Centering the button #}
+                        <a href="{{ url_for('ebook.list_ebooks') }}" class="button btn btn-purple text-white"> {# Assuming ebook_bp for browsing #}
+                            <i class="fa fa-arrow-right"></i> BROWSE DOCUMENTS
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block js_footer_dashboard %}
+    {{ super() }}
+    {# Add any specific JS for this page if needed #}
+{% endblock %}

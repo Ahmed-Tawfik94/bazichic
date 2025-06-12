@@ -1,0 +1,48 @@
+{# Placeholder for Dashboard Sidebar #}
+{# Original file resources/Views/partials/dashboard_sidebar.twig was not found. #}
+<!--
+<div class="dashboard-nav">
+    <div class="dashboard-nav-inner">
+        <ul>
+            <li class="{{ 'active' if request.endpoint == 'dashboard.user_dashboard' else '' }}"><a href="{{ url_for('dashboard.user_dashboard') }}"><i class="sl sl-icon-settings"></i> Dashboard</a></li>
+            <li class="{{ 'active' if request.endpoint == 'dashboard.my_profile_get' else '' }}"><a href="{{ url_for('dashboard.my_profile_get') }}"><i class="sl sl-icon-user"></i> Profile</a></li>
+            <li class="{{ 'active' if request.endpoint == 'dashboard.my_bookmarks_get' else '' }}"><a href="{{ url_for('dashboard.my_bookmarks_get') }}"><i class="sl sl-icon-star"></i> Bookmarks</a></li>
+            <li class="{{ 'active' if request.endpoint == 'dashboard.my_saved_reads_get' else '' }}"><a href="{{ url_for('dashboard.my_saved_reads_get') }}"><i class="sl sl-icon-docs"></i> Saved Reads</a></li>
+            <li class="{{ 'active' if request.endpoint == 'referral.list_my_referrals_get' or request.endpoint == 'dashboard.my_referral_codes_dashboard_get' else '' }}"><a href="{{ url_for('dashboard.my_referral_codes_dashboard_get') }}"><i class="sl sl-icon-present"></i> Referrals & Rewards</a></li>
+            <li class="{{ 'active' if request.endpoint == 'subscription.get_my_subscriptions' else '' }}"><a href="{{ url_for('subscription.get_my_subscriptions') }}"><i class="sl sl-icon-wallet"></i> My Subscriptions</a></li>
+            <li><a href="{{ url_for('auth.logout') }}"><i class="sl sl-icon-power"></i> Logout</a></li>
+        </ul>
+    </div>
+</div>
+-->
+<div class="dashboard-nav">
+    <div class="dashboard-nav-inner">
+        <ul data-submenu-title="Main">
+            <li class="{{ 'active' if request.blueprint == 'dashboard' and request.endpoint.endswith('user_dashboard') else '' }}"><a href="{{ url_for('dashboard.user_dashboard') }}"><i class="sl sl-icon-settings"></i> Dashboard</a></li>
+            <li class="{{ 'active' if request.blueprint == 'dashboard' and request.endpoint.endswith('my_profile_get') else '' }}"><a href="{{ url_for('dashboard.my_profile_get') }}"><i class="sl sl-icon-user"></i> My Profile</a></li>
+            <li class="{{ 'active' if request.blueprint == 'subscription' and request.endpoint.endswith('get_my_subscriptions') else '' }}"><a href="{{ url_for('subscription.get_my_subscriptions') }}"><i class="sl sl-icon-layers"></i> My Subscriptions</a></li>
+
+        </ul>
+
+        <ul data-submenu-title="Organizers">
+            <li class="{{ 'active' if request.blueprint == 'dashboard' and request.endpoint.endswith('my_bookmarks_get') else '' }}"><a href="{{ url_for('dashboard.my_bookmarks_get') }}"><i class="sl sl-icon-star"></i> My Favourites</a></li>
+            <li class="{{ 'active' if request.blueprint == 'dashboard' and request.endpoint.endswith('my_saved_reads_get') else '' }}"><a href="{{ url_for('dashboard.my_saved_reads_get') }}"><i class="sl sl-icon-docs"></i> Saved For Later</a></li>
+        </ul>
+
+        <ul data-submenu-title="Account">
+            <li class="{{ 'active' if request.blueprint == 'dashboard' and request.endpoint.endswith('list_my_notifications_get') else '' }}">
+                <a href="{{ url_for('dashboard.list_my_notifications_get') }}"><i class="sl sl-icon-bell"></i> Notifications
+                    {# Add a badge if there are unread notifications #}
+                    {# {% if unread_notification_count and unread_notification_count > 0 %}
+                        <span class="nav-tag messages">{{ unread_notification_count }}</span>
+                    {% endif %} #}
+                </a>
+            </li>
+            <li class="{{ 'active' if request.blueprint == 'dashboard' and request.endpoint.endswith('my_referral_codes_dashboard_get') else '' }}">
+                <a href="{{ url_for('dashboard.my_referral_codes_dashboard_get') }}"><i class="sl sl-icon-present"></i> Referrals & Rewards</a>
+            </li>
+            <li><a href="{{ url_for('auth.logout') }}"><i class="sl sl-icon-power"></i> Logout</a></li>
+        </ul>
+    </div>
+</div>
+<p class="text-muted p-3">Note: Sidebar structure is a placeholder based on common dashboard patterns. Original `dashboard_sidebar.twig` was not found.</p>

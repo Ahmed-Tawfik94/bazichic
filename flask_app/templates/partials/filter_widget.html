@@ -1,0 +1,169 @@
+{# Converted from resources/Views/partials/widgets/filter.twig #}
+{# This widget is used on the e-book store page (list_ebooks.html) #}
+<style>
+    .filter-section {
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
+        opacity: 1;
+        visibility: visible;
+    }
+    .filter-section.hidden {
+        opacity: 0;
+        visibility: hidden;
+        height: 0;
+        margin: 0;
+        overflow: hidden;
+    }
+    .filter-container {
+        border: 1px solid #e9ecef !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        background-color: #ffffff !important;
+    }
+    .filter-toggle-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background-color: #ffffff;
+        color: #3A1078; /* Example color from admin dash */
+        border: 2px solid #3A1078; /* Example color */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    .filter-toggle-btn:hover {
+        background-color: #3A1078; /* Example color */
+        color: #ffffff;
+        transform: scale(1.05);
+    }
+    .filter-toggle-btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(58, 16, 120, 0.2); /* Adjusted focus color */
+    }
+    .filter-toggle-btn i {
+        font-size: 1.2rem;
+        transition: transform 0.3s ease;
+    }
+    .search-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        pointer-events: none;
+    }
+    /* .form-control adjustments might be in a global CSS file */
+</style>
+
+<!-- Toggle Button -->
+<button class="filter-toggle-btn" id="filterToggleBtn" type="button" title="Toggle Filters (Alt+F)">
+    <i class="bi bi-funnel-fill"></i>
+</button>
+
+<!-- Filter Section -->
+<div class="filter-section" id="filterSection">
+    <div class="container-fluid">
+        <div class="row align-items-center filter-container mx-1 mx-md-3 rounded-lg" style="min-height: 80px;">
+            <div class="col-12 col-md-2 py-3">
+                <h5 class="mb-0 text-muted">Filter</h5>
+            </div>
+            <div class="col-12 col-md-10 py-3">
+                {# Action points to the ebook listing page, parameters will be GET #}
+                <form name="filterDocumentForm" action="{{ url_for('ebook.list_ebooks') }}" method="GET">
+                    <div class="row align-items-center ">
+                        <div class="col-12 col-md">
+                            <div class="form-group mb-md-0 position-relative">
+                                <input type="text" class="form-control mb-md-0" id="search_docs" name="search_item"
+                                       placeholder="Search Something" value="{{ request.args.get('search_item', '') }}">
+                                <i class="bi bi-search search-icon"></i>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md">
+                            <div class="form-group mb-md-0 mb-1">
+                                {# Assuming doc_types_list is passed in context: e.g. [(id, title, allowed), ...] #}
+                                <select class="form-control form-control-lg" id="doc_types" name="document_type">
+                                    <option value="" {% if not request.args.get('document_type') %}selected{% endif %}>All Documents</option>
+                                    {% for item in doc_types_list | default([]) %}
+                                        {% if item.allowed %}
+                                            <option value="{{ item.id }}"
+                                                    {% if request.args.get('document_type') == item.id|string %}selected{% endif %}>
+                                                {{ item.title }}
+                                            </option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md">
+                            <div class="form-group mb-md-0 mb-1">
+                                {# Assuming categories_list is passed in context: e.g. [(id, title), ...] #}
+                                <select class="form-control form-control-lg" id="categories" name="category"> {# Changed name to singular 'category' #}
+                                    <option value="" {% if not request.args.get('category') %}selected{% endif %}>All Categories</option>
+                                    {% if categories_list %}
+                                        {% for category_item in categories_list %}
+                                            <option value="{{ category_item.id }}"
+                                                    {% if request.args.get('category') == category_item.id|string %}selected{% endif %}>
+                                                {{ category_item.title }}
+                                            </option>
+                                        {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-auto">
+                            <button type="submit" class="btn btn-primary w-100"> {# Bootstrap primary color #}
+                                <i class="bi bi-search mr-1"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// This script should ideally be in a global JS file or layout if used on multiple pages.
+$(document).ready(function() {
+    const filterSection = $('#filterSection');
+    const toggleBtn = $('#filterToggleBtn');
+    const toggleIcon = toggleBtn.find('i');
+
+    // Apply initial state from localStorage without animation
+    const isHidden = localStorage.getItem('filterHidden') === 'true';
+    if (isHidden) {
+        filterSection.hide().addClass('hidden'); // Hide before adding class to prevent flash
+        toggleIcon.removeClass('bi-funnel-fill').addClass('bi-funnel');
+    } else {
+        filterSection.show().removeClass('hidden');
+        toggleIcon.removeClass('bi-funnel').addClass('bi-funnel-fill');
+    }
+
+    toggleBtn.on('click', function() {
+        if (filterSection.hasClass('hidden')) {
+            filterSection.removeClass('hidden').slideDown(); // Animate open
+            toggleIcon.removeClass('bi-funnel').addClass('bi-funnel-fill');
+            localStorage.setItem('filterHidden', 'false');
+        } else {
+            filterSection.slideUp(function() { // Animate close
+                $(this).addClass('hidden');
+            });
+            toggleIcon.removeClass('bi-funnel-fill').addClass('bi-funnel');
+            localStorage.setItem('filterHidden', 'true');
+        }
+    });
+
+    // Keyboard shortcut (Alt + F)
+    $(document).on('keydown', function(e) {
+        if (e.altKey && (e.key === 'f' || e.key === 'F')) { // Changed to check for 'F' too
+            toggleBtn.click();
+            e.preventDefault();
+        }
+    });
+});
+</script>

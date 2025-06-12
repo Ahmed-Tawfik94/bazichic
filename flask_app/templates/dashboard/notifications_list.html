@@ -1,0 +1,79 @@
+{% extends "dashboard/dashboard_layout.html" %}
+
+{% block page_title %}{{ title | default("My Notifications - BaziChic") }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+    <div class="col-lg-12 col-md-12 pb-4">
+        <div class="card" style="border-radius: 12px!important;">
+            <div class="card-header bg-white rounded-top-12 py-3 d-flex justify-content-between align-items-center">
+                <h4> <i class="fa fa-bell mr-2"></i>Notifications ({{ total_notifications | default(0) }}) </h4>
+            </div>
+            <div class="card-body">
+                {# Assuming 'notifications_list' is passed in context #}
+                {% if notifications_list and notifications_list|length > 0 %}
+                <ul class="list-group list-group-flush">
+                    {% for notification_item in notifications_list %}
+                        {# Assuming 'notification_list_item.html' is a partial.
+                           Context for partial: 'notification_item'.
+                        #}
+                        {% include "list_items/notification_list_item.html" with {'notification': notification_item} ignore missing %}
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <section style="margin: 40px 0 80px 0;text-align: center;margin-bottom:30px;" class="center">
+                    <h1 style="text-align: center;font-weight: 500;"><i class="fa fa-bell"></i></h1>
+                    <h4>There is nothing for you to attend here. We will notify you when something happens.</h4>
+                    <div class="row" style="margin-top:20px;">
+                        <div class="col-lg-8 offset-lg-2"> {# Centering button #}
+                            <a href="{{ url_for('dashboard.user_dashboard') }}" class="button btn btn-purple text-white" style="margin-bottom:30px;">
+                                <i class="fa fa-arrow-left"></i> Back to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </section>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Pagination - Assuming a 'pagination' object similar to Laravel's Paginator,
+           or a Flask-SQLAlchemy pagination object is passed in context.
+           This is a common way to render pagination in Jinja.
+        #}
+        {% if pagination and pagination.pages and pagination.pages > 1 %}
+        <nav aria-label="Page navigation example" class="mt-4">
+            <ul class="pagination justify-content-end">
+                {# Previous Page Link #}
+                <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                    <a class="page-link text-dark" href="{{ url_for(request.endpoint, page=pagination.prev_num, **request.view_args) if pagination.has_prev else '#' }}" tabindex="-1" aria-disabled="{{ 'true' if not pagination.has_prev else 'false' }}">Previous</a>
+                </li>
+
+                {# Page Number Links #}
+                {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        {% if pagination.page == page_num %}
+                        <li class="page-item active" aria-current="page"><span class="page-link">{{ page_num }}</span></li>
+                        {% else %}
+                        <li class="page-item"><a class="page-link text-dark" href="{{ url_for(request.endpoint, page=page_num, **request.view_args) }}">{{ page_num }}</a></li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+
+                {# Next Page Link #}
+                <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                    <a class="page-link text-dark" href="{{ url_for(request.endpoint, page=pagination.next_num, **request.view_args) if pagination.has_next else '#' }}">Next</a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+        <!-- Pagination / End -->
+    </div>
+</div>
+{% endblock %}
+
+{% block js_footer_dashboard %}
+    {{ super() }}
+    {# Add any specific JS for this page if needed #}
+{% endblock %}

@@ -1,0 +1,193 @@
+{% extends "layout.html" %} {# Or a more specific catalog layout if created #}
+
+{% block title %}{{ title | default("E-Book Store - BaziChic") }}{% endblock %}
+
+{% block jstriggers %}
+    {{ super() }}
+    <script type="text/javascript">
+        // This JS was for async filtering, which requires backend logic.
+        // For a simpler version, the form in filter.html would submit and reload the page.
+        // Keeping the structure if AJAX filtering is to be implemented later.
+        var doc_types_filter = []; // Corrected variable name
+        $(document).ready(function () {
+            // Event listener for document type checkboxes
+            $('.async_document_type').change(function () {
+                doc_types_filter = []; // Reset before populating
+                $("input.async_document_type:checked").each(function () {
+                    doc_types_filter.push($(this).val());
+                });
+                // console.log("Selected doc types:", doc_types_filter);
+                // Here you would typically trigger an AJAX request to filter results
+                // or this change event could be part of a larger form submission.
+            });
+        });
+    </script>
+    <style>
+        button:focus, button:active {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+        .favouriteDocument > i:hover{ /* This class is also in saved_doc_list_item, ensure CSS is global or scoped */
+            color:#DC3444; /* Example color */
+        }
+        .custom-row {
+            margin-left: -10px;
+            margin-right: -10px;
+        }
+        .custom-col {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div id="titlebar" class="bg-bazi m-0"> {# Assuming bg-bazi provides styling #}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h2 style="color:#ffffff;font-weight:500;">Discover E-Books, Audio Books & Magazines</h2>
+                    <nav id="breadcrumbs">
+                        <ul>
+                            <li><a style="color:#ffffff;font-weight:500;" href="{{ url_for('main.home') }}">Home</a></li>
+                            <li><a style="color:#ffffff;font-weight:500;" href="{{ url_for('ebook.list_ebooks') }}">BaziChic Library</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container -->
+    <div class="container-fluid my-4">
+       {% include "partials/widgets/filter.html" ignore missing %} {# filter.twig needs conversion #}
+
+        <div class="row flex-column mx-1 mx-md-3">
+            <div class="col-12">
+                {# Pagination - Assuming 'pagination' object passed from Flask view (e.g., from Flask-SQLAlchemy) #}
+                {% if pagination and pagination.pages and pagination.pages > 0 %}
+                <nav aria-label="Page navigation" class="d-flex justify-content-center align-items-center">
+                    <ul class="pagination">
+                        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for(request.endpoint, page=pagination.prev_num, **request.view_args) if pagination.has_prev else '#' }}" tabindex="-1">Previous</a>
+                        </li>
+                        {% for p_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                            {% if p_num %}
+                                <li class="page-item {% if pagination.page == p_num %}active{% endif %}">
+                                    <a class="page-link" href="{{ url_for(request.endpoint, page=p_num, **request.view_args) }}">{{ p_num }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            {% endif %}
+                        {% endfor %}
+                        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for(request.endpoint, page=pagination.next_num, **request.view_args) if pagination.has_next else '#' }}">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+
+            <div class="col-12 my-2">
+                {# Assuming 'documents_list' is passed in context (renamed from page.data) #}
+                {% if documents_list and documents_list|length > 0 %}
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 custom-row"> {# Adjusted row-cols for responsiveness #}
+                    {% for document_item in documents_list %}
+                    <div class="col px-1 px-md-2 p-1 h-100 custom-col"> {# Adjusted padding #}
+                        <div class="p-2 h-100">
+                            <div class="card w-100 book-card h-100 d-flex flex-column"> {# Added h-100 and flex #}
+                                <a href="{{ url_for('ebook.ebook_detail', ebook_id=document_item.id if document_item.id else document_item.qcode if document_item.qcode else '0') }}">
+                                    <img src="{{ url_for('static', filename=document_item.cover if document_item.cover else 'images/books/default.png') }}"
+                                         class="card-img-top"
+                                         style="aspect-ratio: 1; object-fit: contain;"
+                                         alt="{{ document_item.title }}">
+                                </a>
+                                <hr class="my-2"> {# Adjusted margin #}
+                                <div class="card-body d-flex flex-column" style="height: 180px"> {# Fixed height, might need adjustment #}
+                                    <a class="nav-link p-0 mb-auto" href="{{ url_for('ebook.ebook_detail', ebook_id=document_item.id if document_item.id else document_item.qcode if document_item.qcode else '0') }}"> {# Removed p-2, mb-auto to push footer down #}
+                                        <h5 class="card-title mb-1">{{ document_item.title }}</h5> {# Changed from card-text to card-title #}
+                                        {# Use truncate filter for description if too long, e.g. {{ document_item.description | truncate(70) }} #}
+                                        <p class="card-text small">{{ document_item.description | striptags | truncate(70) if document_item.description else "No description available." }}</p>
+                                        {% if document_item.tag %}
+                                            <div class="sale-flash orange">{{ document_item.tag }}</div>
+                                        {% endif %}
+                                    </a>
+                                </div>
+                                <div class="card-footer d-flex justify-content-between align-items-center bg-white border-0 mt-auto"> {# mt-auto to push footer down #}
+                                    {# Assuming 'page.carosell_view' was a typo for 'carousel_view' or similar context variable #}
+                                    {% if carousel_view | default(true) %} {# Default to true to show buttons, pass this in context #}
+                                        {% if session.get('user_id') %}
+                                            {# This favourite button needs JS to handle the action #}
+                                            <button data-id="{{ document_item.id }}"
+                                                    data-liked="{{ '1' if document_item.is_liked_by_current_user else '0' }}" {# Assuming is_liked_by_current_user is set #}
+                                                    class="favouriteDocument btn btn-link text-muted outline-none border-0 p-0">
+                                                <i class="bi bi-heart-fill {% if document_item.is_liked_by_current_user %}text-danger{% endif %}" style="font-size: 24px"></i>
+                                            </button>
+                                        {% else %}
+                                            <a href="#sign-in-dialog-public-top" {# Ensure this modal ID matches one in your layout #}
+                                               class="item-quick-view popup-with-zoom-anim text-decoration-none"
+                                               data-lightbox="ajax">
+                                                <i class="bi bi-heart-fill text-muted" style="font-size: 24px"></i>
+                                            </a>
+                                        {% endif %}
+                                        <a href="{{ url_for('ebook.ebook_detail', ebook_id=document_item.id if document_item.id else document_item.qcode if document_item.qcode else '0') }}"
+                                           class="item-quick-view btn btn-link text-decoration-none">
+                                            <i class="bi bi-zoom-in mr-1"></i>
+                                            <span> Know More</span>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <section style="padding: 40px;text-align: center;margin-top:30px;margin-bottom:30px;background-color:#eee;" class="well center">
+                    <h1 style="text-align: center;font-weight: 500;">
+                        {# Assuming display_type and doc_type_id are passed in context #}
+                        {% if doc_type_id == 1 or doc_type_id == 3 %}
+                            <i class="sl sl-icon-book-open"></i>
+                        {% else %}
+                            <i class="sl sl-icon-earphones-alt"></i>
+                        {% endif %}
+                    </h1>
+                    <h4>Looks like there is no {{ display_type | default('content') }} at this moment. Check back again.</h4>
+                    <div class="row" style="margin-top:20px;">
+                        <div class="col-12">
+                            <a href="{{ url_for('ebook.list_ebooks') }}" class="button btn btn-purple text-white" style="margin-bottom:30px;">
+                                <i class="fa fa-arrow-right"></i> View All Documents
+                            </a>
+                        </div>
+                    </div>
+                </section>
+                {% endif %}
+            </div>
+
+            <div class="col-12 mt-3"> {# Pagination also at the bottom #}
+                {% if pagination and pagination.pages and pagination.pages > 0 %}
+                <nav aria-label="Page navigation" class="d-flex justify-content-center align-items-center">
+                    <ul class="pagination">
+                        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for(request.endpoint, page=pagination.prev_num, **request.view_args) if pagination.has_prev else '#' }}" tabindex="-1">Previous</a>
+                        </li>
+                        {% for p_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                            {% if p_num %}
+                                <li class="page-item {% if pagination.page == p_num %}active{% endif %}">
+                                    <a class="page-link" href="{{ url_for(request.endpoint, page=p_num, **request.view_args) }}">{{ p_num }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            {% endif %}
+                        {% endfor %}
+                        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for(request.endpoint, page=pagination.next_num, **request.view_args) if pagination.has_next else '#' }}">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+{% endblock content %}

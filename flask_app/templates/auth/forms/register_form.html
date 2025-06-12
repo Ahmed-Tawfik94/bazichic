@@ -1,0 +1,171 @@
+<div id="register_overlay" style="display:none;border-radius: 3px 3px 0 0;">
+    <div style="padding: 60px; text-align: center;">
+        <img src="{{ url_for('static', filename='images/finding.gif') }}" width="64" alt="Registering..."/>
+        <h4 style="color:#333;margin-top:30px;">
+            <strong>Registering Account</strong>
+        </h4>
+        <h5 style="color:#444;">Please wait...</h5>
+    </div>
+</div>
+
+{# Flash messages - Flask style #}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category if category != 'message' else 'info' }}" role="alert">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<form name="registerForm" id="registerForm" action="{{ url_for('auth.register_post') }}" class="login nobottommargin"
+      style="margin-bottom:20px;" method="post">
+    {# Flask-WTF will add CSRF token: {{ form.csrf_token }} #}
+
+    <h3 class="center" style="color:#333;">Don't have an Account? Register Now.</h3>
+    <p class="center" style="color:#333;">Create a quick account and get access to thousands of e-books, audio
+        books and magazines. Read anything, anywhere.</p>
+
+    <div class="clearfix"></div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div>
+                <label for="first_name">First Name <span class="text-danger">*</span></label>
+                {# Example with Flask-WTF: {{ form.first_name(id="first_name", placeholder="Enter first name") }} #}
+                <input name="first_name" type="text" id="first_name" placeholder="Enter first name"
+                       value="{{ request.form.get('first_name', '') }}" required/>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div>
+                <label for="last_name">Last Name <span class="text-danger">*</span></label>
+                <input name="last_name" type="text" id="last_name" placeholder="Enter last name"
+                       value="{{ request.form.get('last_name', '') }}" required/>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div>
+                <label for="email_reg"> Email Address <span class="text-danger">*</span></label>
+                <input name="email" type="email" id="email_reg" placeholder="Email Address" {# Changed name to 'email' to match common practice #}
+                       pattern="^[A-Za-z0-9](([_\.\-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})$"
+                       value="{{ request.form.get('email', '') }}" required/>
+            </div>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div>
+                <label for="country">Select Country <span class="text-danger">*</span></label>
+                {# Assuming 'countries' list is passed in context for Flask-WTF SelectField #}
+                <select class="chosen-select-no-single" name="country" id="country" tabindex="0" required>
+                    <option value="">Click to select</option>
+                    {% for country_name in countries | default([]) %}
+                        <option value="{{ country_name }}" {% if request.form.get('country') == country_name %}selected{% endif %}>{{ country_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div>
+                <label for="dob">Date of Birth <span class="text-danger">*</span></label>
+                {# Flatpickr will initialize this. Ensure it's compatible with Flask form handling #}
+                <input type="text" name="dob" id="dob" class="form-control" placeholder="dd-mm-yyyy" value="{{ request.form.get('dob', '') }}" required/>
+            </div>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="row" id="password_section">
+        <div class="col-md-6">
+            <div>
+                <label for="reg_password">Password <span class="text-danger">*</span></label>
+                <div class="position-relative">
+                    <i id="toggle_reg_password" class="bi bi-eye position-absolute register_show_hide_pass" ></i>
+                    <input type="password" class="form-control input-text position-relative" id="reg_password" name="password" minlength="6" placeholder="Your Password" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div>
+                <label for="password_repeat">Confirm Password <span class="text-danger">*</span></label>
+                <div class="position-relative">
+                    <i id="toggle_password_repeat" class="bi bi-eye position-absolute register_show_hide_pass" ></i>
+                    <input type="password" class="form-control input-text position-relative" id="password_repeat" minlength="6" name="password_confirm" placeholder="Repeat password" required> {# Changed name to password_confirm #}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div>
+                <label for="referral_code">Did someone referred you? Enter referral code to avail referral
+                    benefits.</label>
+                <input name="referral_code" type="text" id="referral_code"
+                       value="{{ referral_code | default(request.form.get('referral_code', '')) }}" {# Assuming referral_code might come from context or form #}
+                       placeholder="Referral Code (Optional)"/>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="checkboxes in-row margin-bottom-20">
+                <input id="check_agree" type="checkbox" name="check_agree" value="1" required>
+                <label for="check_agree" style="color:#333333;">I agree that the above information is
+                    correct.</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="clear"></div>
+
+    <div class="col_full nobottommargin text-right" style="margin-top:20px;">
+        <button class="button button-3d button-green nomargin btn btn-primary-400" id="register-form-submit" name="register-form-submit"
+                value="register">
+            <i class="fa fa-arrow-right"></i>
+            Register My Account
+        </button>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function () {
+        $('#toggle_reg_password').on('click', function () {
+            let passwordField = $('#reg_password');
+            let icon = $(this);
+            if (passwordField.attr('type') === 'password') {
+                passwordField.attr('type', 'text');
+                icon.removeClass('bi-eye').addClass('bi-eye-slash');
+            } else {
+                passwordField.attr('type', 'password');
+                icon.removeClass('bi-eye-slash').addClass('bi-eye');
+            }
+        });
+        $('#toggle_password_repeat').on('click', function () {
+            let passwordField = $('#password_repeat');
+            let icon = $(this);
+            if (passwordField.attr('type') === 'password') {
+                passwordField.attr('type', 'text');
+                icon.removeClass('bi-eye').addClass('bi-eye-slash');
+            } else {
+                passwordField.attr('type', 'password');
+                icon.removeClass('bi-eye-slash').addClass('bi-eye');
+            }
+        });
+        // Note: AJAX submission logic from original page is not included here.
+        // Flatpickr initialization for #dob is in layout.html
+    });
+</script>

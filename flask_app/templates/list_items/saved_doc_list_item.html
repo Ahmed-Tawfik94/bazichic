@@ -1,0 +1,83 @@
+{# Converted from resources/Views/list_items/saved_doc_list_item.twig #}
+{# Expects a 'document_save' object in context, which contains the document and save progress.
+   Let's assume 'document_save.document' gives the Document object, and 'document_save' itself has page/progress.
+#}
+{% set doc = document_save.document %} {# Alias for easier access to document properties #}
+<li class="pending-booking"> {# Class might need review based on actual status #}
+    <div class="list-box-listing">
+        <div class="list-box-listing-img">
+            <a href="{{ url_for('ebook.ebook_detail', ebook_id=doc.id if doc.id else doc.qcode if doc.qcode else '0') }}">
+                {% if doc.cover %}
+                    <img src="{{ url_for('static', filename=doc.cover) }}" alt="{{ doc.title }}">
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/books/default.png') }}" alt="placeholder">
+                {% endif %}
+            </a>
+        </div>
+        <div class="list-box-listing-content">
+            <div class="inner">
+                <h3>{{ doc.title }}
+                    {# <span class="booking-status pending"></span> #} {# Status can be dynamic if available #}
+                </h3>
+                <div class="d-flex align-items-center py-4" style="grid-gap: 20px">
+                    {% if document_save.updated_at %} {# Using updated_at from DocumentSave for 'Last Read' #}
+                    <div class="inner-booking-list">
+                        <h5>Last Read</h5>
+                        <ul class="booking-list">
+                            <li class="highlighted">{{ document_save.updated_at | strftime('%Y-%m-%d %H:%M') }}</li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                    <div class="inner-booking-list">
+                        <h5>Started</h5>
+                        <ul class="booking-list">
+                            <li class="highlighted">{{ document_save.created_at | strftime('%Y-%m-%d %H:%M') }}</li>
+                        </ul>
+                    </div>
+                    {% if document_save.progress is not none %}
+                    <div class="inner-booking-list">
+                        <h5>Progress:</h5>
+                        <ul class="booking-list">
+                            <li class="highlighted">{{ document_save.progress }}%</li>
+                        </ul>
+                    </div>
+                    {% elif document_save.page is not none %}
+                     <div class="inner-booking-list">
+                        <h5>Page:</h5>
+                        <ul class="booking-list">
+                            <li class="highlighted">{{ document_save.page }}</li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex align-items-center flex-row-reverse justify-content-between " style="grid-gap:10px">
+                    <form action="{{ url_for('ebook.ebook_reader_post') }}" name="launchReaderForm_{{doc.id}}" class="launchReaderForm"
+                          method="POST" style="margin-top:10px;margin-bottom:10px;">
+                        {# {{ form_csrf() }} #} {# Placeholder for CSRF if using Flask-WTF #}
+                        <input type="hidden" name="doc_id" value="{{ doc.id }}">
+                        <input type="hidden" name="doc_link" value="{{ doc.link }}"> {# Assuming doc.link is the path/URL to content #}
+                        <input type="hidden" name="is_downloadable" value="{{ '1' if doc.is_downloadable else '0' }}">
+                        <input type="hidden" name="last_read_page" value="{{ document_save.page | default(0) }}">
+                        <button type="submit" class="button btn btn-purple text-white"><i class="fa fa-arrow-right"></i> Read Now</button>
+                    </form>
+                    <div class="d-flex align-items-center" style="grid-gap:10px">
+                        {# Assuming 'is_liked' is a property of the document object, perhaps from a join or a context variable #}
+                        {% if not doc.is_liked_by_current_user %} {# Example: needs current_user context #}
+                        <a href="#" class="button btn btn-secondary text-white gray reject favouriteDocument" data-id="{{ doc.id }}" data-title="Unliked"> {# Changed btn-purple to btn-secondary #}
+                            <i class="sl sl-icon-heart"></i> Favourite
+                        </a>
+                        {% else %}
+                         <a href="#" class="button btn btn-danger text-white gray reject favouriteDocument" data-id="{{ doc.id }}" data-title="Liked"> {# Example for liked #}
+                            <i class="sl sl-icon-heart"></i> Unfavourite
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('ebook.ebook_detail', ebook_id=doc.id if doc.id else doc.qcode if doc.qcode else '0') }}" class="button orange approve btn btn-info text-white"> {# Changed class #}
+                            <i class="sl sl-icon-check"></i> View Detail
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</li>

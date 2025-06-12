@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block slider %}{% endblock %} {# This block was empty in the Twig version #}
+
+{% block content %}
+<div class="container">
+    <div class="row margin-top-10">
+        <div class="col-lg-4">
+            <div class="boxed-widget" style="z-index: 50;box-sizing: border-box;border-radius: 4px;margin:15px;">
+                <div class="text-center">
+                    <!-- Headline -->
+                    <div class="inner">
+                        <div class=""><img src="{{ url_for('static', filename='images/logo.png') }}" style="width:140px;margin:6px;" alt="BaziChic Logo"></div>
+                        <div class="text-center">
+                            <h3 style="color:#333;font-weight: bold;">Welcome to Bazichic</h3>
+                            <p style="color:#444;font-size: 15px;font-weight: bold;">Chinese Metaphysics Consultancy</p>
+                        </div>
+                        <span style="color:#333;">Join our community of like minded people to access knowledge and earn reward points when you learn.</span>
+                    </div>
+                    <a href="{{ url_for('auth.login_get') }}" class="btn btn-primary-400 px-4 py-2 text-white fullwidth margin-top-25 text-decoration-none"> {# Added text-decoration-none #}
+                        <i class="fa fa-user"></i>
+                        Already a member?
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="boxed-widget" style="z-index: 50;box-sizing: border-box;border-radius: 4px;margin:15px;">
+                {% include "auth/forms/register_form.html" %}
+            </div>
+        </div>
+        {# The col-lg-2 was likely for spacing, might not be needed or handled by Bootstrap grid #}
+    </div>
+</div>
+{% endblock %}
+
+{% block jsbottomincludes %}
+    {{ super() }}
+    {# Specific JS for register page, if any, would go here.
+       The password toggle script is now inside register_form.html.
+       Flatpickr for DOB is initialized in layout.html globally; ensure it targets #dob input.
+    #}
+{% endblock %}
