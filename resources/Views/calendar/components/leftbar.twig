@@ -1,73 +1,73 @@
 <script id="entry-template" type="text/template">
     <div  class="details-section text-center">
-        <!-- Today's Date and Title -->
+        {# Today's Date and Title #}
 
         <h2 id="today-title" class="mb-1 text-uppercase font-weight-bold" style="font-size: 3rem; color: #ff5733;">Today</h2>
-        <h2 id="today-title" class="mb-1 font-weight-bold" style="font-size: 5rem; color: #ff5733;">{{ day }}</h2>
-        <h4 id="month-year-title-left" class="font-weight-bold" style="font-size: 2rem; color: #ff5733;">{{ month }}  {{ year }} </h4>
-        <h5 id="title" style="font-size: 2rem; font-weight: normal; color: #ff5733;">{{ dongGongRating }}</h5>
-        <h5 id="title1" style="font-size: 2rem; font-weight: normal; color: #ff5733;">{{ officer }}</h5>
+        <h2 id="today-title" class="mb-1 font-weight-bold" style="font-size: 5rem; color: #ff5733;"><% day %></h2>
+        <h4 id="month-year-title-left" class="font-weight-bold" style="font-size: 2rem; color: #ff5733;"><% month %>  <% year %> </h4>
+        <h5 id="title" style="font-size: 2rem; font-weight: normal; color: #ff5733;"><% dongGongRating %></h5>
+        <h5 id="title1" style="font-size: 2rem; font-weight: normal; color: #ff5733;"><% officer %></h5>
         <hr>
 
-        <!-- Clash Section -->
+        {# Clash Section #}
         <div class="clash-section" style="margin-top: 10px;">
             <div class="text-center" style="flex:1">
                 <p><strong>Clash</strong></p>
                 <div class="clash-item">
-                {{#if clashOne}}
-                    <div id="clash1" style="font-size: 1.2rem;">{{ clashOne }}</div>
-                {{/if}}
-                    <small>{{ clashOneEnglish }}</small>
+                <%#clashOne%>
+                    <div id="clash1" style="font-size: 1.2rem;"><% clashOne %></div>
+                <%/clashOne%>
+                    <small><% clashOneEnglish %></small>
                 </div>
             </div>
             <div class="text-center" style="flex:1">
                 <p><strong>Day</strong></p>
                 <div class="clash-item text-center">
-                {{#if dayClash}}
-                    <div id="clash2" style="font-size: 1.2rem;">{{ dayClash }}</div>
-                 {{/if}}
-                    <small>{{ dayClashEnglish }}</small>
+                <%#dayClash%>
+                    <div id="clash2" style="font-size: 1.2rem;"><% dayClash %></div>
+                 <%/dayClash%>
+                    <small><% dayClashEnglish %></small>
                 </div>
             </div>
             <div class="text-center" style="flex:1">
                 <p><strong>Clash</strong></p>
                 <div class="clash-item text-center">
-                {{#if clashTwo}}
-                    <div id="clash3" style="font-size: 1.2rem;">{{ clashTwo }}</div>
-                 {{/if}}
-                    <small>{{ clashTwoEnglish }}</small>
+                <%#clashTwo%>
+                    <div id="clash3" style="font-size: 1.2rem;"><% clashTwo %></div>
+                 <%/clashTwo%>
+                    <small><% clashTwoEnglish %></small>
                 </div>
             </div>
         </div>
         <hr>
 
-        <!-- Auspicious Directions -->
+        {# Auspicious Directions #}
         <p><strong>吉方位 Auspicious Direction</strong></p>
         <div class="directions text-danger" style="text-align: left; font-size: 0.9rem; line-height: 1.5;">
             <div class="my-2">
             <small>財神方 God of Wealth:</small>
-            <span class="badge badge-danger-200 text-danger">{{ GodOfWealth.english }}</span>
+            <span class="badge badge-danger-200 text-danger"><% GodOfWealth.english %></span>
              </div>
             <div class="my-2">
             <small>喜神方 God of Happiness:</small>
-           <span class="badge badge-danger-200 text-danger"> {{ GodOfLuck.english }}</span>
+           <span class="badge badge-danger-200 text-danger"> <% GodOfLuck.english %></span>
             </div>
             <div class="my-2">
             <small>福神方 God of Prosperity:</small>
-              <span class="badge badge-danger-200 text-danger">{{ GodOfFortune.english }}</span>
+              <span class="badge badge-danger-200 text-danger"><% GodOfFortune.english %></span>
               </div>
             <div class="my-2">
             <small>楊贵人方 Yang Noble:</small>
-             <span class="badge badge-danger-200 text-danger">{{ YangNoble.english }}</span>
+             <span class="badge badge-danger-200 text-danger"><% YangNoble.english %></span>
              </div>
             <div class="my-2">
             <small>陰贵人方 Yin Noble:</small>
-              <span class="badge badge-danger-200 text-danger">{{ YinNoble.english }}</span>
+              <span class="badge badge-danger-200 text-danger"><% YinNoble.english %></span>
               </div>
         </div>
 
-        <!-- Feng Shui Activation Legend -->
-        {{#if user_subscription}}
+        {# Feng Shui Activation Legend #}
+        <%#user_subscription%>
         <hr>
         <div>
             <p><strong>Feng Shui Activation</strong></p>
@@ -83,6 +83,6 @@
                 <li><span style="font-size: 1.2rem;">🕊️</span> Divine Blessing & Protection</li>
             </ul>
         </div>
-        {{/if}}
+        <%/user_subscription%>
     </div>
 </script>

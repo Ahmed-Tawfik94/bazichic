@@ -1,9 +1,9 @@
 <script id="dynamic_date" type="text/template">
     <div class="dynamic-date-display">
-        <div class="date">{{ details.fullDate }}</div>
-        <div class="auspicious">{{ details.dongGong }}</div>
-        <div class="pillar">{{ details.pillar }}</div>
-        <div class="action">{{ details.action }}</div>
+        <div class="date"><% details.fullDate %></div>
+        <div class="auspicious"><% details.dongGong %></div>
+        <div class="pillar"><% details.pillar %></div>
+        <div class="action"><% details.action %></div>
     </div>
     <table class="table table-bordered styled-table">
         <thead>
@@ -14,35 +14,35 @@
         </thead>
         <tbody>
         <tr>
-            <td><strong>Conflict:</strong> {{ details.conflict }}</td>
+            <td><strong>Conflict:</strong> <% details.conflict %></td>
             <td>Anticipate problems.</td>
         </tr>
         <tr>
-            <td><strong>Year Branch:</strong> {{ details.yearBranch }}</td>
+            <td><strong>Year Branch:</strong> <% details.yearBranch %></td>
             <td>Seek accountability buddy.</td>
         </tr>
         <tr>
-            <td><strong>Day Branch:</strong> {{ details.dayBranch }}</td>
+            <td><strong>Day Branch:</strong> <% details.dayBranch %></td>
             <td>Connect with nature.</td>
         </tr>
         <tr>
-            <td><strong>Day Stem:</strong> {{ details.dayStem }}</td>
+            <td><strong>Day Stem:</strong> <% details.dayStem %></td>
             <td>Networking.</td>
         </tr>
         </tbody>
     </table>
     <h4 class="section-title">Recommended Actions to Boost Your Luck</h4>
     <ul class="recommendation-list">
-        {{#each details.recommendedActions}}
+        <%#details.recommendedActions%>
         <li>
-            <span><i class="bi bi-star-fill"></i></span> <!-- Replace with your desired icon -->
+            <span><i class="bi bi-star-fill"></i></span> {# Replace with your desired icon #}
             <div>
-                <strong>{{this}}</strong>
+                <strong><% . %></strong>
                  <br>
-                <small>Tip {{@index}}: Make this action a priority today.</small> <!-- Using 0-based @index -->
+                <small>Make this action a priority today.</small> {# Removed Tip @index #}
             </div>
         </li>
-        {{/each}}
+        <%/details.recommendedActions%>
     </ul>
     <h4 class="section-title">Day Personal Auxiliary Stars</h4>
     <table class="table table-bordered styled-table">
@@ -50,26 +50,26 @@
         <tr>
             <th>Icon</th>
             <th>Name</th>
-            <th>Branch/Stem</th> <!-- Changed header for clarity -->
+            <th>Branch/Stem</th> {# Changed header for clarity #}
         </tr>
         </thead>
         <tbody>
-        {{#each details.auxiliaryStars}}
+        <%#details.auxiliaryStars%>
             <tr>
-                <td>{{this.icon}}</td>
-                <td>{{this.name}}</td>
+                <td><% icon %></td>
+                <td><% name %></td>
                 <td>
                     <div class="d-flex align-items-center gap-2">
-                        {{#each this.branch}}
-                            <span class="badge badge-dark rounded-pill px-4 py-2"> {{this}}</span>
-                        {{/each}}
-                        {{#each this.stem}}
-                            <span class="badge badge-danger rounded-pill px-4 py-2"> {{this}}</span>
-                        {{/each}}
+                        <%#branch%>
+                            <span class="badge badge-dark rounded-pill px-4 py-2"> <% . %></span>
+                        <%/branch%>
+                        <%#stem%>
+                            <span class="badge badge-danger rounded-pill px-4 py-2"> <% . %></span>
+                        <%/stem%>
                     </div>
                 </td>
             </tr>
-        {{/each}}
+        <%/details.auxiliaryStars%>
         </tbody>
     </table>
 </script>

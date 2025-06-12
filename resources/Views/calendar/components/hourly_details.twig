@@ -1,17 +1,17 @@
 <script id="hourly" type="text/template">
-    {{#each hourly_details}}
+    <%#hourly_details%>
     <div class="hourly-card">
-        <div class="hourly-time">{{this.timeRange}}</div>
+        <div class="hourly-time"><%timeRange%></div>
         <div class="hourly-content">
-            <div class="stem-branch"> {{this.stemBranch}}</div>
-            <div>({{this.stemBranchEn}})</div>
-            <div class="activity">{{this.activity}}</div>
+            <div class="stem-branch"> <%stemBranch%></div>
+            <div>(<%stemBranchEn%>)</div>
+            <div class="activity"><%activity%></div>
             <ul class="details-list">
-                {{#each this.details}}
-                <li>{{this}}</li>
-                {{/each}}
+                <%#details%>
+                <li><% . %></li>
+                <%/details%>
             </ul>
         </div>
     </div>
-    {{/each}}
+    <%/hourly_details%>
 </script>

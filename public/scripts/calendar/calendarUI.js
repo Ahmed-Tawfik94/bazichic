@@ -19,12 +19,9 @@ class CalendarUI {
         this.currentMonth = this.calendarDays.find(({date})=> date.isToday)
         this.today= `${this.currentMonth.date.cn.month} ${this.MonthNames[this.currentMonth.date.month]}`
 
-        // Precompile Handlebars templates
-        this.dayCellTemplate = Handlebars.compile($('#day_cell').html());
-        this.leftBarTemplate = Handlebars.compile($('#entry-template').html());
-        this.dynamicDateTableTemplate = Handlebars.compile($('#dynamic_date').html());
-        this.hourlyDetailsTemplate = Handlebars.compile($('#hourly').html());
-
+        // Reinstate Mustache custom tags
+        const customTags = [ '<%', '%>' ];
+        Mustache.tags = customTags;
     }
     async init(){
         this.prevMonthBtn.on('click', this.prevMonth.bind(this));
@@ -135,7 +132,8 @@ class CalendarUI {
             };
 
             // Render the template with data
-            return this.dayCellTemplate(data);
+            // return this.dayCellTemplate(data); // Reverted from Handlebars
+            return Mustache.render($('#day_cell').html(), data);
             // Append the manipulated cell back to the DOM
         });
         this.calendarContent.append(renderedDays);
@@ -166,9 +164,9 @@ class CalendarUI {
             user_subscription:userSubscription !== 'null'
 
         };
-        // Pass the subscription status to the context for Handlebars
-        context.user_subscription = this.subscription ? true : false;
-        const finalTemplate = this.leftBarTemplate(context)
+        // Pass the subscription status to the context
+        // context.user_subscription = this.subscription ? true : false; // Reverted: Mustache handles truthiness directly
+        const finalTemplate = Mustache.render($('#entry-template').html(), context); // Reverted to Mustache
 
         $('#day_details').html(finalTemplate)
     }
@@ -340,8 +338,8 @@ class CalendarUI {
         }
 
         // Construct HTML for the details section
-        // const template = $("#dynamic_date").html(); // Source is already compiled
-        const html = this.dynamicDateTableTemplate({ details });
+        const template = $("#dynamic_date").html();
+        const html = Mustache.render(template, { details }); // Reverted to Mustache
         // Inject the generated HTML into the details section
         $("#dynamic-details").html(html);
     }
@@ -476,6 +474,7 @@ class CalendarUI {
         }
 
         const template = $("#hourly").html();
+        // const html = this.hourlyDetailsTemplate({ hourly_details: processedHourlyDetails }); // Reverted from Handlebars
         const html = Mustache.render(template, { hourly_details: processedHourlyDetails });
         $("#hourly-details-grid").html(html);
     }
