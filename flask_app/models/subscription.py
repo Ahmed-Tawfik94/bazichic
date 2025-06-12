@@ -28,5 +28,14 @@ class Subscription(db.Model):
     created_at = db.Column(db.DateTime, default=func.now())
     updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
 
+    # Relationship to Invoices
+    # This uses the Subscription.stripe_subscription_id to link to Invoice.stripe_subscription_id
+    invoices = db.relationship('Invoice',
+                               foreign_keys='Invoice.stripe_subscription_id',
+                               primaryjoin='Subscription.stripe_subscription_id == Invoice.stripe_subscription_id',
+                               back_populates='subscription',
+                               lazy='dynamic',
+                               cascade="all, delete-orphan")
+
     def __repr__(self):
         return f'<Subscription {self.id} for User {self.user_id} to Plan {self.plan_id}>'

@@ -21,5 +21,8 @@ class Plan(db.Model):
     # Relationship to Subscriptions
     # subscriptions = db.relationship('Subscription', backref='plan', lazy='dynamic')
 
+    # New relationship for this subtask
+    free_trials_on_plan = db.relationship('FreeTrial', back_populates='plan', lazy='dynamic', cascade="all, delete-orphan")
+
     def __repr__(self):
         return f'<Plan {self.name}>'

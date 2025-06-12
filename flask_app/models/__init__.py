@@ -32,5 +32,18 @@ __all__ = [
     'RedeemTransaction',
     'Activity',
     'DocumentReview',
-    'SiteSetting'
+    'SiteSetting',
+    'DocKeyword',
+    'DocumentAudio',
+    'DocumentSave',
+    'DocumentView',
+    'EmailVerification',
+    'Contact',
+    'Invoice',
+    'Status',
+    'StoreTag',
+    'FreeTrial',
+    'AppUsage',
+    'Testimonial',
+    'Currency'
 ]

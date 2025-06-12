@@ -32,6 +32,19 @@ from flask_app.models.redeem_transaction import RedeemTransaction
 from flask_app.models.activity import Activity
 from flask_app.models.document_review import DocumentReview
 from flask_app.models.site_setting import SiteSetting
+from flask_app.models.doc_keyword import DocKeyword
+from flask_app.models.document_audio import DocumentAudio
+from flask_app.models.document_save import DocumentSave
+from flask_app.models.document_view import DocumentView
+from flask_app.models.email_verification import EmailVerification
+from flask_app.models.contact import Contact
+from flask_app.models.invoice import Invoice
+from flask_app.models.status import Status
+from flask_app.models.store_tag import StoreTag
+from flask_app.models.free_trial import FreeTrial
+from flask_app.models.app_usage import AppUsage
+from flask_app.models.testimonial import Testimonial
+from flask_app.models.currency import Currency
 
 @app.route('/')
 def hello_world():

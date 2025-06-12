@@ -26,8 +26,8 @@ class User(db.Model): # Add UserMixin later if needed
     description = db.Column(db.Text, nullable=True)
     user_image = db.Column(db.String(255), nullable=True) # Path or URL to image
     referral_code = db.Column(db.String(50), unique=True, nullable=True, index=True)
-    api_key = db.Column(db.String(120), unique=True, nullable=True, index=True)
-    status_id = db.Column(db.Integer, nullable=True) # Could be FK to a UserStatus model later
+    api_key = db.Column(db.String(120), unique=True, nullable=True, index=True) # Used by AppUsage, ensure it's indexed and unique
+    status_id = db.Column(db.Integer, db.ForeignKey('status.id', name='fk_user_status_id', use_alter=True), nullable=True, index=True) # Changed to FK
 
     ref_user_id = db.Column(db.Integer, db.ForeignKey('users.id', name='fk_user_ref_user_id', use_alter=True), nullable=True)
     referrer = db.relationship('User', remote_side=[id], backref='referrals', lazy='select') # Self-referential for referrals
@@ -65,6 +65,21 @@ class User(db.Model): # Add UserMixin later if needed
     # New relationships for this subtask (Activity, DocumentReview)
     activities_performed = db.relationship('Activity', foreign_keys='Activity.who_id', back_populates='user', lazy='dynamic', cascade="all, delete-orphan")
     document_reviews_written = db.relationship('DocumentReview', back_populates='user', lazy='dynamic', cascade="all, delete-orphan")
+
+    # New relationships for this subtask (DocumentSave, DocumentView, EmailVerification)
+    document_saves = db.relationship('DocumentSave', back_populates='user', lazy='dynamic', cascade="all, delete-orphan")
+    document_views = db.relationship('DocumentView', back_populates='user', lazy='dynamic', cascade="all, delete-orphan")
+    email_verifications = db.relationship('EmailVerification', back_populates='user', lazy='dynamic', cascade="all, delete-orphan")
+
+    # New relationships for this subtask (Contact, Invoice)
+    contact_submissions = db.relationship('Contact', back_populates='user', lazy='dynamic', cascade="all, delete-orphan")
+    invoices = db.relationship('Invoice', back_populates='user', lazy='dynamic', cascade="all, delete-orphan")
+
+    # New/updated relationships for this subtask
+    status_info = db.relationship('Status', foreign_keys=[status_id]) # Removed back_populates as Status model doesn't have users_with_status yet
+    free_trials_taken = db.relationship('FreeTrial', back_populates='user', lazy='dynamic', cascade="all, delete-orphan")
+    testimonials_given = db.relationship('Testimonial', back_populates='user', lazy='dynamic', cascade="all, delete-orphan")
+    # api_usages relationship could be added here if AppUsage.api_key is made a FK to User.api_key
 
 
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())

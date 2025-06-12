@@ -41,5 +41,11 @@ class Document(db.Model):
     # New relationship for this subtask (DocumentReview)
     reviews_received = db.relationship('DocumentReview', back_populates='document', lazy='dynamic', cascade="all, delete-orphan")
 
+    # New relationships for this subtask (DocKeyword, DocumentAudio, DocumentSave, DocumentView)
+    keywords = db.relationship('DocKeyword', back_populates='document', lazy='dynamic', cascade="all, delete-orphan")
+    audio_files = db.relationship('DocumentAudio', back_populates='document', lazy='dynamic', cascade="all, delete-orphan")
+    saves = db.relationship('DocumentSave', back_populates='document', lazy='dynamic', cascade="all, delete-orphan")
+    views = db.relationship('DocumentView', back_populates='document', lazy='dynamic', cascade="all, delete-orphan")
+
     def __repr__(self):
         return f'<Document {self.id}: {self.title}>' # Added ID for clarity
