@@ -167,19 +167,20 @@ class CalendarUI {
     }
     updateDynamicDetails(data) {
         const today = data || this.calendar.todayDetails
-        const {date , lunar, clashes, positions, rating} = today // Added rating here
+        const {date , lunar: lunarDay, clashes, positions, rating} = today // Renamed lunar to lunarDay for clarity
 
         // Example data (replace with actual logic or data from the server)
         const details = {
             fullDate:date.full,
-            dongGong:lunar.officer.full,
-            pillar: `${lunar.stem} ${lunar.branch}`, // Changed order
-            action: lunar.officer.english, // Populated action field
+            dongGong:lunarDay.officer.full,
+            pillar: `${lunarDay.stem} ${lunarDay.branch}`, // Changed order
+            action: lunarDay.officer.english, // Populated action field
             conflict: `${clashes.clash_two.branch} ${ clashes.clash_two.branch_en }`,
-            yearBranch: `${lunar.year.branch} ${chineseToEnglishMapping.earthlyBranches[lunar.year.branch]}`,
-            dayBranch: `${lunar.branch} ${chineseToEnglishMapping.earthlyBranches[lunar.branch]}`,
-            dayStem: `${lunar.stem} ${chineseToEnglishMapping.heavenlyStems[lunar.stem]}`,
+            yearBranch: `${lunarDay.year.branch} ${chineseToEnglishMapping.earthlyBranches[lunarDay.year.branch]}`,
+            dayBranch: `${lunarDay.branch} ${chineseToEnglishMapping.earthlyBranches[lunarDay.branch]}`,
+            dayStem: `${lunarDay.stem} ${chineseToEnglishMapping.heavenlyStems[lunarDay.stem]}`,
             recommendedActions: [], // Initialize as empty, will be populated below
+            // Static auxiliaryStars as a fallback, will be replaced if dynamic data is found
             auxiliaryStars: [
                 { icon: "🐉", name: "Dragon Virtue", branch:["Ox"]  },
                 { icon: "⭐", name: "General Star", branch: ["Snake"] },
@@ -207,30 +208,129 @@ class CalendarUI {
             ]
         };
 
-        // Dynamic recommendations
-        if (lunar.officer.english === 'Establish') {
-            details.recommendedActions.push("Good day for starting new ventures.");
-        }
-        if (lunar.officer.english === 'Full') {
-            details.recommendedActions.push("Activities related to abundance are favored.");
-        }
-        if (lunar.officer.english === 'Remove') {
-            details.recommendedActions.push("Suitable for clearing out old things or ending chapters.");
-        }
-        if (rating && rating.type === 'Bad') {
-            details.recommendedActions.push("Exercise caution in important activities.");
-        }
-        if (rating && rating.type === 'Excellent') {
-            details.recommendedActions.push("An auspicious day for most activities.");
+        // --- Recommended Actions Yi/Ji ---
+        let yiJiSourced = false;
+        if (lunarDay) {
+            if (typeof lunarDay.getYi === 'function' && typeof lunarDay.getJi === 'function') {
+                const yiActions = lunarDay.getYi();
+                const jiActions = lunarDay.getJi();
+
+                if (Array.isArray(yiActions) && yiActions.length > 0) {
+                    yiActions.forEach(action => details.recommendedActions.push(`Suitable for: ${action}`));
+                    yiJiSourced = true;
+                }
+                if (Array.isArray(jiActions) && jiActions.length > 0) {
+                    jiActions.forEach(action => details.recommendedActions.push(`Unsuitable for: ${action}`));
+                    yiJiSourced = true;
+                }
+                if (!yiJiSourced && (Array.isArray(yiActions) || Array.isArray(jiActions))) {
+                    // Methods exist but returned empty arrays
+                     console.log("DynamicDetails: lunarDay.getYi() or lunarDay.getJi() returned empty arrays.");
+                }
+            } else {
+                console.log("DynamicDetails: lunarDay.getYi() or lunarDay.getJi() methods not available.");
+            }
+        } else {
+            console.error("DynamicDetails: lunarDay object is not available for Yi/Ji recommendations.");
         }
 
-        // If no specific recommendations, add a general one
+        // Fallback to officer/rating recommendations if Yi/Ji not sourced
+        if (!yiJiSourced) {
+            if (lunarDay.officer.english === 'Establish') {
+                details.recommendedActions.push("Good day for starting new ventures.");
+            }
+            if (lunarDay.officer.english === 'Full') {
+                details.recommendedActions.push("Activities related to abundance are favored.");
+            }
+            if (lunarDay.officer.english === 'Remove') {
+                details.recommendedActions.push("Suitable for clearing out old things or ending chapters.");
+            }
+            if (rating && rating.type === 'Bad') {
+                details.recommendedActions.push("Exercise caution in important activities.");
+            }
+            if (rating && rating.type === 'Excellent') {
+                details.recommendedActions.push("An auspicious day for most activities.");
+            }
+        }
+
+        // If no recommendations from any source, add a general one
         if (details.recommendedActions.length === 0) {
             details.recommendedActions.push("Consider the day's general influences for your activities.");
         }
 
-        // Log for auxiliary stars
-        console.log("DynamicDetails: Auxiliary stars data is currently static. Needs integration with a dynamic data source if available from the Lunar object or API.");
+        // --- Auxiliary Stars ---
+        let newAuxiliaryStars = [];
+        let dynamicAuxStarsAdded = false;
+        let auxStarLog = "";
+
+        if (lunarDay) {
+            // Try getDayShenSha()
+            if (typeof lunarDay.getDayShenSha === 'function') {
+                const dayShenSha = lunarDay.getDayShenSha();
+                if (Array.isArray(dayShenSha)) {
+                    dayShenSha.forEach(star => {
+                        if (typeof star === 'object' && star.name) {
+                            let icon = '❓';
+                            if (star.type === 'good' || star.type === '吉' || star.lucky === true) icon = '吉';
+                            else if (star.type === 'bad' || star.type === '凶' || star.lucky === false) icon = '凶';
+                            newAuxiliaryStars.push({ icon: icon, name: star.name, branch: [] });
+                            dynamicAuxStarsAdded = true;
+                        }
+                    });
+                    if (dayShenSha.length === 0) auxStarLog += "getDayShenSha() returned empty array. ";
+                } else {
+                     auxStarLog += "getDayShenSha() did not return an array. ";
+                }
+            } else {
+                 auxStarLog += "getDayShenSha() not found. ";
+            }
+
+            // Try getXiu() and getXiuLuck()
+            if (typeof lunarDay.getXiu === 'function' && typeof lunarDay.getXiuLuck === 'function') {
+                const xiuName = lunarDay.getXiu();
+                const xiuLuck = lunarDay.getXiuLuck(); // Expected '吉' or '凶'
+                if (xiuName && typeof xiuLuck === 'string') {
+                    let icon = '❓';
+                    if (xiuLuck === '吉') icon = '吉';
+                    else if (xiuLuck === '凶') icon = '凶';
+                    newAuxiliaryStars.push({ icon: icon, name: `宿: ${xiuName} (${xiuLuck})`, branch: [] });
+                    dynamicAuxStarsAdded = true;
+                } else {
+                    auxStarLog += "getXiu() or getXiuLuck() did not return expected data. ";
+                }
+            } else {
+                 auxStarLog += "getXiu()/getXiuLuck() not found. ";
+            }
+
+            // Try getPengZuBaiJi()
+            if (typeof lunarDay.getPengZuBaiJi === 'function') {
+                const pengZu = lunarDay.getPengZuBaiJi();
+                if (Array.isArray(pengZu)) {
+                    pengZu.forEach(taboo => {
+                        newAuxiliaryStars.push({ icon: '忌', name: taboo, branch: [] });
+                        dynamicAuxStarsAdded = true;
+                    });
+                     if (pengZu.length === 0) auxStarLog += "getPengZuBaiJi() returned empty array. ";
+                } else {
+                    auxStarLog += "getPengZuBaiJi() did not return an array. ";
+                }
+            } else {
+                auxStarLog += "getPengZuBaiJi() not found. ";
+            }
+
+        } else {
+            auxStarLog = "lunarDay object not available for auxiliary stars. ";
+        }
+
+        if (dynamicAuxStarsAdded) {
+            details.auxiliaryStars = newAuxiliaryStars;
+            if (newAuxiliaryStars.length === 0) { // Methods existed but all returned empty
+                 console.log("DynamicDetails: Auxiliary star methods available but returned no stars. " + auxStarLog);
+            }
+        } else {
+            // Keep static auxiliaryStars and log the attempt/failure
+            console.log("DynamicDetails: Could not dynamically populate auxiliary stars. Using static fallback. Attempts: " + auxStarLog);
+        }
 
         // Construct HTML for the details section
         const template = $("#dynamic_date").html();
@@ -243,122 +343,130 @@ class CalendarUI {
         const today = data || this.calendar.todayDetails;
         const { hourly } = today.lunar; // This is an array of 'time' objects from Lunar.js
 
-        let activityDataSourced = false;
-        let detailsDataSourced = false;
+        let overallActivitySourced = false; // Tracks if any hour got activity data
+        let overallDetailsSourced = false; // Tracks if any hour got detail data
 
         const processedHourlyDetails = hourly.map(time => {
             const hourData = {
                 timeRange: `${time.getMinHm()} - ${time.getMaxHm()}`,
                 stemBranch: time.getGanZhi(),
                 stemBranchEn: `${chineseToEnglishMapping.heavenlyStems[time.getGan()]} ${chineseToEnglishMapping.earthlyBranches[time.getZhi()]}`,
-                activity: "Varies", // Default value
-                details: [] // Default empty array
+                activity: "Varies",
+                details: []
             };
 
-            // Attempt to get lucky status
-            if (typeof time.getLucky === 'function') {
-                const luckyStatus = time.getLucky(); // This is a guess, actual method name might differ
-                // Assuming getLucky() returns something like "吉", "凶", "中" or an object
-                if (typeof luckyStatus === 'string') {
-                    // Simple mapping, this would need to be more robust based on actual return values
-                    if (luckyStatus === "吉") hourData.activity = "Auspicious";
-                    else if (luckyStatus === "凶") hourData.activity = "Inauspicious";
-                    else hourData.activity = "Neutral";
-                    activityDataSourced = true;
-                } else {
-                    // If it's an object, you might need to inspect its properties
-                    // For now, we'll stick to the default if it's not a simple string
-                }
-            } else if (typeof time.getTianShen === 'function') { // Another guess based on some Lunar.js versions (黄道黑道)
-                // Example: getTianShen() might return an object like { name: "青龙", type: "黄道" }
-                // Or it might return the name directly: "青龙" (Green Dragon)
-                const tianShen = time.getTianShen();
-                let shenName = "";
-                let shenType = "";
+            let activitySourcedThisHour = false;
+            let detailsSourcedThisHour = false;
+            let tianShenName = null; // To store TianShen name for details if found
 
-                if (typeof tianShen === 'object' && tianShen !== null && tianShen.name && tianShen.type) {
-                    shenName = tianShen.name;
-                    shenType = tianShen.type;
-                } else if (typeof tianShen === 'string') { // If it directly returns the star name
-                    shenName = tianShen;
-                    // We might need a mapping for type if only name is provided
-                }
-
-                if (shenName) {
-                     // Map shenType to activity (e.g., 黄道 often means auspicious)
-                    if (shenType === "黄道" || shenType.toLowerCase().includes('good') || shenType.toLowerCase().includes('lucky')) {
-                        hourData.activity = `Auspicious (${shenName})`;
-                    } else if (shenType === "黑道" || shenType.toLowerCase().includes('bad') || shenType.toLowerCase().includes('unlucky')) {
-                        hourData.activity = `Inauspicious (${shenName})`;
-                    } else {
-                        hourData.activity = shenName; // If type is neutral or unknown
+            // 1. Hourly Activity
+            if (typeof time.getTianShen === 'function') {
+                const tianShen = time.getTianShen(); // e.g., {name: '青龙', type: '吉'} or '青龙'
+                if (tianShen) {
+                    if (typeof tianShen === 'object' && tianShen.name) {
+                        tianShenName = tianShen.name;
+                        let luckType = tianShen.type || tianShen.luck; // '吉', '凶', 'good', 'bad'
+                        if (luckType && (luckType.includes('吉') || luckType.toLowerCase().includes('good'))) {
+                            hourData.activity = `Auspicious (${tianShenName})`;
+                        } else if (luckType && (luckType.includes('凶') || luckType.toLowerCase().includes('bad'))) {
+                            hourData.activity = `Inauspicious (${tianShenName})`;
+                        } else {
+                            hourData.activity = tianShenName; // Neutral or just name
+                        }
+                        activitySourcedThisHour = true;
+                    } else if (typeof tianShen === 'string') {
+                        tianShenName = tianShen;
+                        hourData.activity = tianShenName; // Just the name, actual luck unknown from this
+                        activitySourcedThisHour = true;
                     }
-                    activityDataSourced = true;
-                    // Also, add this to details
-                    hourData.details.push(shenName);
-                    // We won't set detailsDataSourced to true yet, as this is just one aspect
                 }
             }
 
+            if (!activitySourcedThisHour && typeof time.getHuangDaoJiXiong === 'function') {
+                const luck = time.getHuangDaoJiXiong(); // Expected '吉' or '凶'
+                if (luck === '吉') {
+                    hourData.activity = "Yellow Path - Auspicious";
+                    activitySourcedThisHour = true;
+                } else if (luck === '凶') {
+                    hourData.activity = "Black Path - Inauspicious";
+                    activitySourcedThisHour = true;
+                }
+            }
 
-            // Attempt to get hourly stars/influences for the 'details' array
-            // This is highly speculative as method names are unknown.
-            // Common terms: "值神" (Duty God), "时神" (Hour God), specific star names
-            const potentialStarMethods = ['getZhiShen', 'getShiShen', 'getHourStars', 'getShenSha'];
-            let foundStars = [];
-            for (const methodName of potentialStarMethods) {
-                if (typeof time[methodName] === 'function') {
-                    const stars = time[methodName](); // Assuming it returns an array of strings or objects
-                    if (Array.isArray(stars)) {
-                        stars.forEach(star => {
-                            if (typeof star === 'string') foundStars.push(star);
-                            else if (typeof star === 'object' && star.name) foundStars.push(star.name);
-                        });
-                    } else if (typeof stars === 'string') { // If it returns a single star name
-                        foundStars.push(stars);
+            if (!activitySourcedThisHour && typeof time.getShiErShen === 'function') { // 12 Day Officers / Jian Chu
+                const shiErShen = time.getShiErShen(); // e.g., {name: '建', type: '吉'} or just '建'
+                 if (shiErShen) {
+                    if (typeof shiErShen === 'object' && shiErShen.name) {
+                        let luckPrefix = "";
+                        if (shiErShen.type === '吉' || shiErShen.type === 'good') luckPrefix = "Auspicious - ";
+                        else if (shiErShen.type === '凶' || shiErShen.type === 'bad') luckPrefix = "Inauspicious - ";
+                        hourData.activity = `${luckPrefix}${shiErShen.name}`;
+                        activitySourcedThisHour = true;
+                    } else if (typeof shiErShen === 'string') {
+                        hourData.activity = shiErShen; // e.g. "建 (Establish)"
+                        activitySourcedThisHour = true;
                     }
-                    if (foundStars.length > 0) detailsDataSourced = true; // Mark if we got anything
+                }
+            }
+            if(activitySourcedThisHour) overallActivitySourced = true;
+
+
+            // 2. Hourly Details
+            if (tianShenName) { // From getTianShen() attempt above
+                hourData.details.push(tianShenName);
+                detailsSourcedThisHour = true;
+            }
+
+            if (typeof time.getHourShenSha === 'function') {
+                const hourShenSha = time.getHourShenSha(); // Expected array of strings or objects
+                if (Array.isArray(hourShenSha)) {
+                    hourShenSha.forEach(sha => {
+                        if (typeof sha === 'string') hourData.details.push(sha);
+                        else if (typeof sha === 'object' && sha.name) hourData.details.push(sha.name);
+                    });
+                    if (hourShenSha.length > 0) detailsSourcedThisHour = true;
                 }
             }
 
-            if (foundStars.length > 0) {
-                 // If we got TianShen name and it's not already in foundStars, add it.
-                if (hourData.details.length > 0 && !foundStars.includes(hourData.details[0])) {
-                    hourData.details = hourData.details.concat(foundStars);
-                } else if (hourData.details.length === 0) {
-                    hourData.details = foundStars;
+            if (typeof time.getPositionShen === 'function') {
+                 const posShen = time.getPositionShen(); // Could be a string or an object
+                 if(posShen){
+                    if(typeof posShen === 'string') hourData.details.push(posShen);
+                    else if (posShen.name) hourData.details.push(posShen.name);
+                    detailsSourcedThisHour = true;
+                 }
+            }
+
+            if (typeof time.getChong === 'function') {
+                const chong = time.getChong(); // e.g., "卯"
+                if (chong) {
+                    hourData.details.push(`Clash: ${chong} (${chineseToEnglishMapping.earthlyBranches[chong] || ''})`);
+                    detailsSourcedThisHour = true;
                 }
             }
-
-
-            // If still no details from dynamic sources, use a placeholder or keep it empty
-            if (hourData.details.length === 0) {
-                // Example: Keep it empty or add a placeholder
-                // hourData.details.push("General influences apply");
+            if (typeof time.getXing === 'function') {
+                const xing = time.getXing(); // e.g., "子卯刑" or just a branch
+                if (xing) {
+                    hourData.details.push(`Punishment: ${xing}`);
+                    detailsSourcedThisHour = true;
+                }
             }
+            if(detailsSourcedThisHour) overallDetailsSourced = true;
 
-            // Fallback for activity if not sourced
-            if (!activityDataSourced && hourData.activity === "Varies" && hourData.details.length > 0) {
-                // If we have some details but no clear activity, just list the first detail as activity
-                // This is a basic heuristic
-                // hourData.activity = hourData.details[0];
+            // Remove duplicates from details if any were added from multiple sources
+            if (hourData.details.length > 0) {
+                hourData.details = [...new Set(hourData.details)];
             }
-
 
             return hourData;
         });
 
-        if (!activityDataSourced) {
-            console.log("updateHourlyDetails: Could not dynamically source 'activity' for hourly details. It remains static or default. Investigate Lunar.js 'time' object for methods like getLucky() or getTianShen().");
+        if (!overallActivitySourced) {
+            console.log("updateHourlyDetails: Could not dynamically source 'activity' for hourly cards. Defaulting to 'Varies'. Review available methods on the Lunar.js Time object (e.g., getTianShen, getHuangDaoJiXiong, getShiErShen).");
         }
-        if (!detailsDataSourced) {
-            console.log("updateHourlyDetails: Could not dynamically source nested 'details' (hourly stars/influences). These remain static or default. Investigate Lunar.js 'time' object for methods returning hourly astrological influences.");
+        if (!overallDetailsSourced) {
+            console.log("updateHourlyDetails: Could not dynamically source nested 'details' for hourly cards. These will be empty or sparsely populated. Review available methods on the Lunar.js Time object (e.g., getHourShenSha, getPositionShen, getChong, getXing).");
         }
-
-        // If after all attempts, details array is empty for an hour, and we had a static list before,
-        // we might want to put back some generic static details for those.
-        // For now, we'll leave them empty if no dynamic data is found.
-        // This part replaces the old static hourlyDetails array with the new processed one.
 
         const template = $("#hourly").html();
         const html = Mustache.render(template, { hourly_details: processedHourlyDetails });
@@ -504,20 +612,47 @@ class CalendarUI {
 
         // Attempt to find other directional stars from Lunar object (speculative)
         // For example, if d.getExtraDirections() existed and returned an array like [{name: "Tai Sui", direction: "NW", comment: "Year God"}]
-        const lunarInstance = dayData.lunar; // This is 'd' in calendar.js
-        if (typeof lunarInstance.getFetalGodDay === 'function') { // Example:胎神日 (Daily Fetal God)
-            const fetalGodDay = lunarInstance.getFetalGodDay(); // e.g. 占门碓外东南 (Occupies outside the door stone, Southeast)
-             if (fetalGodDay) {
-                 directionalStarsItems.push({ star: "Daily Fetal God", direction: fetalGodDay.replace(/.*(占|仓库|房内|厨灶|房床|碓磨|门堂|鸡栖|厕戶|仓库|碓磨|大门|房主).*/, '').trim() || "Varies", comment: fetalGodDay });
-             }
-        }
-         if (typeof lunarInstance.getPengZu === 'function') { // Example: 彭祖百忌 (Peng Zu's Hundred Taboos)
-            const pengZu = lunarInstance.getPengZu(); // e.g. 甲不开仓 财物耗亡 (Jia day, don't open warehouse, wealth will be lost)
-            if (pengZu) {
-                 directionalStarsItems.push({ star: "Peng Zu's Taboos", direction: "Activities to Avoid", comment: pengZu });
+        const lunarDay = dayData.lunar; // This is 'd' in calendar.js, renamed for clarity
+
+        // Peng Zu Bai Ji - ensure this is part of the directional stars items
+        if (typeof lunarDay.getPengZuBaiJi === 'function') {
+            const pengZuTaboos = lunarDay.getPengZuBaiJi(); // Returns array of strings
+            if (Array.isArray(pengZuTaboos) && pengZuTaboos.length > 0) {
+                pengZuTaboos.forEach(taboo => {
+                    directionalStarsItems.push({ star: "Peng Zu Taboo", direction: "Daily Advice", comment: taboo });
+                });
+            } else if (!Array.isArray(pengZuTaboos)) {
+                 console.log("renderDailyStars: lunarDay.getPengZuBaiJi() did not return an array.");
             }
+        } else {
+            console.log("renderDailyStars: lunarDay.getPengZuBaiJi() method not found.");
         }
 
+        // Fetal God - ensure this is part of the directional stars items
+        if (typeof lunarDay.getFetalGodDay === 'function') {
+            const fetalGodString = lunarDay.getFetalGodDay(); // e.g. "占门碓外东南"
+            if (fetalGodString && typeof fetalGodString === 'string') {
+                 // Basic parsing attempt, specific parsing might be needed depending on string format variability
+                let directionComment = fetalGodString;
+                let directionDetail = "Varies";
+                // Example: "占门碓外东南" -> "门碓外东南" as direction, full string as comment
+                const parts = fetalGodString.split(' '); // if it's space separated
+                if (parts.length > 1) directionDetail = parts.slice(1).join(' ');
+                else { // Try to extract from common patterns like "占[object] [direction]"
+                    const match = fetalGodString.match(/占(.*?) (.*)/) || fetalGodString.match(/占(.*?)([东南西北内外]+)/);
+                    if (match && match[2]) {
+                         directionDetail = (match[1] ? match[1] + " " : "") + match[2];
+                    } else {
+                        directionDetail = fetalGodString.startsWith("占") ? fetalGodString.substring(1) : fetalGodString;
+                    }
+                }
+                directionalStarsItems.push({ star: "Fetal God", direction: directionDetail, comment: fetalGodString });
+            } else if (fetalGodString){
+                 console.log("renderDailyStars: lunarDay.getFetalGodDay() did not return a string.");
+            }
+        } else {
+            console.log("renderDailyStars: lunarDay.getFetalGodDay() method not found.");
+        }
 
         dynamicDailyStarsData.details.push({
             category: "Daily Stars, Auspicious and Inauspicious Directions",
@@ -525,55 +660,95 @@ class CalendarUI {
         });
 
         // 2. Daily Auxiliary Star
-        let auspiciousStars = [];
-        let inauspiciousStars = [];
-        let auxStarsSourced = false;
+        let newAuspiciousItems = [];
+        let newInauspiciousItems = [];
+        let dynamicDailyAuxStarsAdded = false;
+        let auxStarLog = "";
 
-        if (lunarInstance) {
-            // Speculative: try getDayShenSha() or separate good/bad star functions
-            if (typeof lunarInstance.getDayShenSha === 'function') { // More common in some libs
-                const allShenSha = lunarInstance.getDayShenSha(); // Expects array of {name: string, type: 'good'/'bad'} or similar
-                if (Array.isArray(allShenSha)) {
+
+        if (lunarDay) {
+            if (typeof lunarDay.getDayShenSha === 'function') {
+                const allShenSha = lunarDay.getDayShenSha();
+                if (Array.isArray(allShenSha) && allShenSha.length > 0) {
                     allShenSha.forEach(star => {
                         if (typeof star === 'object' && star.name && star.type) {
                             if (star.type.toLowerCase() === 'good' || star.type.toLowerCase() === 'auspicious' || star.type === '吉') {
-                                auspiciousStars.push(star.name);
+                                newAuspiciousItems.push(star.name);
                             } else if (star.type.toLowerCase() === 'bad' || star.type.toLowerCase() === 'inauspicious' || star.type === '凶') {
-                                inauspiciousStars.push(star.name);
+                                newInauspiciousItems.push(star.name);
                             }
+                        } else if (typeof star === 'string') { // some libs might return array of strings if type is implicit
+                            newAuspiciousItems.push(star); // Default to auspicious if type is unknown
                         }
                     });
-                    if (auspiciousStars.length > 0 || inauspiciousStars.length > 0) auxStarsSourced = true;
+                    if (newAuspiciousItems.length > 0 || newInauspiciousItems.length > 0) dynamicDailyAuxStarsAdded = true;
+                    else auxStarLog += "getDayShenSha() returned empty or unparsable array. ";
+                } else if (!Array.isArray(allShenSha)) {
+                     auxStarLog += "getDayShenSha() did not return an array. ";
+                } else {
+                    auxStarLog += "getDayShenSha() returned empty array. ";
                 }
             } else {
-                 // Try separate functions if getDayShenSha doesn't exist or doesn't work
-                if (typeof lunarInstance.getGoodStars === 'function' && typeof lunarInstance.getBadStars === 'function') {
-                    const good = lunarInstance.getGoodStars();
-                    const bad = lunarInstance.getBadStars();
-                    if (Array.isArray(good)) auspiciousStars = good.map(s => (typeof s === 'object' && s.name) ? s.name : s);
-                    if (Array.isArray(bad)) inauspiciousStars = bad.map(s => (typeof s === 'object' && s.name) ? s.name : s);
-                    if (auspiciousStars.length > 0 || inauspiciousStars.length > 0) auxStarsSourced = true;
-                } else if (typeof lunarInstance.getAuspiciousStars === 'function' && typeof lunarInstance.getInauspiciousStars === 'function') {
-                    const good = lunarInstance.getAuspiciousStars();
-                    const bad = lunarInstance.getInauspiciousStars();
-                     if (Array.isArray(good)) auspiciousStars = good.map(s => (typeof s === 'object' && s.name) ? s.name : s);
-                    if (Array.isArray(bad)) inauspiciousStars = bad.map(s => (typeof s === 'object' && s.name) ? s.name : s);
-                    if (auspiciousStars.length > 0 || inauspiciousStars.length > 0) auxStarsSourced = true;
+                 auxStarLog += "getDayShenSha() method not found. ";
+                 // Fallback to getGoodStars/getBadStars if getDayShenSha is not present
+                if (typeof lunarDay.getGoodStars === 'function' && typeof lunarDay.getBadStars === 'function') {
+                    const goodStars = lunarDay.getGoodStars();
+                    const badStars = lunarDay.getBadStars();
+                    if (Array.isArray(goodStars) && goodStars.length > 0) {
+                        newAuspiciousItems = goodStars.map(s => (typeof s === 'object' && s.name) ? s.name : s);
+                        dynamicDailyAuxStarsAdded = true;
+                    } else if (!Array.isArray(goodStars)) auxStarLog += "getGoodStars() did not return an array. ";
+
+                    if (Array.isArray(badStars) && badStars.length > 0) {
+                        newInauspiciousItems = badStars.map(s => (typeof s === 'object' && s.name) ? s.name : s);
+                        dynamicDailyAuxStarsAdded = true;
+                    } else if (!Array.isArray(badStars)) auxStarLog += "getBadStars() did not return an array. ";
+
+                    if (!dynamicDailyAuxStarsAdded && (goodStars || badStars)) auxStarLog += "getGoodStars/BadStars returned empty or unparsable. ";
+
+                } else {
+                    auxStarLog += "getGoodStars()/getBadStars() methods not found. ";
                 }
             }
+
+            // Constellation (Xiu)
+            if (typeof lunarDay.getXiu === 'function' && typeof lunarDay.getXiuLuck === 'function') {
+                const xiuName = lunarDay.getXiu();
+                const xiuLuck = lunarDay.getXiuLuck(); // '吉' or '凶'
+                if (xiuName && typeof xiuLuck === 'string') {
+                    const xiuString = `宿: ${xiuName} (${xiuLuck})`;
+                    if (xiuLuck === '吉') {
+                        newAuspiciousItems.push(xiuString);
+                    } else if (xiuLuck === '凶') {
+                        newInauspiciousItems.push(xiuString);
+                    } else { // Neutral or other
+                        newAuspiciousItems.push(xiuString); // Default to auspicious list if not '凶'
+                    }
+                    dynamicDailyAuxStarsAdded = true;
+                } else {
+                    auxStarLog += "getXiu() or getXiuLuck() did not return expected data. ";
+                }
+            } else {
+                auxStarLog += "getXiu()/getXiuLuck() methods not found. ";
+            }
+        } else {
+             auxStarLog += "lunarDay object not available. ";
         }
 
-        if (!auxStarsSourced) {
-            console.log("renderDailyStars: 'Daily Auxiliary Star' data is currently STALE/STATIC. Failed to dynamically source from Lunar.js object. Please investigate methods like getDayShenSha(), getGoodStars()/getBadStars() on the lunar object provided by the library.");
-            // Fallback to static data if dynamic sourcing fails
-            auspiciousStars = ["Static Moon", "Static Four Phase", "Static Removal God", "Static Heavenly Virtue", "Static Success God", "Static Heavenly Horse"];
-            inauspiciousStars = ["Static War Female", "Static Flying Disaster", "Static Sha God", "Static Imprisonment", "Static Lesser Consumer"];
+        let finalAuspiciousItems = newAuspiciousItems;
+        let finalInauspiciousItems = newInauspiciousItems;
+
+        if (!dynamicDailyAuxStarsAdded || (newAuspiciousItems.length === 0 && newInauspiciousItems.length === 0)) {
+            console.log(`renderDailyStars: Could not dynamically populate Daily Auxiliary Stars. Using static placeholders. Attempts: ${auxStarLog}`);
+            // Fallback to static data as previously defined if no dynamic stars were added or if methods returned empty.
+            finalAuspiciousItems = ["Static Moon", "Static Four Phase", "Static Removal God", "Static Heavenly Virtue", "Static Success God", "Static Heavenly Horse"];
+            finalInauspiciousItems = ["Static War Female", "Static Flying Disaster", "Static Sha God", "Static Imprisonment", "Static Lesser Consumer"];
         }
 
         dynamicDailyStarsData.details.push({
             category: "Daily Auxiliary Star",
-            items: auspiciousStars,
-            inauspiciousItems: inauspiciousStars
+            items: finalAuspiciousItems,
+            inauspiciousItems: finalInauspiciousItems
         });
 
         const container = document.getElementById("daily-stars");
