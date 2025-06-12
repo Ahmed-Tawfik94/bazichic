@@ -1,13 +1,13 @@
 <script id="day_cell" type="text/template">
-    <div class="calendar-cell <% class %>" data-index="<%idx%>">
-        <div class="date-number"><% day_number %></div>
+    <div class="calendar-cell {{ class }}" data-index="{{idx}}">
+        <div class="date-number">{{ day_number }}</div>
         <div class="bazi-info">
-            <div> <%stem%></div>
-            <div> <%branch%></div>
-            <small> <% stem_en %> <% branch_en %></small>
+            <div>{{stem}}</div>
+            <div>{{branch}}</div>
+            <small>{{ stem_en }} {{ branch_en }}</small>
         </div>
         <div class="bazi-info">
-            <small><% officer %></small>
+            <small>{{ officer }}</small>
         </div>
     </div>
 </script>
